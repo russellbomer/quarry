@@ -51,6 +51,89 @@ class WizardModel(BaseModel):
         return v
 
 
+# Named constants to avoid magic values littered through the module.
+DEFAULT_RPS = 1.0
+DEFAULT_MAX_ITEMS = 100
+
+
+# Template defaults centralized to reduce run_wizard size and magic values.
+TEMPLATES_DEFAULTS: dict[str, dict[str, Any]] = {
+    "custom": {
+        "job_name": "my_job",
+        "entry": "https://example.com/",
+        "parser": "custom_list",
+        "normalize": "custom",
+        "allowlist": ["example.com"],
+        "rps": DEFAULT_RPS,
+        "cursor_field": "id",
+        "sink_kind": "parquet",
+        "sink_path": "data/cache/%Y%m%dT%H%M%SZ.parquet",
+    },
+    "fda_example": {
+        "job_name": "fda_recalls",
+        "entry": "https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts",
+        "parser": "fda_list",
+        "detail_parser": "fda_detail",
+        "normalize": "fda_recalls",
+        "allowlist": ["fda.gov"],
+        "rps": DEFAULT_RPS,
+        "cursor_field": "id",
+        "sink_kind": "parquet",
+        "sink_path": "data/cache/fda/%Y%m%dT%H%M%SZ.parquet",
+    },
+    "nws_example": {
+        "job_name": "nws_alerts",
+        "entry": "https://alerts.weather.gov/cap/us.php?x=0",
+        "parser": "nws_list",
+        "normalize": "nws_alerts",
+        "allowlist": ["weather.gov", "alerts.weather.gov"],
+        "rps": DEFAULT_RPS,
+        "cursor_field": "id",
+        "sink_kind": "parquet",
+        "sink_path": "data/cache/nws/%Y%m%dT%H%M%SZ.parquet",
+    },
+}
+
+
+def _build_spec(model: WizardModel, parser: str, normalize: str, template_defaults: dict[str, Any]) -> dict[str, Any]:
+    """Build the YAML spec dict from validated model and inputs.
+
+    Extracted to reduce run_wizard size and make intent explicit.
+    """
+    spec: dict[str, Any] = {
+        "version": "1",
+        "job": model.job_name,
+        "source": {
+            "kind": "html",
+            "entry": str(model.entry),
+            "parser": parser,
+            "rate_limit_rps": model.rps,
+            "cursor": {
+                "field": model.cursor_field,
+                "stop_when_seen": True,
+            },
+        },
+        "transform": {"pipeline": [{"normalize": normalize}]},
+        "sink": {"kind": model.sink_kind, "path": model.sink_path},
+        "policy": {"robots": "allow", "allowlist": model.allowlist},
+    }
+
+    if template_defaults.get("detail_parser"):
+        spec["source"]["detail_parser"] = template_defaults["detail_parser"]
+
+    return spec
+
+
+def _write_yaml(spec: dict[str, Any], job_name: str) -> None:
+    """Write YAML spec to jobs/<job>.yml. Kept as a single-responsibility helper."""
+    jobs_dir = Path("jobs")
+    jobs_dir.mkdir(exist_ok=True)
+    yaml_path = jobs_dir / f"{job_name}.yml"
+
+    with open(yaml_path, "w", encoding="utf-8") as f:
+        yaml.dump(spec, f, default_flow_style=False, sort_keys=False)
+
+
 def _prompt_text(prompt: str, default: str = "") -> str:
     """Prompt for text input with fallback."""
     if HAS_ENHANCED_UI:
@@ -132,44 +215,7 @@ def run_wizard() -> None:
     )
 
     # Set defaults based on template
-    defaults: dict[str, Any] = {
-        "custom": {
-            "job_name": "my_job",
-            "entry": "https://example.com/",
-            "parser": "custom_list",
-            "normalize": "custom",
-            "allowlist": ["example.com"],
-            "rps": 1.0,
-            "cursor_field": "id",
-            "sink_kind": "parquet",
-            "sink_path": "data/cache/%Y%m%dT%H%M%SZ.parquet",
-        },
-        "fda_example": {
-            "job_name": "fda_recalls",
-            "entry": "https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts",
-            "parser": "fda_list",
-            "detail_parser": "fda_detail",
-            "normalize": "fda_recalls",
-            "allowlist": ["fda.gov"],
-            "rps": 1.0,
-            "cursor_field": "id",
-            "sink_kind": "parquet",
-            "sink_path": "data/cache/fda/%Y%m%dT%H%M%SZ.parquet",
-        },
-        "nws_example": {
-            "job_name": "nws_alerts",
-            "entry": "https://alerts.weather.gov/cap/us.php?x=0",
-            "parser": "nws_list",
-            "normalize": "nws_alerts",
-            "allowlist": ["weather.gov", "alerts.weather.gov"],
-            "rps": 1.0,
-            "cursor_field": "id",
-            "sink_kind": "parquet",
-            "sink_path": "data/cache/nws/%Y%m%dT%H%M%SZ.parquet",
-        },
-    }
-
-    template_defaults = defaults[template]
+    template_defaults = TEMPLATES_DEFAULTS[template]
 
     # Collect inputs
     job_name = _prompt_text("Job name (slug)", template_defaults["job_name"])
@@ -227,7 +273,7 @@ def run_wizard() -> None:
     )
     sink_path = _prompt_text("Sink path template", template_defaults["sink_path"])
 
-    max_items_str = _prompt_text("Max items (for smoke test)", "100")
+    max_items_str = _prompt_text("Max items (for smoke test)", str(DEFAULT_MAX_ITEMS))
     try:
         max_items = int(max_items_str)
     except ValueError:
@@ -255,42 +301,9 @@ def run_wizard() -> None:
         sys.exit(1)
 
     # Build YAML spec
-    spec: dict[str, Any] = {
-        "version": "1",
-        "job": model.job_name,
-        "source": {
-            "kind": "html",
-            "entry": str(model.entry),
-            "parser": parser,
-            "rate_limit_rps": model.rps,
-            "cursor": {
-                "field": model.cursor_field,
-                "stop_when_seen": True,
-            },
-        },
-        "transform": {
-            "pipeline": [{"normalize": normalize}],
-        },
-        "sink": {
-            "kind": model.sink_kind,
-            "path": model.sink_path,
-        },
-        "policy": {
-            "robots": "allow",
-            "allowlist": model.allowlist,
-        },
-    }
+    spec = _build_spec(model, parser, normalize, template_defaults)
 
-    if template == "fda_example" and template_defaults.get("detail_parser"):
-        spec["source"]["detail_parser"] = template_defaults["detail_parser"]
-
-    # Write YAML
-    jobs_dir = Path("jobs")
-    jobs_dir.mkdir(exist_ok=True)
-    yaml_path = jobs_dir / f"{model.job_name}.yml"
-
-    with open(yaml_path, "w", encoding="utf-8") as f:
-        yaml.dump(spec, f, default_flow_style=False, sort_keys=False)
+    _write_yaml(spec, model.job_name)
 
     success_msg = f"Job spec written to {yaml_path}"
     if console:
