@@ -60,9 +60,16 @@ class GenericConnector:
         item_selector = selectors.get("item")
         field_selectors = selectors.get("fields", {})
         
-        if not item_selector or not field_selectors:
+        if not item_selector:
             raise ValueError(
-                "GenericConnector requires 'selectors.item' and 'selectors.fields' in config"
+                "GenericConnector requires 'selectors.item' in config. "
+                "Please add item selector to your YAML: selectors: { item: '.your-selector' }"
+            )
+        
+        if not field_selectors:
+            raise ValueError(
+                "GenericConnector requires 'selectors.fields' in config. "
+                "Please add field selectors to your YAML: selectors: { fields: { title: '.title', url: 'a::attr(href)' } }"
             )
         
         # Fetch HTML (always live for generic connector - no fixtures)

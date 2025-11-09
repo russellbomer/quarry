@@ -339,24 +339,87 @@ def find_item_selector(html: str, min_items: int = 3) -> list[dict[str, Any]]:
                 ]
                 
                 if matching_links:
-                    # Build selector based on href pattern
-                    # Use CSS attribute selector with *= (contains)
-                    selector = f"a[href*='{pattern}']"
+                    # Strategy: Find common parent container of these links
+                    # This is more useful than selecting the links themselves
+                    parent_containers = []
+                    for link in matching_links[:10]:  # Sample first 10
+                        # Walk up to find a meaningful container (article, li, div with class, etc.)
+                        parent = link.parent
+                        depth = 0
+                        while parent and depth < 5:
+                            # Stop at semantic tags or elements with classes
+                            if parent.name in ["article", "li", "tr", "section"]:
+                                parent_containers.append(parent)
+                                break
+                            elif parent.get("class"):
+                                parent_containers.append(parent)
+                                break
+                            parent = parent.parent
+                            depth += 1
                     
-                    # Check if already covered
-                    if any(pattern in c.get("selector", "") for c in candidates):
-                        continue
-                    
-                    first_link = matching_links[0]
-                    sample_title = first_link.get_text(strip=True)[:80] or "Link"
-                    
-                    candidates.append({
-                        "selector": selector,
-                        "count": len(matching_links),
-                        "sample_title": sample_title,
-                        "sample_url": first_link.get("href", ""),
-                        "confidence": "high" if len(matching_links) >= 10 else "medium",
-                    })
+                    # Find most common parent type
+                    if parent_containers:
+                        parent_tags = Counter()
+                        parent_classes = Counter()
+                        
+                        for container in parent_containers:
+                            parent_tags[container.name] += 1
+                            classes = container.get("class", [])
+                            if classes:
+                                # Use first class as representative
+                                parent_classes[f"{container.name}.{classes[0]}"] += 1
+                        
+                        # Prefer classed containers over bare tags
+                        if parent_classes:
+                            most_common = parent_classes.most_common(1)[0]
+                            selector = most_common[0]
+                            count_in_sample = most_common[1]
+                            
+                            # Find all instances of this container
+                            tag_name, class_name = selector.split(".", 1)
+                            all_containers = soup.find_all(tag_name, class_=class_name)
+                            actual_count = len(all_containers)
+                        else:
+                            # Fall back to bare tag
+                            most_common_tag = parent_tags.most_common(1)[0][0]
+                            selector = most_common_tag
+                            all_containers = soup.find_all(most_common_tag)
+                            actual_count = len(all_containers)
+                        
+                        # Get sample from first container
+                        first_container = all_containers[0] if all_containers else parent_containers[0]
+                        
+                        # Extract sample title from container
+                        sample_title = ""
+                        title_elem = first_container.find(["h1", "h2", "h3", "h4", "h5", "h6"])
+                        if title_elem:
+                            sample_title = title_elem.get_text(strip=True)[:80]
+                        elif first_container.find("a", href=True):
+                            link_text = first_container.find("a", href=True).get_text(strip=True)
+                            sample_title = link_text[:80] if link_text else "Item"
+                        else:
+                            sample_title = first_container.get_text(strip=True)[:80] or "Item"
+                        
+                        candidates.append({
+                            "selector": selector,
+                            "count": actual_count,
+                            "sample_title": sample_title,
+                            "sample_url": first_container.find("a", href=True).get("href", "") if first_container.find("a", href=True) else "",
+                            "confidence": "high" if actual_count >= 10 else "medium",
+                        })
+                    else:
+                        # Fall back to selecting links directly (less useful but better than nothing)
+                        selector = f"a[href*='{pattern}']"
+                        first_link = matching_links[0]
+                        sample_title = first_link.get_text(strip=True)[:80] or "Link"
+                        
+                        candidates.append({
+                            "selector": selector,
+                            "count": len(matching_links),
+                            "sample_title": sample_title,
+                            "sample_url": first_link.get("href", ""),
+                            "confidence": "low",  # Links without containers are less useful
+                        })
     
     # Strategy 6: Link density clustering
     # Find containers with high link density (likely list items)

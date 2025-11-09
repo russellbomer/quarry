@@ -410,6 +410,27 @@ def _analyze_html_and_build_selectors(entry_url: str) -> dict[str, Any] | None: 
                 )
                 field_selectors[field_type] = custom_selector
         
+        # Check if we found any fields
+        if not field_selectors:
+            if console:
+                console.print("[yellow]⚠ No fields were auto-detected. You'll need to add them manually to the YAML.[/yellow]")
+            else:
+                print("⚠ No fields were auto-detected. You'll need to add them manually to the YAML.")
+            
+            # Ask if user wants to continue without fields or skip selector generation
+            if not _prompt_confirm("Continue with item selector only (no field selectors)?", default=False):
+                if console:
+                    console.print("[yellow]Skipping selector generation[/yellow]")
+                else:
+                    print("Skipping selector generation")
+                return None
+            
+            # Return with empty fields - user will need to add manually
+            return {
+                "item": item_selector,
+                "fields": {},
+            }
+        
         # Preview extraction with all fields
         if field_selectors:
             if console:
@@ -619,6 +640,10 @@ def run_wizard() -> None:  # noqa: PLR0912, PLR0915
             # GenericConnector needs live mode, others use offline with fixtures
             if console:
                 console.print(f"[dim]Running with offline={not is_generic}...[/dim]")
+                # Debug: show what we're passing
+                if is_generic:
+                    console.print(f"[dim]Selectors in spec: {spec.get('selectors')}[/dim]")
+            
             df, next_cursor = run_job(spec, max_items=model.max_items, offline=not is_generic)
             summary = f"{model.job_name}: {len(df)} rows, next_cursor={next_cursor}"
             if console:
