@@ -571,3 +571,11 @@ def run_wizard() -> None:  # noqa: PLR0912, PLR0915
                 console.print(f"[red]{error_msg}[/red]")
             else:
                 print(f"ERROR: {error_msg}")
+
+
+if __name__ == "__main__":
+    try:
+        run_wizard()
+    except KeyboardInterrupt:
+        # Friendly shutdown if user presses Ctrl-C while interacting
+        print("\nWizard aborted by user.")
