@@ -450,24 +450,43 @@ def _analyze_html_and_build_selectors(entry_url: str) -> dict[str, Any] | None: 
         error_msg = f"HTML analysis failed: {e}"
         
         # Provide helpful context for common errors
-        if "403" in str(e) or "Forbidden" in str(e):
+        if "robots.txt disallows" in str(e):
+            help_msg = (
+                "\n\n💡 This URL is blocked by robots.txt. "
+                "The site owner has explicitly disallowed scraping this page.\n"
+                "\nOptions:\n"
+                "  1. Check robots.txt manually: [domain]/robots.txt\n"
+                "  2. Try a different page on the same site\n"
+                "  3. Contact the site owner for permission\n"
+                "  4. Look for an official API instead\n"
+                "\nYou can continue the wizard with respect_robots=False (not recommended for production)."
+            )
+            error_msg += help_msg
+        elif "403" in str(e) or "Forbidden" in str(e):
             help_msg = (
                 "\n\n💡 This website is blocking automated requests. "
                 "This often happens with sites using:\n"
                 "  • Cloudflare, Akamai, or other bot protection\n"
                 "  • Anti-scraping measures\n"
                 "\nOptions:\n"
-                "  1. Try accessing the page in a browser first, then run the wizard\n"
-                "  2. Use browser developer tools to inspect the HTML manually\n"
-                "  3. Check if the site has an API available\n"
-                "  4. Contact the site owner for permission\n"
+                "  1. Try a slower rate limit (default is already 1 req/sec)\n"
+                "  2. Check if the site has robots.txt restrictions\n"
+                "  3. Use browser developer tools to inspect the HTML manually\n"
+                "  4. Check if the site has an API available\n"
+                "  5. Contact the site owner for permission\n"
                 "\nYou can continue the wizard without HTML analysis and write selectors manually."
             )
             error_msg += help_msg
         elif "404" in str(e) or "Not Found" in str(e):
             error_msg += "\n\n💡 The URL returned 404. Please check the URL is correct."
         elif "timeout" in str(e).lower() or "timed out" in str(e).lower():
-            error_msg += "\n\n💡 Request timed out. The site may be slow or temporarily unavailable."
+            error_msg += "\n\n💡 Request timed out. The site may be slow or temporarily unavailable. Try again or increase timeout."
+        elif "connection" in str(e).lower() or "network" in str(e).lower():
+            error_msg += "\n\n💡 Network connection failed. Check your internet connection and verify the domain is accessible."
+        elif "ssl" in str(e).lower() or "certificate" in str(e).lower():
+            error_msg += "\n\n💡 SSL/TLS certificate error. The site may have an invalid or expired certificate."
+        elif "429" in str(e) or "Too Many Requests" in str(e):
+            error_msg += "\n\n💡 Rate limited by the server. The site is asking us to slow down. This is unusual for a single request."
         
         if console:
             console.print(f"[red]{error_msg}[/red]")

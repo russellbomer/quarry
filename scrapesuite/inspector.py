@@ -18,6 +18,15 @@ def inspect_html(html: str) -> dict[str, Any]:
     - links: Anchor tags with hrefs
     - metadata: Page title, description, etc.
     """
+    if not html or not html.strip():
+        return {
+            "title": "",
+            "description": "",
+            "total_links": 0,
+            "repeated_classes": [],
+            "sample_links": [],
+        }
+    
     soup = BeautifulSoup(html, "html.parser")
     
     # Find repeated element patterns
@@ -93,7 +102,16 @@ def find_item_selector(html: str, min_items: int = 3) -> list[dict[str, Any]]:
     
     Returns list of potential item containers with CSS selectors.
     """
+    if not html or not html.strip():
+        return []
+    
     soup = BeautifulSoup(html, "html.parser")
+    
+    # Check if we got meaningful HTML (not just error page or empty)
+    if not soup.find("body") and not soup.find("html"):
+        # Might be a fragment, try to parse anyway
+        pass
+    
     candidates = []
     
     # Strategy 1: Look for repeated classes
@@ -773,13 +791,31 @@ def preview_extraction(html: str, item_selector: str, field_selectors: dict[str,
     Returns:
         List of extracted items (limited to first 3)
     """
+    if not html or not html.strip():
+        return []
+    
+    if not item_selector or not item_selector.strip():
+        return []
+    
     soup = BeautifulSoup(html, "html.parser")
-    items = soup.select(item_selector)
+    
+    try:
+        items = soup.select(item_selector)
+    except Exception:
+        # Invalid selector
+        return []
+    
+    if not items:
+        return []
     
     previews = []
     for item in items[:3]:  # Limit to 3 for preview
         data = {}
         for field_name, selector in field_selectors.items():
+            if not selector:
+                data[field_name] = ""
+                continue
+                
             try:
                 # Handle attribute extraction
                 if "::attr(" in selector:
