@@ -6,6 +6,11 @@ from pathlib import Path
 
 from scrapesuite.state import load_cursor, save_cursor, upsert_items
 
+# Test constants
+EXPECTED_NEW_COUNT_FIRST = 2
+EXPECTED_NEW_COUNT_SECOND = 1
+EXPECTED_TOTAL_ITEMS = 3
+
 
 def test_upsert_items_deduplication() -> None:
     """Test that upsert_items only counts new inserts, not updates."""
@@ -19,7 +24,7 @@ def test_upsert_items_deduplication() -> None:
             {"id": "002", "title": "Item 2"},
         ]
         new_count1 = upsert_items("test_job", records1, db_path=db_path)
-        assert new_count1 == 2
+        assert new_count1 == EXPECTED_NEW_COUNT_FIRST
 
         # Second insert with duplicates
         records2 = [
@@ -27,7 +32,7 @@ def test_upsert_items_deduplication() -> None:
             {"id": "003", "title": "Item 3"},  # New
         ]
         new_count2 = upsert_items("test_job", records2, db_path=db_path)
-        assert new_count2 == 1  # Only one new insert
+        assert new_count2 == EXPECTED_NEW_COUNT_SECOND  # Only one new insert
 
         # Verify all three items exist
         conn = sqlite3.connect(db_path)
@@ -36,7 +41,7 @@ def test_upsert_items_deduplication() -> None:
             "SELECT id FROM items WHERE job = ? ORDER BY id", ("test_job",)
         ).fetchall()
         conn.close()
-        assert len(rows) == 3
+        assert len(rows) == EXPECTED_TOTAL_ITEMS
         assert [r["id"] for r in rows] == ["001", "002", "003"]
 
     finally:

@@ -1,0 +1,42 @@
+version: "1"
+job: fda_recalls
+source:
+  kind: html
+  entry: https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts
+  parser: fda_list
+  detail_parser: fda_detail
+  rate_limit_rps: 1
+  cursor:
+    field: id
+    stop_when_seen: true
+transform:
+  pipeline:
+    - normalize: fda_recalls
+sink:
+  kind: parquet
+  path: data/cache/fda/%Y%m%dT%H%M%SZ.parquet
+policy:
+  robots: allow
+  allowlist: ["fda.gov"]
+version: "1"
+job: fda_recalls
+source:
+  kind: html
+  entry: https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts
+  parser: fda_list
+  detail_parser: fda_detail
+  rate_limit_rps: 1
+  cursor:
+    field: id
+    stop_when_seen: true
+transform:
+  pipeline:
+    - normalize: fda_recalls
+sink:
+  kind: parquet
+  path: data/cache/fda/%Y%m%dT%H%M%SZ.parquet
+policy:
+  robots: allow
+  allowlist: ["fda.gov"]
+
+

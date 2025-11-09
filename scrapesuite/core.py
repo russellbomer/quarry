@@ -6,32 +6,40 @@ from typing import Any
 import pandas as pd
 import yaml
 
+from scrapesuite import http
 from scrapesuite.connectors import custom as custom_conn
-from scrapesuite.connectors import fda, nws
+from scrapesuite.connectors import fda, generic, nws
 from scrapesuite.connectors.base import Connector
 from scrapesuite.policy import is_allowed_domain
+from scrapesuite.ratelimit import DomainRateLimiter
 from scrapesuite.sinks.base import Sink
 from scrapesuite.sinks.csv import CSVSink
+from scrapesuite.sinks.jsonl import JSONLSink
 from scrapesuite.sinks.parquet import ParquetSink
 from scrapesuite.state import load_cursor, save_cursor, upsert_items
 from scrapesuite.transforms import custom as custom_tx
 from scrapesuite.transforms import fda as fda_transforms
+from scrapesuite.transforms import generic as generic_transforms
 from scrapesuite.transforms import nws as nws_transforms
 
 _CONNECTOR_REGISTRY: dict[str, type[Connector]] = {
     "custom_list": custom_conn.CustomConnector,
     "fda_list": fda.FDAConnector,
     "nws_list": nws.NWSConnector,
+    "generic": generic.GenericConnector,
 }
 
 _TRANSFORM_REGISTRY: dict[str, Any] = {
     "custom": custom_tx.normalize,
     "fda_recalls": fda_transforms.normalize,
     "nws_alerts": nws_transforms.normalize,
+    "generic": generic_transforms.normalize,
 }
 
 
-def _resolve_connector(source: dict[str, Any], policy: dict[str, Any], offline: bool):
+def _resolve_connector(
+    source: dict[str, Any], policy: dict[str, Any], offline: bool, config: dict[str, Any]
+):
     """Resolve and instantiate connector from source spec.
 
     Separated out to reduce complexity in run_job.
@@ -50,7 +58,10 @@ def _resolve_connector(source: dict[str, Any], policy: dict[str, Any], offline: 
             )
 
     return connector_class(
-        entry_url=entry_url, allowlist=allowlist, rate_limit_rps=rate_limit_rps
+        entry_url=entry_url,
+        allowlist=allowlist,
+        rate_limit_rps=rate_limit_rps,
+        config=config,
     )
 
 
@@ -88,8 +99,10 @@ def _create_sink(sink_spec: dict[str, Any], timezone: str, job_name: str) -> Sin
         sink: Sink = ParquetSink(sink_path_template, timezone=timezone)
     elif sink_kind == "csv":
         sink = CSVSink(sink_path_template, timezone=timezone)
+    elif sink_kind == "jsonl":
+        sink = JSONLSink(sink_path_template, timezone=timezone)
     else:
-        available = "parquet, csv"
+        available = "parquet, csv, jsonl"
         raise ValueError(f"Unknown sink kind '{sink_kind}'. Available: {available}")
 
     return sink
@@ -145,11 +158,19 @@ def run_job(
     sink_spec = job_dict["sink"]
     policy = job_dict.get("policy", {})
 
+    # Configure per-domain rate limiting
+    default_rps = policy.get("default_rps", 1.0)
+    rate_limits = policy.get("rate_limits", {})
+    if not offline and rate_limits:
+        # Set up global rate limiter with custom limits
+        limiter = DomainRateLimiter(default_rps=default_rps, rate_limits=rate_limits)
+        http.set_rate_limiter(limiter)
+
     # Load cursor from state
     cursor = load_cursor(job_name, db_path=db_path)
 
     # Instantiate connector with config from YAML
-    connector = _resolve_connector(source, policy, offline)
+    connector = _resolve_connector(source, policy, offline, job_dict)
 
     # Collect records
     detail_parser_name = source.get("detail_parser")

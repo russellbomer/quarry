@@ -22,8 +22,7 @@ def test_wizard_generates_yaml() -> None:
             "fda_example",  # template
             "test_fda",  # job_name
             (
-                "https://www.fda.gov/safety/recalls-market-withdrawals-"
-                "safety-alerts"
+                "https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts"
             ),  # entry (listing page, not detail)
             "fda_list",  # parser
             "fda_recalls",  # normalize

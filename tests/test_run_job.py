@@ -5,8 +5,13 @@ from pathlib import Path
 
 import pytest
 
+from scrapesuite.connectors import custom
 from scrapesuite.core import load_yaml, run_job
 from scrapesuite.state import load_cursor
+
+# Test constants to avoid magic numbers
+MIN_EXPECTED_RECORDS = 3
+MIN_RECORDS_FOR_STATE_TEST = 2
 
 
 def test_load_yaml() -> None:
@@ -134,7 +139,7 @@ def test_run_custom_job_offline() -> None:
 
         df, next_cursor = run_job(job_dict, max_items=10, offline=True, db_path=db_path)
 
-        assert len(df) >= 3
+        assert len(df) >= MIN_EXPECTED_RECORDS
         assert next_cursor is not None
 
         # Check expected columns
@@ -150,8 +155,6 @@ def test_run_custom_job_offline() -> None:
 
 def test_custom_connector_live_raises() -> None:
     """Test that custom connector raises NotImplementedError in live mode."""
-    from scrapesuite.connectors import custom
-
     entry_url = "https://example.com/"
     connector = custom.CustomConnector(entry_url=entry_url)
 

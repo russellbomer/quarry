@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
+from scrapesuite.robots import check_robots as _check_robots
+
 
 def is_allowed_domain(url: str, allowlist: list[str]) -> bool:
     """Check if URL domain is in allowlist."""
@@ -24,14 +26,14 @@ def is_allowed_domain(url: str, allowlist: list[str]) -> bool:
     return False
 
 
-def check_robots(url: str) -> bool:
+def check_robots(url: str, user_agent: str = "ScrapeSuite") -> bool:
     """
-    Stub robots.txt checker.
+    Check if URL is allowed by robots.txt.
 
-    TODO: Implement proper robots.txt parsing and checking.
-    For now, returns True (allow all).
+    Uses cached robots.txt parser with 24-hour TTL.
+    Returns True if allowed, False if disallowed.
     """
-    return True
+    return _check_robots(url, user_agent)
 
 
 @dataclass

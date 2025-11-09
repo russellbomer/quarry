@@ -3,8 +3,11 @@
 import pytest
 
 import scrapesuite.connectors.custom as custom_mod
-
 from scrapesuite.connectors import custom, fda, nws
+
+# Test constants to avoid magic numbers
+MIN_EXPECTED_RECORDS = 3
+MIN_RECORDS_FOR_CURSOR_TEST = 2
 
 
 def test_fda_connector_offline() -> None:
@@ -13,7 +16,7 @@ def test_fda_connector_offline() -> None:
     connector = fda.FDAConnector(entry_url=entry_url)
     records, next_cursor = connector.collect(cursor=None, max_items=10, offline=True)
 
-    assert len(records) >= 3
+    assert len(records) >= MIN_EXPECTED_RECORDS
     assert next_cursor is not None
 
     # Check first record has required keys
@@ -68,7 +71,7 @@ def test_fda_cursor_filtering() -> None:
     connector = fda.FDAConnector(entry_url=entry_url)
     records, _ = connector.collect(cursor=None, max_items=10, offline=True)
 
-    if len(records) >= 2:
+    if len(records) >= MIN_RECORDS_FOR_CURSOR_TEST:
         cursor_id = records[1]["id"]
         filtered_records, _ = connector.collect(cursor=cursor_id, max_items=10, offline=True)
         # Should stop before cursor, so only first item
@@ -82,7 +85,7 @@ def test_fda_deprecation_warning() -> None:
         connector = fda.FDAConnector()
         # Should still work with fallback
         records, _ = connector.collect(cursor=None, max_items=10, offline=True)
-        assert len(records) >= 3
+        assert len(records) >= MIN_EXPECTED_RECORDS
 
 
 def test_nws_deprecation_warning() -> None:
@@ -100,7 +103,7 @@ def test_custom_connector_offline() -> None:
     connector = custom.CustomConnector(entry_url=entry_url)
     records, next_cursor = connector.collect(cursor=None, max_items=10, offline=True)
 
-    assert len(records) >= 3
+    assert len(records) >= MIN_EXPECTED_RECORDS
     assert next_cursor is not None
 
     # Check first record has required keys
@@ -136,4 +139,4 @@ def test_custom_connector_synthesis_warning(tmp_path, monkeypatch) -> None:
     with pytest.warns(UserWarning, match="Fixture not found"):
         connector = custom.CustomConnector(entry_url=entry_url)
         records, _ = connector.collect(cursor=None, max_items=10, offline=True)
-        assert len(records) >= 3
+        assert len(records) >= MIN_EXPECTED_RECORDS

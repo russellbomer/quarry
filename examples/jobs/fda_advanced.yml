@@ -1,0 +1,36 @@
+# Example job with per-domain rate limiting and robots.txt checking
+version: "1.0"
+job: fda_recalls_advanced
+
+source:
+  parser: fda_list
+  entry: https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts
+
+transform:
+  pipeline:
+    - normalize: fda_recalls
+
+sink:
+  kind: parquet
+  path: data/cache/{job}/%Y%m%dT%H%M%SZ.parquet
+
+policy:
+  # Allowlist of domains that can be scraped (optional)
+  allowlist:
+    - fda.gov
+
+  # Default rate limit for all domains (requests per second)
+  default_rps: 1.0
+
+  # Per-domain rate limits override default
+  # Useful when different sites have different rate limit policies
+  rate_limits:
+    fda.gov: 2.0          # Allow 2 requests/sec to FDA
+    api.fda.gov: 3.0      # Higher rate for API endpoints
+    weather.gov: 0.5      # Slower for weather.gov
+
+# Note: robots.txt checking is automatic and respects:
+# - User-Agent matching
+# - Disallow directives
+# - Crawl-delay directives (used as minimum rate limit)
+# - 24-hour cache TTL

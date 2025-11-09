@@ -2,7 +2,7 @@
 
 import json
 import sqlite3
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -37,6 +37,18 @@ def open_db(path: str | None = None) -> sqlite3.Connection:
             first_seen TEXT,
             last_seen TEXT,
             PRIMARY KEY (job, id)
+        )
+    """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS failed_urls (
+            job TEXT,
+            url TEXT,
+            error_message TEXT,
+            retry_count INTEGER,
+            last_attempt TEXT,
+            PRIMARY KEY (job, url)
         )
     """
     )
@@ -118,3 +130,60 @@ def upsert_items(job: str, records: list[dict[str, Any]], db_path: str | None = 
     conn.commit()
     conn.close()
     return new_count
+
+
+def record_failed_url(job: str, url: str, error_message: str, db_path: str | None = None) -> None:
+    """
+    Record a failed URL with error details.
+
+    Increments retry_count if URL already failed before.
+    """
+    conn = open_db(db_path)
+    now = datetime.now(UTC).isoformat()
+
+    # Check if URL already failed
+    existing = conn.execute(
+        "SELECT retry_count FROM failed_urls WHERE job = ? AND url = ?",
+        (job, url),
+    ).fetchone()
+
+    if existing:
+        # Increment retry count
+        new_count = existing["retry_count"] + 1
+        conn.execute(
+            """
+            UPDATE failed_urls
+            SET error_message = ?, retry_count = ?, last_attempt = ?
+            WHERE job = ? AND url = ?
+        """,
+            (error_message, new_count, now, job, url),
+        )
+    else:
+        # First failure
+        conn.execute(
+            """
+            INSERT INTO failed_urls (job, url, error_message, retry_count, last_attempt)
+            VALUES (?, ?, ?, ?, ?)
+        """,
+            (job, url, error_message, 1, now),
+        )
+
+    conn.commit()
+    conn.close()
+
+
+def get_failed_urls(job: str, db_path: str | None = None) -> list[dict[str, Any]]:
+    """
+    Get all failed URLs for a job.
+
+    Returns:
+        List of dicts with keys: url, error_message, retry_count, last_attempt
+    """
+    conn = open_db(db_path)
+    rows = conn.execute(
+        "SELECT url, error_message, retry_count, last_attempt FROM failed_urls WHERE job = ?",
+        (job,),
+    ).fetchall()
+    conn.close()
+
+    return [dict(row) for row in rows]
