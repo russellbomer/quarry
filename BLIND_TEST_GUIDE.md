@@ -427,6 +427,20 @@ python -m pytest -v
 
 ## Troubleshooting Guide
 
+### Problem: Windows Unicode encoding error
+
+**Symptom**:
+```
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2011'
+```
+
+**Fix**: Already handled in the code! Pull the latest version:
+```bash
+git pull origin chore/context-freeze
+```
+
+The test scripts now automatically detect Windows and use UTF-8 encoding.
+
 ### Problem: "ImportError: cannot import name..."
 
 **Fix**:
