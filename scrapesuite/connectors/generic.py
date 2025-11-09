@@ -55,15 +55,6 @@ class GenericConnector:
         Returns:
             (records, next_cursor)
         """
-        # Fetch HTML
-        if offline:
-            # Generic connector works with live sites, no fixtures
-            # Return empty for offline/smoke tests
-            return [], None
-        
-        html = get_html(self.entry_url)
-        soup = BeautifulSoup(html, "html.parser")
-        
         # Extract records using selectors
         selectors = self.config.get("selectors", {})
         item_selector = selectors.get("item")
@@ -73,6 +64,15 @@ class GenericConnector:
             raise ValueError(
                 "GenericConnector requires 'selectors.item' and 'selectors.fields' in config"
             )
+        
+        # Fetch HTML (always live for generic connector - no fixtures)
+        if offline:
+            # Generic connector works with live sites, no fixtures
+            # Return empty for offline/smoke tests
+            return [], None
+        
+        html = get_html(self.entry_url)
+        soup = BeautifulSoup(html, "html.parser")
         
         items = soup.select(item_selector)
         records: list[Raw] = []
