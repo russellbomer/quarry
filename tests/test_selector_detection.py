@@ -252,6 +252,114 @@ class TestRealWorldSelectorDetection:
         assert title_elem is not None
         title_text = title_elem.get_text(strip=True)
         assert len(title_text) > 0
+    
+    def test_data_attributes(self):
+        """Test detection of modern data-* attributes."""
+        html = '''
+        <div>
+          <div class="card" data-id="1">
+            <h3 data-title="Product One">Product One</h3>
+            <span data-date="2024-01-15">Jan 15</span>
+            <span data-author="john">John</span>
+            <span data-score="42">42 points</span>
+          </div>
+          <div class="card" data-id="2">
+            <h3 data-title="Product Two">Product Two</h3>
+            <span data-date="2024-01-14">Jan 14</span>
+            <span data-author="jane">Jane</span>
+            <span data-score="38">38 points</span>
+          </div>
+          <div class="card" data-id="3">
+            <h3 data-title="Product Three">Product Three</h3>
+            <span data-date="2024-01-13">Jan 13</span>
+            <span data-author="bob">Bob</span>
+            <span data-score="50">50 points</span>
+          </div>
+        </div>
+        '''
+        
+        candidates = find_item_selector(html, min_items=3)
+        assert len(candidates) > 0
+        assert ".card" in [c["selector"] for c in candidates]
+        
+        soup = BeautifulSoup(html, 'html.parser')
+        item = soup.select_one('.card')
+        
+        # Should detect data-date
+        date_selector = generate_field_selector(item, 'date')
+        assert date_selector is not None
+        assert "data-date" in date_selector or "span" in date_selector
+        
+        # Should detect data-author  
+        author_selector = generate_field_selector(item, 'author')
+        assert author_selector is not None
+        assert "data-author" in author_selector or "span" in author_selector
+        
+        # Should detect data-score
+        score_selector = generate_field_selector(item, 'score')
+        assert score_selector is not None
+    
+    def test_url_pattern_detection(self):
+        """Test URL pattern-based item detection (like FDA connector)."""
+        html = '''
+        <html>
+        <body>
+          <nav>
+            <a href="/home">Home</a>
+            <a href="/about">About</a>
+          </nav>
+          <div class="content">
+            <p><a href="/articles/123/first-article">First Article</a></p>
+            <p><a href="/articles/124/second-article">Second Article</a></p>
+            <p><a href="/articles/125/third-article">Third Article</a></p>
+            <p><a href="/articles/126/fourth-article">Fourth Article</a></p>
+          </div>
+        </body>
+        </html>
+        '''
+        
+        candidates = find_item_selector(html, min_items=3)
+        selectors = [c["selector"] for c in candidates]
+        
+        # Should detect URL pattern a[href*='/articles']
+        assert any("articles" in s for s in selectors), \
+            f"Should detect /articles pattern, got: {selectors}"
+    
+    def test_split_title_detection(self):
+        """Test detection of titles split across multiple elements."""
+        html = '''
+        <div>
+          <article class="item">
+            <div class="title-container">
+              <span>Part One:</span>
+              <span>Part Two of Title</span>
+            </div>
+          </article>
+          <article class="item">
+            <div class="title-container">
+              <span>Another:</span>
+              <span>Split Title Example</span>
+            </div>
+          </article>
+          <article class="item">
+            <div class="title-container">
+              <span>Third:</span>
+              <span>Title With Parts</span>
+            </div>
+          </article>
+        </div>
+        '''
+        
+        candidates = find_item_selector(html, min_items=3)
+        assert len(candidates) > 0
+        assert ".item" in [c["selector"] for c in candidates]
+        
+        soup = BeautifulSoup(html, 'html.parser')
+        item = soup.select_one('.item')
+        
+        # Should detect some container for the title
+        title_selector = generate_field_selector(item, 'title')
+        assert title_selector is not None
 
 
 if __name__ == "__main__":

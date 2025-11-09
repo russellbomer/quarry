@@ -276,13 +276,139 @@ def find_item_selector(html: str, min_items: int = 3) -> list[dict[str, Any]]:
                         "confidence": "medium",
                     })
     
-    # Sort by count and confidence
-    return sorted(candidates, key=lambda x: x["count"], reverse=True)[:5]
+    # Strategy 5: URL pattern detection (find links with common path patterns)
+    # This is inspired by the FDA connector which uses href pattern matching
+    # More resilient to HTML structure changes than class-based selection
+    links = soup.find_all("a", href=True)
+    if len(links) >= min_items:
+        # Group links by URL path patterns
+        from urllib.parse import urlparse
+        path_patterns = Counter()
+        
+        for link in links:
+            href = link.get("href", "")
+            if not href or href.startswith("#") or href.startswith("javascript:"):
+                continue
+            
+            # Extract path pattern (ignore specific IDs/slugs)
+            try:
+                parsed = urlparse(href)
+                path = parsed.path
+                
+                # Convert specific paths to patterns
+                # /articles/123/my-slug -> /articles
+                # /post/2024/11/09/title -> /post  
+                parts = [p for p in path.split("/") if p]
+                if len(parts) >= 1:
+                    # Keep only first part to find common base paths
+                    pattern = "/" + parts[0]
+                    path_patterns[pattern] += 1
+                elif len(parts) == 0 and path == "/":
+                    # Root path
+                    path_patterns["/"] += 1
+            except Exception:
+                continue
+        
+        # Find most common path pattern
+        for pattern, count in path_patterns.most_common(3):
+            if count >= min_items:
+                # Find links matching this pattern
+                matching_links = [
+                    link for link in links
+                    if link.get("href", "").startswith(pattern)
+                ]
+                
+                if matching_links:
+                    # Build selector based on href pattern
+                    # Use CSS attribute selector with *= (contains)
+                    selector = f"a[href*='{pattern}']"
+                    
+                    # Check if already covered
+                    if any(pattern in c.get("selector", "") for c in candidates):
+                        continue
+                    
+                    first_link = matching_links[0]
+                    sample_title = first_link.get_text(strip=True)[:80] or "Link"
+                    
+                    candidates.append({
+                        "selector": selector,
+                        "count": len(matching_links),
+                        "sample_title": sample_title,
+                        "sample_url": first_link.get("href", ""),
+                        "confidence": "high" if len(matching_links) >= 10 else "medium",
+                    })
+    
+    # Strategy 6: Link density clustering
+    # Find containers with high link density (likely list items)
+    # Look for elements that contain exactly 1-3 links (typical for list items)
+    all_elements = soup.find_all(True)
+    link_containers = []
+    
+    for elem in all_elements:
+        # Skip if too deep or already counted
+        if elem.name in ["html", "head", "body", "script", "style"]:
+            continue
+        
+        # Count direct child links (not nested deeply)
+        direct_links = elem.find_all("a", href=True, recursive=False)
+        nested_links = elem.find_all("a", href=True)
+        
+        # Good candidate: has 1-3 links and some text
+        if 1 <= len(nested_links) <= 3:
+            text = elem.get_text(strip=True)
+            if text and len(text) > 10:  # Has substantial text
+                link_containers.append(elem)
+    
+    # Group by tag+class signature
+    if link_containers:
+        signature_counts = Counter()
+        signature_examples = {}
+        
+        for container in link_containers:
+            classes = " ".join(container.get("class", []))
+            signature = f"{container.name}.{classes.split()[0]}" if classes else container.name
+            signature_counts[signature] += 1
+            if signature not in signature_examples:
+                signature_examples[signature] = container
+        
+        for signature, count in signature_counts.items():
+            if count >= min_items:
+                # Check if not already covered
+                if any(sig in c.get("selector", "") for sig in [signature, signature.split(".")[0]] for c in candidates):
+                    continue
+                
+                example = signature_examples[signature]
+                sample_title = ""
+                
+                link = example.find("a", href=True)
+                if link:
+                    sample_title = link.get_text(strip=True)[:80]
+                
+                if not sample_title:
+                    sample_title = example.get_text(strip=True)[:80] or f"<{signature}> with links"
+                
+                selector = f".{signature.split('.')[-1]}" if "." in signature else signature
+                
+                candidates.append({
+                    "selector": selector,
+                    "count": count,
+                    "sample_title": sample_title,
+                    "sample_url": link.get("href") if link else "",
+                    "confidence": "medium",
+                })
+    
+    # Sort by confidence first (high > medium > low), then by count
+    def sort_key(candidate):
+        confidence_score = {"high": 3, "medium": 2, "low": 1}.get(candidate["confidence"], 0)
+        return (confidence_score, candidate["count"])
+    
+    return sorted(candidates, key=sort_key, reverse=True)[:5]
 
 
-def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  # noqa: PLR0911, PLR0912
+def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  # noqa: PLR0911, PLR0912, C901
     """
     Generate CSS selector for common field types within an item.
+    Uses multiple strategies to handle diverse HTML patterns.
     
     Args:
         item_element: BeautifulSoup Tag representing the item container
@@ -292,8 +418,8 @@ def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  
         CSS selector string or None if not found
     """
     if field_type == "title":
-        # Look for headings first (most semantic)
-        for tag in ["h1", "h2", "h3", "h4"]:
+        # Strategy 1: Semantic headings (highest priority)
+        for tag in ["h1", "h2", "h3", "h4", "h5", "h6"]:
             elem = item_element.find(tag)
             if elem and elem.get_text(strip=True):
                 classes = elem.get("class", [])
@@ -301,7 +427,58 @@ def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  
                     return f"{tag}.{classes[0]}"
                 return tag
         
-        # Score all links and pick the best candidate
+        # Strategy 2: Data attributes (common in modern frameworks)
+        for attr in ["data-title", "data-name", "data-heading"]:
+            elem = item_element.find(attrs={attr: True})
+            if elem:
+                classes = elem.get("class", [])
+                if classes:
+                    return f".{classes[0]}"
+                return f"[{attr}]"
+        
+        # Strategy 3: Semantic attributes
+        for attr_check in [
+            {"itemprop": "name"},
+            {"itemprop": "headline"},
+            {"role": "heading"},
+        ]:
+            elem = item_element.find(attrs=attr_check)
+            if elem and elem.get_text(strip=True):
+                classes = elem.get("class", [])
+                if classes:
+                    return f".{classes[0]}"
+                attr_name = list(attr_check.keys())[0]
+                attr_value = list(attr_check.values())[0]
+                return f"[{attr_name}='{attr_value}']"
+        
+        # Strategy 4: Largest text block or container (for split titles or complex structure)
+        # Check both direct text and combined child text
+        max_text_len = 0
+        best_text_elem = None
+        
+        for elem in item_element.find_all(["span", "div", "p", "strong", "b", "h1", "h2", "h3", "h4", "h5", "h6"]):
+            # Get direct text only (not from children)
+            direct_text = "".join(elem.find_all(string=True, recursive=False))
+            text_len = len(direct_text.strip())
+            
+            # Also check combined text for containers with multiple children
+            if text_len < 10:
+                combined_text = elem.get_text(strip=True)
+                if len(combined_text) > text_len:
+                    text_len = len(combined_text)
+            
+            if text_len > max_text_len and text_len > 10:
+                max_text_len = text_len
+                best_text_elem = elem
+        
+        if best_text_elem:
+            classes = best_text_elem.get("class", [])
+            if classes:
+                return f".{classes[0]}"
+            # If no class, return tag name
+            return best_text_elem.name
+        
+        # Strategy 5: Scored link selection (existing, enhanced)
         link_candidates = []
         for a in item_element.find_all("a", href=True):
             text = a.get_text(strip=True)
@@ -326,12 +503,20 @@ def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  
             if a.get("itemprop") and "name" in str(a.get("itemprop")):
                 score += 20
             
+            # Boost for data attributes
+            if any(a.get(attr) for attr in ["data-title", "data-name"]):
+                score += 15
+            
             # Penalize common navigation/UI patterns
             classes = " ".join(a.get("class", [])).lower()
-            if any(word in classes for word in ["vote", "upvote", "reply", "share", "flag", "hide"]):
+            if any(word in classes for word in ["vote", "upvote", "reply", "share", "flag", "hide", "button", "btn"]):
                 score -= 30
-            if any(word in text.lower() for word in ["vote", "reply", "share", "hide", "save", "report"]):
+            if any(word in text.lower() for word in ["vote", "reply", "share", "hide", "save", "report", "edit", "delete"]):
                 score -= 30
+            
+            # Penalize if link is tiny (likely icon/button)
+            if len(text) < 5 and not any(ord(c) > 127 for c in text):  # Not unicode
+                score -= 20
             
             link_candidates.append((score, a))
         
@@ -351,13 +536,24 @@ def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  
             return "a"
     
     elif field_type == "url":
-        # Reuse title logic but append ::attr(href)
+        # Strategy 1: Data attributes
+        for attr in ["data-url", "data-href", "data-link"]:
+            elem = item_element.find(attrs={attr: True})
+            if elem:
+                classes = elem.get("class", [])
+                if classes:
+                    return f".{classes[0]}::attr({attr})"
+                return f"[{attr}]::attr({attr})"
+        
+        # Strategy 2: Reuse title logic but append ::attr(href)
         title_selector = generate_field_selector(item_element, "title")
         if title_selector:
-            return f"{title_selector}::attr(href)"
+            # If title selector already has ::attr, don't add it again
+            if "::attr" not in title_selector:
+                return f"{title_selector}::attr(href)"
     
     elif field_type == "date":
-        # Look for time element or common date patterns
+        # Strategy 1: Semantic time element
         time_elem = item_element.find("time")
         if time_elem:
             classes = time_elem.get("class", [])
@@ -365,23 +561,37 @@ def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  
                 return f"time.{classes[0]}"
             return "time"
         
-        # Try semantic attributes
+        # Strategy 2: Data attributes
+        for attr in ["data-date", "data-time", "data-timestamp", "data-published"]:
+            elem = item_element.find(attrs={attr: True})
+            if elem:
+                classes = elem.get("class", [])
+                if classes:
+                    return f".{classes[0]}"
+                return f"[{attr}]"
+        
+        # Strategy 3: Datetime attribute (can be on any element)
         datetime_elem = item_element.find(attrs={"datetime": True})
         if datetime_elem:
             classes = datetime_elem.get("class", [])
             if classes:
                 return f".{classes[0]}"
+            return datetime_elem.name
         
-        # Score elements by date-related signals (works across languages)
+        # Strategy 4: Score elements by date-related signals (works across languages)
         candidates = []
-        for elem in item_element.find_all(["span", "div", "p", "small"]):
+        for elem in item_element.find_all(["span", "div", "p", "small", "time"]):
             score = 0
             text = elem.get_text(strip=True)
             classes = " ".join(elem.get("class", [])).lower()
             
             # Keyword matching (English and common patterns)
-            if any(kw in classes for kw in ["date", "time", "timestamp", "posted", "published", "ago", "when"]):
+            if any(kw in classes for kw in ["date", "time", "timestamp", "posted", "published", "ago", "when", "updated"]):
                 score += 30
+            
+            # Data attribute presence
+            if any(elem.get(attr) for attr in ["data-date", "data-time", "data-timestamp"]):
+                score += 25
             
             # Text pattern matching (language-agnostic)
             import re
@@ -405,17 +615,25 @@ def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  
             return best_elem.name
     
     elif field_type == "author":
-        # Try semantic attributes first
-        author_elem = item_element.find(attrs={"itemprop": "author"})
-        if not author_elem:
-            author_elem = item_element.find(attrs={"rel": "author"})
-        if author_elem:
-            classes = author_elem.get("class", [])
-            if classes:
-                return f".{classes[0]}"
-            return author_elem.name
+        # Strategy 1: Semantic attributes
+        for attr_check in [
+            {"itemprop": "author"},
+            {"rel": "author"},
+            {"data-author": True},
+            {"data-user": True},
+        ]:
+            author_elem = item_element.find(attrs=attr_check)
+            if author_elem:
+                classes = author_elem.get("class", [])
+                if classes:
+                    return f".{classes[0]}"
+                # Return attribute selector if no class
+                attr_name = list(attr_check.keys())[0]
+                if attr_name.startswith("data-"):
+                    return f"[{attr_name}]"
+                return author_elem.name
         
-        # Score elements by author-related signals
+        # Strategy 2: Score elements by author-related signals
         candidates = []
         for elem in item_element.find_all(["span", "a", "div", "p", "small"]):
             score = 0
@@ -423,16 +641,24 @@ def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  
             text = elem.get_text(strip=True)
             
             # Keyword matching (expand for multilingual)
-            if any(kw in classes for kw in ["author", "user", "username", "by", "posted-by", "submitter", "creator"]):
+            if any(kw in classes for kw in ["author", "user", "username", "by", "posted-by", "submitter", "creator", "writer"]):
                 score += 30
             
+            # Data attribute presence
+            if any(elem.get(attr) for attr in ["data-author", "data-user", "data-username"]):
+                score += 25
+            
             # Text patterns that suggest authorship
-            if text.startswith("by ") or text.startswith("@"):
+            if text.lower().startswith("by ") or text.startswith("@"):
                 score += 15
             
             # Penalize very long text (unlikely to be just a username)
             if len(text) > 50:
                 score -= 10
+            
+            # Penalize very short text (likely abbreviation/icon)
+            if len(text) < 2:
+                score -= 20
             
             if score > 0:
                 candidates.append((score, elem))
@@ -446,7 +672,16 @@ def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  
             return best_elem.name
     
     elif field_type == "score":
-        # Score elements by voting/scoring signals
+        # Strategy 1: Data attributes
+        for attr in ["data-score", "data-points", "data-votes", "data-rating"]:
+            elem = item_element.find(attrs={attr: True})
+            if elem:
+                classes = elem.get("class", [])
+                if classes:
+                    return f".{classes[0]}"
+                return f"[{attr}]"
+        
+        # Strategy 2: Score elements by voting/scoring signals
         candidates = []
         for elem in item_element.find_all(["span", "div", "p", "small"]):
             score = 0
