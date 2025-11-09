@@ -186,6 +186,96 @@ def find_item_selector(html: str, min_items: int = 3) -> list[dict[str, Any]]:
                     "confidence": "medium",
                 })
     
+    # Strategy 3: Semantic HTML tags (article, li, tr)
+    semantic_tags = ["article", "li", "tr"]
+    for tag_name in semantic_tags:
+        elements = soup.find_all(tag_name)
+        count = len(elements)
+        
+        if count >= min_items:
+            # Check if not already covered by class selector
+            selector = tag_name
+            if not any(selector in c["selector"] for c in candidates):
+                first = elements[0]
+                
+                # Extract sample title using same logic as above
+                sample_title = ""
+                title_elem = first.find(["h1", "h2", "h3", "h4", "h5", "h6"])
+                if title_elem:
+                    sample_title = title_elem.get_text(strip=True)[:80]
+                
+                if not sample_title:
+                    link_elem = first.find("a", href=True)
+                    if link_elem:
+                        link_text = link_elem.get_text(strip=True)
+                        if link_text and len(link_text) > 3:
+                            sample_title = link_text[:80]
+                
+                if not sample_title:
+                    all_text = first.get_text(strip=True)
+                    if all_text:
+                        sample_title = all_text[:80] if len(all_text) > 10 else f"Text: '{all_text}'"
+                
+                if not sample_title:
+                    sample_title = f"<{tag_name}> element"
+                
+                candidates.append({
+                    "selector": selector,
+                    "count": count,
+                    "sample_title": sample_title,
+                    "sample_url": first.find("a", href=True).get("href") if first.find("a", href=True) else "",
+                    "confidence": "medium",
+                })
+    
+    # Strategy 4: Parent containers with repeated children
+    # Look for containers (ul, ol, tbody, div) that have many similar children
+    container_tags = ["ul", "ol", "tbody", "div"]
+    for container_tag in container_tags:
+        containers = soup.find_all(container_tag)
+        for container in containers:
+            # Get direct children only (filter out None/text nodes)
+            children = [child for child in container.children if hasattr(child, 'name') and child.name]
+            if not children:
+                continue
+            
+            # Count children by tag name
+            child_tag_counts = Counter(child.name for child in children)
+            
+            for child_tag, child_count in child_tag_counts.items():
+                if child_count >= min_items and child_tag:  # Ensure child_tag is not None
+                    # Build selector: "ul > li" or "tbody > tr"
+                    selector = f"{container_tag} > {child_tag}"
+                    
+                    # Check if similar selector already exists
+                    if any(child_tag in c["selector"] for c in candidates):
+                        continue
+                    
+                    # Get sample from first child
+                    first_child = next(c for c in children if c.name == child_tag)
+                    sample_title = ""
+                    
+                    heading = first_child.find(["h1", "h2", "h3", "h4", "h5", "h6"])
+                    if heading:
+                        sample_title = heading.get_text(strip=True)[:80]
+                    
+                    if not sample_title:
+                        link = first_child.find("a", href=True)
+                        if link:
+                            link_text = link.get_text(strip=True)
+                            if link_text and len(link_text) > 3:
+                                sample_title = link_text[:80]
+                    
+                    if not sample_title:
+                        sample_title = first_child.get_text(strip=True)[:80] or f"<{child_tag}> element"
+                    
+                    candidates.append({
+                        "selector": selector,
+                        "count": child_count,
+                        "sample_title": sample_title,
+                        "sample_url": first_child.find("a", href=True).get("href") if first_child.find("a", href=True) else "",
+                        "confidence": "medium",
+                    })
+    
     # Sort by count and confidence
     return sorted(candidates, key=lambda x: x["count"], reverse=True)[:5]
 
