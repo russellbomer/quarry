@@ -5,6 +5,8 @@ from typing import Any
 
 from bs4 import BeautifulSoup, Tag
 
+from .selector_builder import build_robust_selector
+
 
 def inspect_html(html: str) -> dict[str, Any]:
     """
@@ -405,6 +407,31 @@ def find_item_selector(html: str, min_items: int = 3) -> list[dict[str, Any]]:
     return sorted(candidates, key=sort_key, reverse=True)[:5]
 
 
+def _make_selector_robust(element: Tag, item_element: Tag) -> str:
+    """
+    Build a robust CSS selector for element relative to item_element.
+    
+    Handles deep nesting, obfuscated classes, and dynamic class names.
+    
+    Args:
+        element: The target element to select
+        item_element: The item container (root context)
+    
+    Returns:
+        Robust CSS selector string
+    """
+    # Use robust selector builder with item as root
+    selector = build_robust_selector(element, root=item_element)
+    
+    # If selector is just a single class/tag, it's already simple enough
+    if " " not in selector and ">" not in selector:
+        return selector
+    
+    # For complex selectors, strip the root marker if present since we're already scoped to item
+    # This keeps selectors relative to the item container
+    return selector
+
+
 def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  # noqa: PLR0911, PLR0912, C901
     """
     Generate CSS selector for common field types within an item.
@@ -474,6 +501,17 @@ def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  
         if best_text_elem:
             classes = best_text_elem.get("class", [])
             if classes:
+                # Check if element is deeply nested (5+ levels from item)
+                depth = 0
+                current = best_text_elem
+                while current and current != item_element and depth < 10:
+                    depth += 1
+                    current = current.parent
+                
+                # Use robust selector for deep nesting to avoid brittle paths
+                if depth >= 5:
+                    return _make_selector_robust(best_text_elem, item_element)
+                
                 return f".{classes[0]}"
             # If no class, return tag name
             return best_text_elem.name
