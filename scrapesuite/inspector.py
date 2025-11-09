@@ -202,23 +202,45 @@ def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  
         CSS selector string or None if not found
     """
     if field_type == "title":
-        # Look for headings or prominent links
-        for tag in ["h1", "h2", "h3", "h4", "a"]:
+        # Look for headings or prominent links WITH TEXT
+        for tag in ["h1", "h2", "h3", "h4"]:
             elem = item_element.find(tag)
-            if elem:
+            if elem and elem.get_text(strip=True):
                 classes = elem.get("class", [])
                 if classes:
                     return f"{tag}.{classes[0]}"
                 return tag
+        
+        # Look for link with substantial text (not buttons/icons)
+        for a in item_element.find_all("a", href=True):
+            text = a.get_text(strip=True)
+            if text and len(text) > 3:  # Ignore empty or very short links
+                classes = a.get("class", [])
+                if classes:
+                    return f"a.{classes[0]}"
+                # If no class, use parent context to make it more specific
+                parent = a.parent
+                if parent and parent.get("class"):
+                    parent_class = parent.get("class")[0]
+                    return f".{parent_class} a"
+                return "a"
     
     elif field_type == "url":
-        # Find first anchor with href
-        a = item_element.find("a", href=True)
-        if a:
-            classes = a.get("class", [])
-            if classes:
-                return f"a.{classes[0]}"
-            return "a"
+        # Find first anchor with href AND text content
+        for a in item_element.find_all("a", href=True):
+            text = a.get_text(strip=True)
+            href = a.get("href", "")
+            # Skip vote links, empty links, and anchors
+            if text and len(text) > 3 and not href.startswith("#"):
+                classes = a.get("class", [])
+                if classes:
+                    return f"a.{classes[0]}::attr(href)"
+                # Use parent context for specificity
+                parent = a.parent
+                if parent and parent.get("class"):
+                    parent_class = parent.get("class")[0]
+                    return f".{parent_class} a::attr(href)"
+                return "a::attr(href)"
     
     elif field_type == "date":
         # Look for time element or common date classes
