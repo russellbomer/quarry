@@ -448,6 +448,27 @@ def _analyze_html_and_build_selectors(entry_url: str) -> dict[str, Any] | None: 
     
     except Exception as e:
         error_msg = f"HTML analysis failed: {e}"
+        
+        # Provide helpful context for common errors
+        if "403" in str(e) or "Forbidden" in str(e):
+            help_msg = (
+                "\n\n💡 This website is blocking automated requests. "
+                "This often happens with sites using:\n"
+                "  • Cloudflare, Akamai, or other bot protection\n"
+                "  • Anti-scraping measures\n"
+                "\nOptions:\n"
+                "  1. Try accessing the page in a browser first, then run the wizard\n"
+                "  2. Use browser developer tools to inspect the HTML manually\n"
+                "  3. Check if the site has an API available\n"
+                "  4. Contact the site owner for permission\n"
+                "\nYou can continue the wizard without HTML analysis and write selectors manually."
+            )
+            error_msg += help_msg
+        elif "404" in str(e) or "Not Found" in str(e):
+            error_msg += "\n\n💡 The URL returned 404. Please check the URL is correct."
+        elif "timeout" in str(e).lower() or "timed out" in str(e).lower():
+            error_msg += "\n\n💡 Request timed out. The site may be slow or temporarily unavailable."
+        
         if console:
             console.print(f"[red]{error_msg}[/red]")
         else:
