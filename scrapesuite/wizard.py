@@ -267,23 +267,6 @@ def _collect_allowlist(entry: str, template_defaults: dict[str, Any]) -> list[st
     return allowlist
 
 
-def _collect_rps(template_defaults: dict[str, Any]) -> float:
-    """Collect and validate RPS value."""
-    if console:
-        console.print(f"\n[cyan]ℹ Rate limit:[/cyan] Requests per second (0.1-2.0). Lower is more polite. Recommended: 1.0")
-    else:
-        print(f"\nℹ Rate limit: Requests per second (0.1-2.0). Lower is more polite. Recommended: 1.0")
-    
-    rps_str = _prompt_text("Rate limit (RPS)", str(template_defaults["rps"]))
-    try:
-        rps = float(rps_str)
-        if not MIN_RPS <= rps <= MAX_RPS:
-            return DEFAULT_RPS
-        return rps
-    except ValueError:
-        return DEFAULT_RPS
-
-
 def _collect_max_items() -> int:
     """Collect and validate max items for smoke test."""
     max_items_str = _prompt_text("Max items (for smoke test)", str(DEFAULT_MAX_ITEMS))
@@ -514,7 +497,9 @@ def run_wizard() -> None:  # noqa: PLR0912, PLR0915
         normalize = _prompt_text("Normalize function", template_defaults.get("normalize", ""))
     
     allowlist = _collect_allowlist(entry, template_defaults)
-    rps = _collect_rps(template_defaults)
+    
+    # Use a sensible default rate limit (1 req/sec is polite and reliable)
+    rps = DEFAULT_RPS
     
     # Cursor field - suggest based on selectors if available
     if console:
