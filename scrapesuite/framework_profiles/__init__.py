@@ -7,23 +7,30 @@ from bs4 import Tag
 from .base import FrameworkProfile, _get_element_classes
 from .cms import DrupalViewsProfile, WordPressProfile
 from .css import BootstrapProfile, TailwindProfile
-from .ecommerce import ShopifyProfile
+from .ecommerce import ShopifyProfile, WooCommerceProfile
 from .frameworks import (
     DjangoAdminProfile,
     NextJSProfile,
     ReactComponentProfile,
     VueJSProfile,
 )
+from .universal import OpenGraphProfile, SchemaOrgProfile, TwitterCardsProfile
 
 # Registry of all available profiles
 # Order matters: More specific frameworks should come before generic ones
 FRAMEWORK_PROFILES: list[type[FrameworkProfile]] = [
+    # Universal/meta profiles (high priority - structured data)
+    SchemaOrgProfile,       # Schema.org microdata (universal)
+    OpenGraphProfile,       # Open Graph meta tags (universal)
+    TwitterCardsProfile,    # Twitter Card meta tags (universal)
+    # Framework-specific profiles
     DjangoAdminProfile,     # Very specific (Django admin)
     NextJSProfile,          # Specific (Next.js apps)
     ReactComponentProfile,  # Specific (React apps)
     VueJSProfile,           # Specific (Vue.js apps)
     DrupalViewsProfile,     # Specific CMS
-    ShopifyProfile,         # Specific e-commerce
+    WooCommerceProfile,     # E-commerce (WordPress plugin)
+    ShopifyProfile,         # E-commerce platform
     TailwindProfile,        # Framework/utility CSS
     BootstrapProfile,       # Component library
     WordPressProfile,       # Generic CMS (might match "post" class from others)
@@ -129,15 +136,26 @@ def is_framework_pattern(selector: str, framework: type[FrameworkProfile] | None
 
 __all__ = [
     "FrameworkProfile",
+    "_get_element_classes",
+    # CMS
     "DrupalViewsProfile",
     "WordPressProfile",
+    # CSS Frameworks
     "BootstrapProfile",
     "TailwindProfile",
+    # E-commerce
     "ShopifyProfile",
+    "WooCommerceProfile",
+    # JavaScript Frameworks
     "DjangoAdminProfile",
     "NextJSProfile",
     "ReactComponentProfile",
     "VueJSProfile",
+    # Universal/Meta
+    "SchemaOrgProfile",
+    "OpenGraphProfile",
+    "TwitterCardsProfile",
+    # Functions
     "FRAMEWORK_PROFILES",
     "detect_framework",
     "detect_all_frameworks",
