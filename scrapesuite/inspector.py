@@ -115,9 +115,11 @@ def find_item_selector(html: str, min_items: int = 3) -> list[dict[str, Any]]:  
     candidates = []
     
     # Strategy 0: Find parent containers of repeated field groups
-    # This is crucial for sites like FDA where fields are siblings, not nested
+    # This is crucial for sites like FDA/Drupal where fields are siblings, not nested
     # Look for elements that contain multiple children with similar class patterns
     class_pattern_parents = Counter()
+    parent_examples = {}  # Store first example of each parent
+    
     for tag in soup.find_all(True):
         classes = tag.get("class", [])
         if not classes:
@@ -134,69 +136,80 @@ def find_item_selector(html: str, min_items: int = 3) -> list[dict[str, Any]]:  
                     parent_classes = " ".join(parent.get("class", []))
                     parent_sig = f"{parent.name}.{parent_classes.split()[0]}" if parent_classes else parent.name
                     class_pattern_parents[parent_sig] += 1
+                    
+                    # Store first example
+                    if parent_sig not in parent_examples:
+                        parent_examples[parent_sig] = parent
     
     # Add high-confidence parent containers
-    for parent_sig, child_count in class_pattern_parents.items():
-        if child_count >= min_items:
-            # Find actual elements matching this signature
-            if "." in parent_sig:
-                tag_name, class_name = parent_sig.split(".", 1)
-                elements = soup.find_all(tag_name, class_=class_name)
-            else:
-                elements = soup.find_all(parent_sig)
+    # But only if they actually represent distinct items, not just field counts
+    for parent_sig, field_count in class_pattern_parents.items():
+        # field_count is the number of child fields with pattern prefixes
+        # We want to find how many actual parent elements exist
+        
+        # Find actual elements matching this signature
+        if "." in parent_sig:
+            tag_name, class_name = parent_sig.split(".", 1)
+            parent_elements = soup.find_all(tag_name, class_=class_name)
+        else:
+            parent_elements = soup.find_all(parent_sig)
+        
+        actual_count = len(parent_elements)
+        
+        # Only add if we have multiple instances AND multiple fields per instance
+        # This filters out single containers with many fields vs many items with fields
+        if actual_count >= min_items and field_count >= actual_count * 2:
+            # Likely a good candidate: multiple items, each with multiple fields
+            first = parent_elements[0]
             
-            actual_count = len(elements)
-            if actual_count >= min_items:
-                first = elements[0]
+            # Extract sample title from first element
+            sample_title = ""
+            title_elem = first.find(["h1", "h2", "h3", "h4"])
+            if title_elem:
+                sample_title = title_elem.get_text(strip=True)[:80]
+            
+            if not sample_title:
+                link_elem = first.find("a", href=True)
+                if link_elem:
+                    sample_title = link_elem.get_text(strip=True)[:80]
+            
+            if not sample_title:
+                sample_title = first.get_text(strip=True)[:80] or f"<{parent_sig}> container"
+            
+            # Extract multiple samples for clarity
+            sample_texts = []
+            num_samples = min(3, actual_count)
+            for elem in parent_elements[:num_samples]:
+                elem_text = ""
+                heading = elem.find(["h1", "h2", "h3", "h4"])
+                if heading:
+                    elem_text = heading.get_text(strip=True)[:50]
+                if not elem_text:
+                    elem_link = elem.find("a", href=True)
+                    if elem_link:
+                        elem_text = elem_link.get_text(strip=True)[:50]
+                if not elem_text:
+                    elem_text = elem.get_text(strip=True)[:50]
                 
-                # Extract sample title from first element
-                sample_title = ""
-                title_elem = first.find(["h1", "h2", "h3", "h4"])
-                if title_elem:
-                    sample_title = title_elem.get_text(strip=True)[:80]
-                
-                if not sample_title:
-                    link_elem = first.find("a", href=True)
-                    if link_elem:
-                        sample_title = link_elem.get_text(strip=True)[:80]
-                
-                if not sample_title:
-                    sample_title = first.get_text(strip=True)[:80] or f"<{parent_sig}> container"
-                
-                # Extract multiple samples for clarity
-                sample_texts = []
-                num_samples = min(3, actual_count)
-                for elem in elements[:num_samples]:
-                    elem_text = ""
-                    heading = elem.find(["h1", "h2", "h3", "h4"])
-                    if heading:
-                        elem_text = heading.get_text(strip=True)[:50]
-                    if not elem_text:
-                        elem_link = elem.find("a", href=True)
-                        if elem_link:
-                            elem_text = elem_link.get_text(strip=True)[:50]
-                    if not elem_text:
-                        elem_text = elem.get_text(strip=True)[:50]
-                    
-                    if elem_text:
-                        sample_texts.append(elem_text)
-                
-                # Deduplicate and join
-                unique_samples = list(dict.fromkeys(sample_texts))
-                if len(unique_samples) > 1:
-                    sample_title = " | ".join(unique_samples)
-                elif unique_samples:
-                    sample_title = unique_samples[0]
-                
-                selector = f".{parent_sig.split('.')[-1]}" if "." in parent_sig else parent_sig
-                
-                candidates.append({
-                    "selector": selector,
-                    "count": actual_count,
-                    "sample_title": sample_title,
-                    "sample_url": first.find("a", href=True).get("href", "") if first.find("a", href=True) else "",
-                    "confidence": "high",  # High confidence for field group parents
-                })
+                if elem_text:
+                    sample_texts.append(elem_text)
+            
+            # Deduplicate and join
+            unique_samples = list(dict.fromkeys(sample_texts))
+            if len(unique_samples) > 1:
+                sample_title = " | ".join(unique_samples)
+            elif unique_samples:
+                sample_title = unique_samples[0]
+            
+            selector = f".{parent_sig.split('.')[-1]}" if "." in parent_sig else parent_sig
+            
+            candidates.append({
+                "selector": selector,
+                "count": actual_count,
+                "sample_title": sample_title,
+                "sample_url": first.find("a", href=True).get("href", "") if first.find("a", href=True) else "",
+                "confidence": "high",  # High confidence for field group parents
+            })
     
     # Strategy 1: Look for repeated classes
     class_counts = Counter()

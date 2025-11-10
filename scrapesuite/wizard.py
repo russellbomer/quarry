@@ -356,6 +356,7 @@ def _analyze_html_and_build_selectors(entry_url: str) -> dict[str, Any] | None: 
             
             # Let user select item selector
             choices = [f"{i}. {c['selector']} ({c['count']} items)" for i, c in enumerate(candidates[:max_display], 1)]
+            choices.append("Enter custom selector manually")
             choices.append("Skip (use manual config)")
             
             selection = _prompt_select("Select item pattern", choices, default=choices[0])
@@ -363,9 +364,17 @@ def _analyze_html_and_build_selectors(entry_url: str) -> dict[str, Any] | None: 
             if "Skip" in selection:
                 return None
             
-            # Extract selector from selection (remove option number and count)
-            # Format: "1. .selector (10 items)" -> ".selector"
-            item_selector = selection.split(". ", 1)[1].split(" (")[0]
+            # Handle manual selector input
+            if "custom selector" in selection.lower():
+                item_selector = _prompt_text("Enter CSS selector for item container", ".views-row")
+                if console:
+                    console.print(f"[cyan]Using custom selector: {item_selector}[/cyan]")
+                else:
+                    print(f"Using custom selector: {item_selector}")
+            else:
+                # Extract selector from selection (remove option number and count)
+                # Format: "1. .selector (10 items)" -> ".selector"
+                item_selector = selection.split(". ", 1)[1].split(" (")[0]
             
             # Get sample item for field detection
             soup = BeautifulSoup(html, "html.parser")
