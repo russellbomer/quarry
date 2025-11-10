@@ -737,6 +737,194 @@ def _make_selector_robust(element: Tag, item_element: Tag) -> str:
     return selector
 
 
+def _generate_field_selector_for_table_row(row_element: Tag, field_type: str) -> str | None:  # noqa: PLR0911
+    """
+    Generate field selector specifically for table row (<tr>) elements.
+    Handles common table patterns including Drupal Views.
+    
+    Args:
+        row_element: BeautifulSoup Tag representing a <tr> element
+        field_type: One of 'title', 'url', 'date', 'author', 'score', 'image'
+    
+    Returns:
+        CSS selector string or None if not found
+    """
+    # Get all cells in the row
+    cells = row_element.find_all(["td", "th"])
+    
+    if not cells:
+        return None
+    
+    if field_type == "title":
+        # Strategy 1: Look for cells with title/name-related classes
+        for cell in cells:
+            classes = " ".join(cell.get("class", [])).lower()
+            if any(keyword in classes for keyword in ["title", "name", "headline", "subject", "product-description"]):
+                # Found a title-like cell
+                cell_classes = cell.get("class", [])
+                if cell_classes:
+                    # Check if there's a link inside
+                    link = cell.find("a", href=True)
+                    if link:
+                        # Return link selector within this cell
+                        return f".{cell_classes[0]} a"
+                    # Otherwise return cell selector
+                    return f".{cell_classes[0]}"
+        
+        # Strategy 2: Look for links with substantial text
+        link_candidates = []
+        for cell in cells:
+            link = cell.find("a", href=True)
+            if link:
+                text = link.get_text(strip=True)
+                if text and len(text) > 10:  # Substantial text
+                    # Score based on text length and position
+                    score = len(text)
+                    # Boost if in first few cells (typical for titles)
+                    cell_index = cells.index(cell)
+                    if cell_index <= 2:
+                        score += 50
+                    link_candidates.append((score, cell, link))
+        
+        if link_candidates:
+            link_candidates.sort(reverse=True, key=lambda x: x[0])
+            best_cell, best_link = link_candidates[0][1], link_candidates[0][2]
+            cell_classes = best_cell.get("class", [])
+            if cell_classes:
+                return f".{cell_classes[0]} a"
+            # Fallback to nth-child selector
+            cell_index = cells.index(best_cell) + 1
+            return f"td:nth-child({cell_index}) a"
+        
+        # Strategy 3: Largest text content
+        max_len = 0
+        best_cell = None
+        for cell in cells:
+            text = cell.get_text(strip=True)
+            if len(text) > max_len:
+                max_len = len(text)
+                best_cell = cell
+        
+        if best_cell and max_len > 10:
+            cell_classes = best_cell.get("class", [])
+            if cell_classes:
+                return f".{cell_classes[0]}"
+            cell_index = cells.index(best_cell) + 1
+            return f"td:nth-child({cell_index})"
+    
+    elif field_type == "url":
+        # Look for title cell first, then extract href
+        title_selector = _generate_field_selector_for_table_row(row_element, "title")
+        if title_selector and "a" in title_selector:
+            # Already points to a link, append ::attr(href)
+            return f"{title_selector}::attr(href)"
+        elif title_selector:
+            # Cell has class but might have link inside
+            # Try to find link in that cell
+            cell_class = title_selector.replace(".", "").replace("td:nth-child(", "").replace(")", "")
+            cell = None
+            if cell_class.isdigit():
+                # nth-child selector
+                idx = int(cell_class) - 1
+                if idx < len(cells):
+                    cell = cells[idx]
+            else:
+                # Class selector
+                cell = row_element.find(class_=cell_class)
+            
+            if cell:
+                link = cell.find("a", href=True)
+                if link:
+                    return f"{title_selector} a::attr(href)" if "a" not in title_selector else f"{title_selector}::attr(href)"
+    
+    elif field_type == "date":
+        # Strategy 1: Look for cells with date/time classes
+        for cell in cells:
+            classes = " ".join(cell.get("class", [])).lower()
+            if any(keyword in classes for keyword in ["date", "time", "posted", "published", "updated", "field-date"]):
+                cell_classes = cell.get("class", [])
+                if cell_classes:
+                    return f".{cell_classes[0]}"
+        
+        # Strategy 2: Look for <time> elements
+        for cell in cells:
+            time_elem = cell.find("time")
+            if time_elem:
+                cell_classes = cell.get("class", [])
+                if cell_classes:
+                    return f".{cell_classes[0]} time"
+                cell_index = cells.index(cell) + 1
+                return f"td:nth-child({cell_index}) time"
+        
+        # Strategy 3: Text pattern matching
+        import re
+        for cell in cells:
+            text = cell.get_text(strip=True)
+            # Look for date patterns
+            if re.search(r'\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}/\d{2,4}', text):
+                cell_classes = cell.get("class", [])
+                if cell_classes:
+                    return f".{cell_classes[0]}"
+                cell_index = cells.index(cell) + 1
+                return f"td:nth-child({cell_index})"
+    
+    elif field_type == "author":
+        # Look for cells with author/user classes
+        for cell in cells:
+            classes = " ".join(cell.get("class", [])).lower()
+            if any(keyword in classes for keyword in ["author", "user", "username", "by", "submitter", "company"]):
+                cell_classes = cell.get("class", [])
+                if cell_classes:
+                    return f".{cell_classes[0]}"
+    
+    elif field_type == "score":
+        # Look for cells with score/points/votes classes
+        for cell in cells:
+            classes = " ".join(cell.get("class", [])).lower()
+            if any(keyword in classes for keyword in ["score", "points", "votes", "rating", "karma"]):
+                cell_classes = cell.get("class", [])
+                if cell_classes:
+                    return f".{cell_classes[0]}"
+    
+    elif field_type == "image":
+        # Look for img tags in cells
+        for cell in cells:
+            img = cell.find("img")
+            if img:
+                cell_classes = cell.get("class", [])
+                if cell_classes:
+                    return f".{cell_classes[0]} img"
+                cell_index = cells.index(cell) + 1
+                return f"td:nth-child({cell_index}) img"
+    
+    return None
+
+
+def _make_selector_robust(element: Tag, item_element: Tag) -> str:
+    """
+    Build a robust CSS selector for element relative to item_element.
+    
+    Handles deep nesting, obfuscated classes, and dynamic class names.
+    
+    Args:
+        element: The target element to select
+        item_element: The item container (root context)
+    
+    Returns:
+        Robust CSS selector string
+    """
+    # Use robust selector builder with item as root
+    selector = build_robust_selector(element, root=item_element)
+    
+    # If selector is just a single class/tag, it's already simple enough
+    if " " not in selector and ">" not in selector:
+        return selector
+    
+    # For complex selectors, strip the root marker if present since we're already scoped to item
+    # This keeps selectors relative to the item container
+    return selector
+
+
 def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  # noqa: PLR0911, PLR0912, C901
     """
     Generate CSS selector for common field types within an item.
@@ -749,6 +937,10 @@ def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  
     Returns:
         CSS selector string or None if not found
     """
+    # Special handling for table rows
+    if item_element.name == "tr":
+        return _generate_field_selector_for_table_row(item_element, field_type)
+    
     if field_type == "title":
         # Strategy 1: Semantic headings (highest priority)
         for tag in ["h1", "h2", "h3", "h4", "h5", "h6"]:
