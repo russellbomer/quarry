@@ -5,6 +5,7 @@ from typing import Any
 
 from bs4 import BeautifulSoup, Tag
 
+from .framework_profiles import detect_framework, get_framework_field_selector
 from .selector_builder import build_robust_selector
 
 
@@ -749,6 +750,30 @@ def _generate_field_selector_for_table_row(row_element: Tag, field_type: str) ->
     Returns:
         CSS selector string or None if not found
     """
+    # Try framework-specific detection first
+    html_context = str(row_element.parent) if row_element.parent else str(row_element)
+    framework = detect_framework(html_context, row_element)
+    
+    if framework:
+        # For table rows in frameworks like Drupal, check for field cells
+        mappings = framework.get_field_mappings()
+        patterns = mappings.get(field_type, [])
+        
+        for pattern in patterns:
+            # Try to find cell matching pattern
+            if pattern.startswith("."):
+                # Class selector - look in cells
+                class_name = pattern[1:].split()[0]  # Get first class
+                elem = row_element.find(class_=class_name)
+                if elem:
+                    # Check if it's a link pattern
+                    if " a" in pattern:
+                        link = elem.find("a", href=True)
+                        if link:
+                            return pattern
+                    else:
+                        return pattern
+    
     # Get all cells in the row
     cells = row_element.find_all(["td", "th"])
     
@@ -937,6 +962,16 @@ def generate_field_selector(item_element: Tag, field_type: str) -> str | None:  
     Returns:
         CSS selector string or None if not found
     """
+    # Try framework-specific detection first
+    # Get HTML context for framework detection
+    html_context = str(item_element.parent) if item_element.parent else str(item_element)
+    framework = detect_framework(html_context, item_element)
+    
+    if framework:
+        selector = get_framework_field_selector(framework, item_element, field_type)
+        if selector:
+            return selector
+    
     # Special handling for table rows
     if item_element.name == "tr":
         return _generate_field_selector_for_table_row(item_element, field_type)

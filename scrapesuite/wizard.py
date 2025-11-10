@@ -23,6 +23,7 @@ import yaml
 from pydantic import BaseModel, HttpUrl, field_validator
 
 from scrapesuite.core import run_job
+from scrapesuite.framework_profiles import detect_framework
 from scrapesuite.http import get_html
 from scrapesuite.inspector import (
     find_item_selector,
@@ -294,13 +295,21 @@ def _analyze_html_and_build_selectors(entry_url: str) -> dict[str, Any] | None: 
         # Inspect HTML structure
         analysis = inspect_html(html)
         
+        # Detect framework
+        framework = detect_framework(html)
+        framework_name = framework.name if framework else "unknown"
+        
         # Display page info
         if console:
             console.print(f"[green]✓[/green] Page: {analysis['title']}")
             console.print(f"[green]✓[/green] Total links: {analysis['total_links']}")
+            if framework:
+                console.print(f"[green]✓[/green] Framework detected: {framework_name}")
         else:
             print(f"✓ Page: {analysis['title']}")
             print(f"✓ Total links: {analysis['total_links']}")
+            if framework:
+                print(f"✓ Framework detected: {framework_name}")
         
         # Find potential item selectors
         candidates = find_item_selector(html, min_items=3)
