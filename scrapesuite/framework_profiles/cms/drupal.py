@@ -2,7 +2,7 @@
 
 from bs4 import Tag
 
-from ..base import FrameworkProfile
+from ..base import FrameworkProfile, _get_element_classes
 
 
 class DrupalViewsProfile(FrameworkProfile):
@@ -27,7 +27,7 @@ class DrupalViewsProfile(FrameworkProfile):
         
         # Check item element if provided
         if item_element:
-            classes = " ".join(item_element.get("class", []))
+            classes = _get_element_classes(item_element)
             if "views-row" in classes:
                 score += 25
             if "views-field" in classes:

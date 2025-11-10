@@ -4,7 +4,7 @@ from typing import Any
 
 from bs4 import Tag
 
-from .base import FrameworkProfile
+from .base import FrameworkProfile, _get_element_classes
 from .cms import DrupalViewsProfile, WordPressProfile
 from .css import BootstrapProfile, TailwindProfile
 from .ecommerce import ShopifyProfile

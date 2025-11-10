@@ -8,5 +8,11 @@ typer
 questionary
 pydantic
 rich
+ruff
+mypy
+types-requests
+types-PyYAML
+
+
 
 

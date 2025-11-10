@@ -5,6 +5,24 @@ from typing import Any
 from bs4 import Tag
 
 
+def _get_element_classes(element: Tag) -> str:
+    """
+    Get element's classes as a space-separated string.
+    
+    Args:
+        element: BeautifulSoup Tag element
+        
+    Returns:
+        Space-separated class names, or empty string if no classes
+    """
+    classes = element.get("class")
+    if classes is None:
+        return ""
+    if isinstance(classes, list):
+        return " ".join(classes)
+    return str(classes)
+
+
 class FrameworkProfile:
     """Base class for framework-specific detection profiles."""
     
