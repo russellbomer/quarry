@@ -114,7 +114,67 @@ def find_item_selector(html: str, min_items: int = 3) -> list[dict[str, Any]]:  
     
     candidates = []
     
-    # Strategy 0: Find parent containers of repeated field groups
+    # Strategy 0a: Table rows (very common for data listings)
+    # Check for <tr> elements in tables - often used for tabular data like FDA recalls
+    table_rows = soup.find_all("tr")
+    # Filter out header rows
+    data_rows = [tr for tr in table_rows if tr.find_parent("tbody") or not tr.find("th")]
+    
+    if len(data_rows) >= min_items:
+        # This is likely a data table
+        first_row = data_rows[0]
+        
+        # Extract sample from first row
+        sample_title = ""
+        # Look for link in row
+        link_elem = first_row.find("a", href=True)
+        if link_elem:
+            sample_title = link_elem.get_text(strip=True)[:80]
+        
+        # Or just get all text
+        if not sample_title:
+            sample_title = first_row.get_text(strip=True)[:80]
+        
+        # Get multiple samples
+        sample_texts = []
+        for row in data_rows[:3]:
+            row_link = row.find("a", href=True)
+            if row_link:
+                row_text = row_link.get_text(strip=True)[:50]
+            else:
+                row_text = row.get_text(strip=True)[:50]
+            
+            if row_text:
+                sample_texts.append(row_text)
+        
+        # Deduplicate
+        unique_samples = list(dict.fromkeys(sample_texts))
+        if len(unique_samples) > 1:
+            sample_title = " | ".join(unique_samples)
+        elif unique_samples:
+            sample_title = unique_samples[0]
+        
+        # Check if rows have classes for more specific selector
+        row_classes = first_row.get("class", [])
+        if row_classes:
+            # Use class selector for more specificity
+            selector = f"tr.{row_classes[0]}"
+        else:
+            # Check if in tbody for specificity
+            if first_row.find_parent("tbody"):
+                selector = "tbody > tr"
+            else:
+                selector = "tr"
+        
+        candidates.append({
+            "selector": selector,
+            "count": len(data_rows),
+            "sample_title": sample_title,
+            "sample_url": link_elem.get("href", "") if link_elem else "",
+            "confidence": "high",  # High confidence for table rows
+        })
+    
+    # Strategy 0b: Find parent containers of repeated field groups
     # This is crucial for sites like FDA/Drupal where fields are siblings, not nested
     # Look for elements that contain multiple children with similar class patterns
     class_pattern_parents = Counter()
