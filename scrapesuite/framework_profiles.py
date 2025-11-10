@@ -227,6 +227,16 @@ class DrupalViewsProfile(FrameworkProfile):
                 ".views-field-changed",
                 ".views-field-post-date",
             ],
+            "published_date": [
+                ".views-field-created",
+                ".views-field-post-date",
+                ".views-field-published",
+            ],
+            "updated_date": [
+                ".views-field-changed",
+                ".views-field-updated",
+                ".views-field-modified",
+            ],
             "author": [
                 ".views-field-company-name",
                 ".views-field-brand-name",
@@ -241,9 +251,50 @@ class DrupalViewsProfile(FrameworkProfile):
                 ".views-field-field-body",
                 ".views-field-description",
             ],
+            "excerpt": [
+                ".views-field-teaser",
+                ".views-field-summary",
+                ".views-field-excerpt",
+            ],
+            "content": [
+                ".views-field-body",
+                ".views-field-field-body",
+                ".views-field-content",
+            ],
             "image": [
                 ".views-field-field-image img",
                 ".views-field-field-photo img",
+            ],
+            "thumbnail": [
+                ".views-field-field-thumbnail img",
+                ".views-field-field-image-thumbnail img",
+            ],
+            "category": [
+                ".views-field-field-category",
+                ".views-field-type",
+                ".views-field-field-type",
+            ],
+            "tags": [
+                ".views-field-field-tags",
+                ".views-field-taxonomy",
+                ".views-field-field-taxonomy-tags",
+            ],
+            "rating": [
+                ".views-field-field-rating",
+                ".views-field-vote-average",
+            ],
+            "location": [
+                ".views-field-field-location",
+                ".views-field-field-address",
+                ".views-field-city",
+            ],
+            "phone": [
+                ".views-field-field-phone",
+                ".views-field-field-telephone",
+            ],
+            "email": [
+                ".views-field-field-email",
+                ".views-field-mail",
             ],
         }
 
@@ -310,20 +361,67 @@ class WordPressProfile(FrameworkProfile):
                 ".published",
                 "time.entry-date",
             ],
+            "published_date": [
+                ".published",
+                ".entry-date",
+                "time.published",
+            ],
+            "updated_date": [
+                ".updated",
+                ".modified",
+                "time.updated",
+            ],
             "author": [
                 ".author",
                 ".entry-author",
                 ".post-author",
                 ".by-author",
+                ".vcard",
             ],
             "body": [
                 ".entry-content",
-                ".entry-summary",
                 ".post-content",
+            ],
+            "excerpt": [
+                ".entry-summary",
+                ".entry-excerpt",
+                ".post-excerpt",
+            ],
+            "content": [
+                ".entry-content",
+                ".post-content",
+                ".article-content",
             ],
             "image": [
                 ".post-thumbnail img",
                 ".entry-image img",
+                ".wp-post-image",
+            ],
+            "thumbnail": [
+                ".post-thumbnail img",
+                ".attachment-thumbnail",
+            ],
+            "category": [
+                ".cat-links",
+                ".entry-categories",
+                ".post-categories",
+            ],
+            "tags": [
+                ".tag-links",
+                ".entry-tags",
+                ".post-tags",
+            ],
+            "rating": [
+                ".star-rating",
+                ".rating",
+            ],
+            "phone": [
+                ".phone",
+                ".tel",
+            ],
+            "email": [
+                ".email",
+                ".mail",
             ],
         }
 
@@ -378,23 +476,54 @@ class BootstrapProfile(FrameworkProfile):
                 ".card-title",
                 ".media-heading",
                 "h5.card-title",
+                ".list-group-item-heading",
             ],
             "url": [
                 ".card-title a",
                 ".card-link",
+                ".list-group-item[href]::attr(href)",
             ],
             "date": [
                 ".card-subtitle",
                 ".text-muted",
+                "small.text-muted",
+            ],
+            "author": [
+                ".card-footer",
+                ".media-heading small",
             ],
             "body": [
                 ".card-text",
+                ".card-body",
+            ],
+            "excerpt": [
+                ".card-text",
+                ".list-group-item-text",
+            ],
+            "content": [
                 ".card-body",
                 ".media-body",
             ],
             "image": [
                 ".card-img-top",
                 ".media-object",
+                "img.rounded",
+            ],
+            "thumbnail": [
+                ".card-img-top",
+                "img.img-thumbnail",
+            ],
+            "category": [
+                ".badge",
+                ".label",
+            ],
+            "tags": [
+                ".badge-pill",
+                ".tag",
+            ],
+            "rating": [
+                ".star-rating",
+                ".rating",
             ],
         }
 
@@ -495,15 +624,42 @@ class ShopifyProfile(FrameworkProfile):
             "url": [
                 ".product-card__title a",
                 ".product-link",
+                ".grid-product__link::attr(href)",
             ],
             "price": [
                 ".product-price",
                 ".price",
                 ".grid-product__price",
+                ".money",
             ],
             "image": [
                 ".product-card__image img",
                 ".grid-product__image img",
+                ".product-featured-img",
+            ],
+            "thumbnail": [
+                ".product-card__image img",
+                ".product-thumbnail",
+            ],
+            "category": [
+                ".product-type",
+                ".collection-title",
+            ],
+            "tags": [
+                ".product-tags",
+                ".product-tag",
+            ],
+            "rating": [
+                ".spr-badge",
+                ".product-rating",
+            ],
+            "description": [
+                ".product-description",
+                ".product-card__description",
+            ],
+            "vendor": [
+                ".product-vendor",
+                ".grid-product__vendor",
             ],
         }
 
@@ -563,10 +719,34 @@ class DjangoAdminProfile(FrameworkProfile):
                 ".field-date",
                 ".field-published",
             ],
+            "published_date": [
+                ".field-created",
+                ".field-published",
+                ".field-date_published",
+            ],
+            "updated_date": [
+                ".field-modified",
+                ".field-updated",
+                ".field-last_modified",
+            ],
             "author": [
                 ".field-author",
                 ".field-user",
                 ".field-created_by",
+                ".field-owner",
+            ],
+            "category": [
+                ".field-category",
+                ".field-type",
+            ],
+            "tags": [
+                ".field-tags",
+                ".field-keywords",
+            ],
+            "status": [
+                ".field-status",
+                ".field-is_active",
+                ".field-published",
             ],
         }
 
@@ -625,13 +805,43 @@ class NextJSProfile(FrameworkProfile):
                 "[datetime]",
                 "[class*='date']",
             ],
+            "published_date": [
+                "time[datetime]",
+                "[class*='published']",
+            ],
+            "updated_date": [
+                "[class*='updated']",
+                "[class*='modified']",
+            ],
             "author": [
                 "[class*='author']",
                 "[rel='author']",
+                "[class*='user']",
+            ],
+            "excerpt": [
+                "[class*='excerpt']",
+                "[class*='summary']",
+                "[class*='description']",
+            ],
+            "content": [
+                "[class*='content']",
+                "[class*='body']",
             ],
             "image": [
                 "img[src]",
                 "[class*='image'] img",
+            ],
+            "thumbnail": [
+                "[class*='thumb'] img",
+                "[class*='thumbnail'] img",
+            ],
+            "category": [
+                "[class*='category']",
+                "[class*='tag']",
+            ],
+            "tags": [
+                "[class*='tags']",
+                "[class*='keywords']",
             ],
         }
 
@@ -676,7 +886,7 @@ class ReactComponentProfile(FrameworkProfile):
     
     @classmethod
     def get_field_mappings(cls) -> dict[str, list[str]]:
-        """React component field mappings (typically use camelCase)."""
+        """React component field mappings (typically use PascalCase/camelCase)."""
         return {
             "title": [
                 "[class*='Title']",
@@ -694,14 +904,51 @@ class ReactComponentProfile(FrameworkProfile):
                 "[class*='Date']",
                 "[class*='Timestamp']",
             ],
+            "published_date": [
+                "[class*='PublishedDate']",
+                "[class*='CreatedAt']",
+            ],
+            "updated_date": [
+                "[class*='UpdatedAt']",
+                "[class*='ModifiedDate']",
+            ],
             "author": [
                 "[class*='Author']",
                 "[class*='User']",
+                "[class*='Creator']",
             ],
             "description": [
                 "[class*='Description']",
                 "[class*='Excerpt']",
                 "p",
+            ],
+            "excerpt": [
+                "[class*='Excerpt']",
+                "[class*='Summary']",
+            ],
+            "content": [
+                "[class*='Content']",
+                "[class*='Body']",
+            ],
+            "image": [
+                "img",
+                "[class*='Image'] img",
+            ],
+            "thumbnail": [
+                "[class*='Thumbnail'] img",
+                "[class*='Thumb'] img",
+            ],
+            "category": [
+                "[class*='Category']",
+                "[class*='Tag']",
+            ],
+            "tags": [
+                "[class*='Tags']",
+                "[class*='Keywords']",
+            ],
+            "rating": [
+                "[class*='Rating']",
+                "[class*='Score']",
             ],
         }
 
@@ -745,7 +992,7 @@ class VueJSProfile(FrameworkProfile):
     
     @classmethod
     def get_field_mappings(cls) -> dict[str, list[str]]:
-        """Vue.js component field mappings."""
+        """Vue.js component field mappings (typically use kebab-case or camelCase)."""
         return {
             "title": [
                 "[class*='title']",
@@ -761,8 +1008,44 @@ class VueJSProfile(FrameworkProfile):
                 "[datetime]",
                 "[class*='date']",
             ],
+            "published_date": [
+                "[class*='published']",
+                "[class*='created']",
+            ],
+            "updated_date": [
+                "[class*='updated']",
+                "[class*='modified']",
+            ],
             "author": [
                 "[class*='author']",
+                "[class*='user']",
+            ],
+            "excerpt": [
+                "[class*='excerpt']",
+                "[class*='summary']",
+            ],
+            "content": [
+                "[class*='content']",
+                "[class*='body']",
+            ],
+            "image": [
+                "img",
+                "[class*='image'] img",
+            ],
+            "thumbnail": [
+                "[class*='thumb'] img",
+                "[class*='thumbnail'] img",
+            ],
+            "category": [
+                "[class*='category']",
+                "[class*='tag']",
+            ],
+            "tags": [
+                "[class*='tags']",
+            ],
+            "rating": [
+                "[class*='rating']",
+                "[class*='score']",
             ],
         }
 
