@@ -762,7 +762,7 @@ def _make_selector_robust(element: Tag, item_element: Tag) -> str:
 def _generate_field_selector_for_table_row(row_element: Tag, field_type: str) -> str | None:  # noqa: PLR0911
     """
     Generate field selector specifically for table row (<tr>) elements.
-    Handles common table patterns including Drupal Views.
+    Uses table headers to intelligently map columns to fields.
     
     Args:
         row_element: BeautifulSoup Tag representing a <tr> element
@@ -771,7 +771,102 @@ def _generate_field_selector_for_table_row(row_element: Tag, field_type: str) ->
     Returns:
         CSS selector string or None if not found
     """
-    # Try framework-specific detection first
+    # First, try to find the table header row to map columns
+    table = row_element.find_parent("table")
+    header_row = None
+    header_cells = []
+    
+    if table:
+        # Look for header row in <thead>
+        thead = table.find("thead")
+        if thead:
+            header_row = thead.find("tr")
+        
+        # If no thead, look for first row with <th> elements
+        if not header_row:
+            for tr in table.find_all("tr"):
+                if tr.find("th"):
+                    header_row = tr
+                    break
+        
+        # If still no header, check if first row looks like a header
+        if not header_row:
+            first_row = table.find("tr")
+            if first_row and first_row != row_element:
+                # Check if text is header-like
+                text = first_row.get_text(strip=True).lower()
+                if any(h in text for h in ["date", "title", "name", "author", "company"]):
+                    header_row = first_row
+        
+        if header_row:
+            header_cells = header_row.find_all(["th", "td"])
+    
+    # Get data cells from current row
+    cells = row_element.find_all(["td", "th"])
+    
+    if not cells:
+        return None
+    
+    # If we have header cells, use them to intelligently map columns
+    if header_cells and len(header_cells) == len(cells):
+        # Map field types to header keywords
+        header_keywords = {
+            "title": ["title", "name", "subject", "headline", "product", "description", "recall"],
+            "url": ["url", "link", "href"],
+            "date": ["date", "time", "posted", "published", "updated"],
+            "author": ["author", "user", "by", "company", "brand", "submitter"],
+            "score": ["score", "points", "votes", "rating", "karma"],
+            "image": ["image", "photo", "picture", "thumbnail"],
+        }
+        
+        keywords = header_keywords.get(field_type, [])
+        
+        # Find matching header cell
+        for idx, header_cell in enumerate(header_cells):
+            header_text = header_cell.get_text(strip=True).lower()
+            
+            # Check if any keyword matches
+            if any(keyword in header_text for keyword in keywords):
+                # Found matching column!
+                data_cell = cells[idx]
+                
+                # Get selector for this cell
+                cell_classes = data_cell.get("class", [])
+                
+                if cell_classes:
+                    # Check if this is a URL field - need to extract href
+                    if field_type == "url":
+                        link = data_cell.find("a", href=True)
+                        if link:
+                            return f".{cell_classes[0]} a::attr(href)"
+                        # No link found, maybe the cell itself has the URL
+                        return f".{cell_classes[0]}"
+                    # For title, check if there's a link and use that
+                    elif field_type == "title":
+                        link = data_cell.find("a", href=True)
+                        if link:
+                            return f".{cell_classes[0]} a"
+                        return f".{cell_classes[0]}"
+                    else:
+                        return f".{cell_classes[0]}"
+                else:
+                    # No class, use nth-child selector
+                    cell_index = idx + 1
+                    
+                    if field_type == "url":
+                        link = data_cell.find("a", href=True)
+                        if link:
+                            return f"td:nth-child({cell_index}) a::attr(href)"
+                        return f"td:nth-child({cell_index})"
+                    elif field_type == "title":
+                        link = data_cell.find("a", href=True)
+                        if link:
+                            return f"td:nth-child({cell_index}) a"
+                        return f"td:nth-child({cell_index})"
+                    else:
+                        return f"td:nth-child({cell_index})"
+    
+    # Fallback: Try framework-specific detection first
     html_context = str(row_element.parent) if row_element.parent else str(row_element)
     framework = detect_framework(html_context, row_element)
     
