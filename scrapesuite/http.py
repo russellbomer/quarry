@@ -291,19 +291,37 @@ def get_html(
             time.sleep(wait_time)
         
         except requests.RequestException as e:
-            if attempt == max_retries - 1:
+            # Provide helpful context for different error types
+            if isinstance(e, (requests.Timeout, requests.ConnectTimeout, requests.ReadTimeout)):
+                timeout_type = type(e).__name__
+                domain = urlparse(url).netloc
+                
+                # If this is the last attempt, provide detailed timeout guidance
+                if attempt == max_retries - 1:
+                    raise requests.Timeout(
+                        f"{timeout_type} after {timeout}s for {url}\n\n"
+                        f"This site ({domain}) is slow or rate-limiting. Try:\n"
+                        f"  1. Increase timeout: get_html(url, timeout=60)  # default is 30s\n"
+                        f"  2. Reduce rate limit in job YAML (slower requests)\n"
+                        f"  3. Check if site blocks automated access (may need session/cookies)\n"
+                        f"  4. Some sites (Best Buy, Walmart) have aggressive rate limits\n\n"
+                        f"Current settings: timeout={timeout}s, attempt={attempt + 1}/{max_retries}"
+                    ) from e
+                
+                # For retries, wait longer for timeout errors
+                base_backoff = 0.5 * (2**attempt) * 2  # Double wait for timeouts
+                jitter = random.uniform(0, 0.1 * base_backoff)
+                time.sleep(base_backoff + jitter)
+            
+            elif attempt == max_retries - 1:
+                # Last attempt for other errors - re-raise with context
                 raise
             
-            # Backoff for other errors (timeout, connection, etc.)
-            # For timeout errors, increase wait time more aggressively
-            base_backoff = 0.5 * (2**attempt)
-            
-            # Timeout errors need longer retry delays
-            if isinstance(e, (requests.Timeout, requests.ConnectTimeout, requests.ReadTimeout)):
-                base_backoff *= 2  # Double the wait for timeout errors
-            
-            jitter = random.uniform(0, 0.1 * base_backoff)
-            time.sleep(base_backoff + jitter)
+            else:
+                # Generic backoff for other connection errors
+                base_backoff = 0.5 * (2**attempt)
+                jitter = random.uniform(0, 0.1 * base_backoff)
+                time.sleep(base_backoff + jitter)
 
     raise RuntimeError("Unexpected end of retry loop")
 
