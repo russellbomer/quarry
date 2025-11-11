@@ -169,7 +169,16 @@ def get_html(
     if respect_robots:
         check_ua = ua or "ScrapeSuite/1.0 (+https://github.com/russellbomer/scrapesuite)"
         if not _check_robots_txt(url, check_ua):
-            raise PermissionError(f"robots.txt disallows fetching: {url}")
+            domain = urlparse(url).netloc
+            raise PermissionError(
+                f"robots.txt disallows fetching: {url}\n\n"
+                f"This site ({domain}) blocks automated access. Options:\n"
+                f"  1. For testing/debugging only: get_html(url, respect_robots=False)\n"
+                f"  2. Fetch HTML manually and save to a file for testing\n"
+                f"  3. Use a bot-friendly alternative site (see docs/USER_TESTING_PLAN.md)\n"
+                f"  4. Set SCRAPESUITE_INTERACTIVE=1 to be prompted on blocks\n\n"
+                f"Note: Respecting robots.txt is the ethical default and required for production use."
+            )
     
     # Build realistic browser headers
     headers = _build_browser_headers(url, user_agent=ua)
