@@ -138,8 +138,9 @@ def show_api_guide():
     console.print(
         Panel(
             "[bold cyan]Finding API Endpoints for Infinite Scroll Sites[/bold cyan]",
-            subtitle="A Foundry Guide",
-            border_style="cyan"
+            subtitle="A Quarry Guide",
+            border_style="cyan",
+            expand=False
         )
     )
     console.print()
@@ -152,7 +153,8 @@ def show_api_guide():
         Panel(
             "💡 [bold]Pro Tip:[/bold] Open DevTools Network tab, scroll the page, "
             "and look for JSON responses in the XHR/Fetch filter.",
-            border_style="green"
+            border_style="green",
+            expand=False
         )
     )
     console.print()

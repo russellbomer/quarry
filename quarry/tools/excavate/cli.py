@@ -82,6 +82,15 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
     
     if not schema_file:
         click.echo("❌ Error: No schema file specified", err=True)
+        click.echo("", err=True)
+        click.echo("Usage: quarry excavate SCHEMA_FILE [OPTIONS]", err=True)
+        click.echo("", err=True)
+        click.echo("Examples:", err=True)
+        click.echo("  quarry excavate schema.yml --url https://example.com", err=True)
+        click.echo("  quarry excavate schema.yml --file page.html", err=True)
+        click.echo("  quarry excavate  # Interactive mode", err=True)
+        click.echo("", err=True)
+        click.echo("Run 'quarry excavate --help' for full options.", err=True)
         sys.exit(1)
     # Load schema
     click.echo(f"📋 Loading schema: {schema_file}", err=True)

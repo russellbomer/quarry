@@ -49,7 +49,8 @@ def build_schema_interactive(
         "[bold]Step 1: Schema Metadata[/bold]",
         title="Schema Info",
         title_align="left",
-        border_style="cyan"
+        border_style="cyan",
+        expand=False
     ))
     
     name = Prompt.ask("Schema name", default="extraction")
@@ -62,7 +63,8 @@ def build_schema_interactive(
         "Start with a pre-configured template for common data types",
         title="Templates",
         title_align="left",
-        border_style="cyan"
+        border_style="cyan",
+        expand=False
     ))
     
     if Confirm.ask("Browse templates?", default=True):
@@ -131,7 +133,8 @@ def build_schema_interactive(
                 f"{template['description']}",
                 title="Using Template",
                 title_align="left",
-                border_style="green"
+                border_style="green",
+                expand=False
             ))
             
             # Item selector
@@ -198,7 +201,8 @@ def build_schema_interactive(
                 "Configure multi-page extraction",
                 title="Pagination",
                 title_align="left",
-                border_style="cyan"
+                border_style="cyan",
+                expand=False
             ))
             
             pagination = None
@@ -231,7 +235,8 @@ def build_schema_interactive(
                 (f"[bold]Pagination:[/bold] enabled" if schema.pagination else "[bold]Pagination:[/bold] disabled"),
                 title="Schema Summary",
                 title_align="left",
-                border_style="green"
+                border_style="green",
+                expand=False
             ))
             
             return schema
@@ -267,7 +272,8 @@ def build_schema_interactive(
         "(e.g., article, product card, list item)",
         title="Item Selector",
         title_align="left",
-        border_style="cyan"
+        border_style="cyan",
+        expand=False
     ))
     
     if analysis and analysis.get("containers"):
@@ -320,7 +326,8 @@ def build_schema_interactive(
         "Define fields to extract from each item",
         title="Field Definitions",
         title_align="left",
-        border_style="cyan"
+        border_style="cyan",
+        expand=False
     ))
     
     fields = {}
@@ -452,7 +459,8 @@ def build_schema_interactive(
         "Configure multi-page extraction",
         title="Pagination",
         title_align="left",
-        border_style="cyan"
+        border_style="cyan",
+        expand=False
     ))
     
     pagination = None
@@ -512,7 +520,8 @@ def build_schema_interactive(
         (f"[bold]Pagination:[/bold] enabled (max: {schema.pagination.max_pages or 'unlimited'})" if schema.pagination else "[bold]Pagination:[/bold] disabled"),
         title="Schema Summary",
         title_align="left",
-        border_style="green"
+        border_style="green",
+        expand=False
     ))
     
     return schema
