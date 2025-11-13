@@ -60,7 +60,14 @@ def quarry(ctx):
         console = Console()
         console.print(BANNER)
         console.print()  # Add blank line
-        click.echo(ctx.get_help())
+        console.print("[dim]A modern toolkit for analyzing, extracting, and exporting web data.[/dim]")
+        console.print()
+        console.print("Available tools: [cyan]scout[/cyan] | [cyan]survey[/cyan] | [cyan]excavate[/cyan] | [cyan]polish[/cyan] | [cyan]ship[/cyan]")
+        console.print()
+        console.print("Run [yellow]quarry --help[/yellow] to see all commands and options.")
+        console.print("Run [yellow]quarry <tool> --help[/yellow] for tool-specific help.")
+        console.print()
+        ctx.exit()
 
 
 # Add tool commands
