@@ -197,8 +197,7 @@ def scout(url_or_file, file, output, format, pretty, find_api, batch_mode):
             click.echo("─" * 50, err=True)
             
             # Import here to avoid circular dependency
-            from quarry.tools.survey.cli import survey, create
-            from click.testing import CliRunner
+            from quarry.tools.survey.cli import create
             
             # Save analysis to temp file if not already saved
             analysis_file = None
@@ -212,23 +211,25 @@ def scout(url_or_file, file, output, format, pretty, find_api, batch_mode):
                 with open(fd, 'w') as f:
                     json.dump(analysis, f, indent=2)
             
-            # Run survey create with the URL and analysis
-            runner = CliRunner()
-            survey_args = ["create", "--url", url]
-            if analysis_file:
-                survey_args.extend(["--from-probe", analysis_file])
+            # Build context for survey create
+            ctx = click.get_current_context()
             
-            result = runner.invoke(survey, survey_args, standalone_mode=False)
-            
-            # Clean up temp file if we created one
-            if analysis_file and not output:
-                import os
-                try:
-                    os.unlink(analysis_file)
-                except:
-                    pass
-            
-            sys.exit(result.exit_code if result.exit_code else 0)
+            # Invoke create command directly with new context
+            try:
+                ctx.invoke(create, 
+                          url=url,
+                          from_probe=analysis_file,
+                          file=None,
+                          output="schema.yml",
+                          preview=True)
+            finally:
+                # Clean up temp file if we created one
+                if analysis_file and not output:
+                    import os
+                    try:
+                        os.unlink(analysis_file)
+                    except:
+                        pass
 
 
 if __name__ == "__main__":

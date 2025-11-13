@@ -254,13 +254,19 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
                 
                 # Import here to avoid circular dependency
                 from quarry.tools.polish.cli import polish
-                from click.testing import CliRunner
                 
-                # Run polish
+                # Invoke polish command directly
                 ctx = click.get_current_context()
-                runner = CliRunner()
-                result = runner.invoke(polish, [output], standalone_mode=False)
-                sys.exit(result.exit_code if result.exit_code else 0)
+                ctx.invoke(polish,
+                          input_file=output,
+                          output=None,
+                          dedupe=None,
+                          dedupe_keys=(),
+                          dedupe_strategy="first",
+                          transform=(),
+                          skip_invalid=False,
+                          stats=False,
+                          batch_mode=False)
     else:
         click.echo("⚠️  No items extracted", err=True)
 

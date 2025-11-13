@@ -129,20 +129,18 @@ def create(from_probe, url, file, output, preview):
             
             # Import here to avoid circular dependency
             from quarry.tools.excavate.cli import excavate
-            from click.testing import CliRunner
             
-            # Prepare arguments for excavate
+            # Invoke excavate command directly
             ctx = click.get_current_context()
-            runner = CliRunner()
-            
-            # Build excavate arguments
-            excavate_args = [str(output)]
-            if schema.url:
-                excavate_args.extend(["--url", schema.url])
-            
-            # Run excavate in the same process
-            result = runner.invoke(excavate, excavate_args, standalone_mode=False)
-            sys.exit(result.exit_code if result.exit_code else 0)
+            ctx.invoke(excavate,
+                      schema_file=str(output),
+                      url=schema.url,
+                      file=None,
+                      output="output.jsonl",
+                      max_pages=None,
+                      no_metadata=False,
+                      pretty=False,
+                      batch_mode=False)
             
     except Exception as e:
         click.echo(f"Error saving schema: {e}", err=True)

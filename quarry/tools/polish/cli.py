@@ -269,13 +269,19 @@ def polish(input_file, output, dedupe, dedupe_keys, dedupe_strategy, transform, 
                 
                 # Import here to avoid circular dependency
                 from quarry.tools.ship.cli import ship
-                from click.testing import CliRunner
                 
-                # Run ship
+                # Invoke ship command directly
                 ctx = click.get_current_context()
-                runner = CliRunner()
-                result = runner.invoke(ship, [output], standalone_mode=False)
-                sys.exit(result.exit_code if result.exit_code else 0)
+                ctx.invoke(ship,
+                          input_file=output,
+                          destination=None,
+                          table=None,
+                          if_exists="replace",
+                          delimiter=",",
+                          pretty=False,
+                          exclude_meta=True,
+                          stats=False,
+                          batch_mode=False)
     
     except Exception as e:
         click.echo(f"❌ Processing failed: {e}", err=True)
