@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from scrapesuite.lib.http import get_html
 from scrapesuite.lib.schemas import ExtractionSchema, FieldSchema, PaginationSchema
 from scrapesuite.tools.probe.analyzer import analyze_page
+from .templates import list_templates, get_template, create_from_template, suggest_template
 
 
 def build_schema_interactive(
@@ -53,6 +54,190 @@ def build_schema_interactive(
     
     name = Prompt.ask("Schema name", default="extraction")
     description = Prompt.ask("Description (optional)", default="")
+    
+    # Step 1.5: Ask about templates
+    console.print()
+    console.print(Panel(
+        "[bold]Use a Template?[/bold]\n"
+        "Start with a pre-configured template for common data types",
+        title="Templates",
+        title_align="left",
+        border_style="cyan"
+    ))
+    
+    if Confirm.ask("Browse templates?", default=True):
+        templates = list_templates()
+        
+        table = Table(
+            title="Available Templates",
+            title_style="bold",
+            title_justify="left",
+            box=box.ROUNDED,
+            show_header=True,
+            header_style="bold cyan"
+        )
+        table.add_column("#", style="cyan dim", width=4, justify="right")
+        table.add_column("Template", style="yellow bold", width=20)
+        table.add_column("Description", style="white", max_width=50)
+        
+        for idx, template in enumerate(templates, 1):
+            table.add_row(str(idx), template["name"], template["description"])
+        
+        # Add "Custom" option
+        table.add_row(str(len(templates) + 1), "Custom", "Build from scratch")
+        
+        console.print(table)
+        console.print()
+        
+        choice = Prompt.ask(
+            "Select template number or enter 'skip'",
+            default=str(len(templates) + 1)
+        )
+        
+        template_key = None
+        if choice.lower() != "skip" and choice.isdigit():
+            idx = int(choice) - 1
+            if 0 <= idx < len(templates):
+                template_key = templates[idx]["key"]
+                console.print(f"[green]✓[/green] Using template: [cyan]{templates[idx]['name']}[/cyan]")
+        
+        if template_key:
+            # Use template workflow
+            template = get_template(template_key)
+            
+            # Get URL if not provided
+            if not url and not html:
+                url = Prompt.ask("\nTarget URL (optional)", default="")
+                if url and url.strip():
+                    console.print(f"[dim]Fetching {url}...[/dim]")
+                    try:
+                        html = get_html(url)
+                    except Exception as e:
+                        console.print(f"[red]Error fetching URL: {e}[/red]")
+                        html = None
+            
+            # Run analysis if we have HTML
+            if html and not analysis:
+                console.print("[dim]Running Probe analysis...[/dim]")
+                try:
+                    analysis = analyze_page(html, url=url)
+                except Exception as e:
+                    console.print(f"[yellow]Warning: Could not analyze page: {e}[/yellow]")
+            
+            # Show suggested selectors
+            console.print()
+            console.print(Panel(
+                f"[bold]Template: {template['name']}[/bold]\n"
+                f"{template['description']}",
+                title="Using Template",
+                title_align="left",
+                border_style="green"
+            ))
+            
+            # Item selector
+            console.print()
+            suggested_selectors = template["common_selectors"]
+            
+            if analysis and analysis.get("containers"):
+                # Merge template suggestions with detected containers
+                detected = [c.get("child_selector") or c.get("selector") for c in analysis["containers"][:3]]
+                all_selectors = suggested_selectors + [s for s in detected if s not in suggested_selectors]
+            else:
+                all_selectors = suggested_selectors
+            
+            console.print("[bold]Common selectors for this template:[/bold]")
+            for idx, sel in enumerate(all_selectors[:5], 1):
+                console.print(f"  {idx}. {sel}")
+            console.print()
+            
+            choice = Prompt.ask(
+                "Select number or enter custom selector",
+                default="1"
+            )
+            
+            if choice.isdigit() and 1 <= int(choice) <= len(all_selectors):
+                item_selector = all_selectors[int(choice) - 1]
+            else:
+                item_selector = choice
+            
+            console.print(f"[green]✓[/green] Using: [cyan]{item_selector}[/cyan]")
+            
+            # Use template fields (optionally allow customization)
+            console.print()
+            if Confirm.ask("Customize template fields?", default=False):
+                # Show template fields and allow editing
+                fields = dict(template["fields"])
+                
+                console.print("\n[bold]Template fields:[/bold]")
+                for fname, fschema in fields.items():
+                    console.print(f"  • {fname}: {fschema.selector}")
+                
+                console.print()
+                if Confirm.ask("Add more fields?", default=False):
+                    # Add custom fields
+                    while True:
+                        field_name = Prompt.ask("Field name (or press Enter to finish)", default="")
+                        if not field_name.strip():
+                            break
+                        
+                        selector = Prompt.ask(f"Selector for '{field_name}'")
+                        attribute = Prompt.ask("Attribute (optional)", default="")
+                        
+                        fields[field_name] = FieldSchema(
+                            selector=selector,
+                            attribute=attribute if attribute.strip() else None
+                        )
+                        console.print(f"[green]✓[/green] Added: {field_name}")
+            else:
+                fields = template["fields"]
+            
+            # Pagination (optional)
+            console.print()
+            console.print(Panel(
+                "[bold]Step 4: Pagination (Optional)[/bold]\n"
+                "Configure multi-page extraction",
+                title="Pagination",
+                title_align="left",
+                border_style="cyan"
+            ))
+            
+            pagination = None
+            if Confirm.ask("Enable pagination?", default=False):
+                next_selector = Prompt.ask("Next page link selector", default="a.next")
+                max_pages_str = Prompt.ask("Max pages (leave empty for unlimited)", default="")
+                
+                pagination = PaginationSchema(
+                    next_selector=next_selector,
+                    max_pages=int(max_pages_str) if max_pages_str.strip() else None
+                )
+            
+            # Build schema from template
+            schema = ExtractionSchema(
+                name=name,
+                description=description if description.strip() else template["description"],
+                url=url if url and url.strip() else None,
+                item_selector=item_selector,
+                fields=fields,
+                pagination=pagination
+            )
+            
+            # Summary
+            console.print()
+            console.print(Panel(
+                f"[bold]Name:[/bold] {schema.name}\n"
+                f"[bold]Template:[/bold] {template['name']}\n"
+                f"[bold]Item selector:[/bold] [cyan]{schema.item_selector}[/cyan]\n"
+                f"[bold]Fields:[/bold] {len(schema.fields)} ({', '.join(schema.fields.keys())})\n" +
+                (f"[bold]Pagination:[/bold] enabled" if schema.pagination else "[bold]Pagination:[/bold] disabled"),
+                title="Schema Summary",
+                title_align="left",
+                border_style="green"
+            ))
+            
+            return schema
+    
+    # Continue with custom build (original flow)
+    console.print("[dim]Building custom schema...[/dim]\n")
     
     # Step 2: Get URL if not provided
     if not url and not html:
