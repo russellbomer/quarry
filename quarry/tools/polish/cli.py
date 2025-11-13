@@ -5,6 +5,7 @@ import click
 import questionary
 from pathlib import Path
 
+from quarry.lib.session import get_last_output, set_last_output
 from .processor import PolishProcessor
 
 
@@ -76,16 +77,31 @@ def polish(input_file, output, dedupe, dedupe_keys, dedupe_strategy, transform, 
     if not batch_mode and not input_file:
         click.echo("✨ Foundry Polish - Interactive Mode\n", err=True)
         
-        # Prompt for input file
-        input_file = questionary.path(
-            "Input file (JSONL):",
-            only_files=True,
-            validate=lambda x: Path(x).exists() or "File does not exist"
-        ).ask()
+        # Check if there's output from a previous tool invocation
+        last_output = get_last_output()
+        if last_output and last_output.get("format") == "jsonl":
+            from datetime import datetime
+            timestamp = datetime.fromisoformat(last_output["timestamp"])
+            time_ago = (datetime.now(timestamp.tzinfo) - timestamp).total_seconds()
+            
+            # Only offer if output was created in the last 5 minutes
+            if time_ago < 300:  # 5 minutes
+                click.echo(f"💡 Found recent output: {last_output['path']}", err=True)
+                click.echo(f"   ({last_output['record_count']} records)", err=True)
+                if click.confirm("Use this file?", default=True):
+                    input_file = last_output["path"]
         
+        # Prompt for input file if not set
         if not input_file:
-            click.echo("Cancelled", err=True)
-            sys.exit(0)
+            input_file = questionary.path(
+                "Input file (JSONL):",
+                only_files=True,
+                validate=lambda x: Path(x).exists() or "File does not exist"
+            ).ask()
+            
+            if not input_file:
+                click.echo("Cancelled", err=True)
+                sys.exit(0)
         
         # Ask what operations to perform
         operations = questionary.checkbox(
@@ -226,6 +242,9 @@ def polish(input_file, output, dedupe, dedupe_keys, dedupe_strategy, transform, 
         # Report results
         click.echo(f"✅ Wrote {result_stats['records_written']} records to {output}", err=True)
         
+        # Store in session for potential chaining
+        set_last_output(output, "jsonl", result_stats['records_written'])
+        
         if stats or dedupe or skip_invalid:
             click.echo("\n📊 Statistics:", err=True)
             click.echo(f"   Records read: {result_stats['records_read']}", err=True)
@@ -239,6 +258,24 @@ def polish(input_file, output, dedupe, dedupe_keys, dedupe_strategy, transform, 
             
             if result_stats['validation_errors'] > 0:
                 click.echo(f"   Validation errors: {result_stats['validation_errors']}", err=True)
+        
+        # Offer to run ship next
+        if not batch_mode:
+            click.echo("", err=True)
+            if click.confirm("🔗 Run ship now to export this data?", default=False):
+                click.echo("", err=True)
+                click.echo("Starting ship...", err=True)
+                click.echo("─" * 50, err=True)
+                
+                # Import here to avoid circular dependency
+                from quarry.tools.ship.cli import ship
+                from click.testing import CliRunner
+                
+                # Run ship
+                ctx = click.get_current_context()
+                runner = CliRunner(mix_stderr=False)
+                result = runner.invoke(ship, [output], standalone_mode=False)
+                sys.exit(result.exit_code if result.exit_code else 0)
     
     except Exception as e:
         click.echo(f"❌ Processing failed: {e}", err=True)

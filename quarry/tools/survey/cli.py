@@ -7,6 +7,7 @@ import click
 
 from quarry.lib.http import get_html
 from quarry.lib.schemas import load_schema, save_schema
+from quarry.lib.session import set_last_schema
 from .builder import build_schema_interactive, load_analysis_from_file
 from .preview import preview_extraction, format_preview
 
@@ -115,6 +116,34 @@ def create(from_probe, url, file, output, preview):
     try:
         save_schema(schema, output)
         click.echo(f"\n✅ Schema saved to: {output}", err=True)
+        
+        # Store in session for potential chaining
+        set_last_schema(output, schema.url)
+        
+        # Offer to run excavate next
+        click.echo("", err=True)
+        if click.confirm("🔗 Run excavate now with this schema?", default=False):
+            click.echo("", err=True)
+            click.echo("Starting excavate...", err=True)
+            click.echo("─" * 50, err=True)
+            
+            # Import here to avoid circular dependency
+            from quarry.tools.excavate.cli import excavate
+            from click.testing import CliRunner
+            
+            # Prepare arguments for excavate
+            ctx = click.get_current_context()
+            runner = CliRunner(mix_stderr=False)
+            
+            # Build excavate arguments
+            excavate_args = [str(output)]
+            if schema.url:
+                excavate_args.extend(["--url", schema.url])
+            
+            # Run excavate in the same process
+            result = runner.invoke(excavate, excavate_args, standalone_mode=False)
+            sys.exit(result.exit_code if result.exit_code else 0)
+            
     except Exception as e:
         click.echo(f"Error saving schema: {e}", err=True)
         sys.exit(1)

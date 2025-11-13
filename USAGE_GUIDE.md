@@ -56,6 +56,16 @@ Quarry follows a **mining metaphor** for web data extraction:
   the site         schemas          extraction        data           results
 ```
 
+### Seamless Tool Chaining
+
+Quarry tools can automatically pass data to the next tool in the workflow. When using interactive mode, each tool will offer to launch the next step with your data already loaded:
+
+- **Survey → Excavate**: After creating a schema, survey offers to run excavate with it
+- **Excavate → Polish**: After extraction, excavate offers to clean the data
+- **Polish → Ship**: After polishing, polish offers to export the results
+
+This creates a smooth end-to-end workflow without manually specifying file paths.
+
 ### When to Use Each Tool
 
 | Tool | Use When | Output |

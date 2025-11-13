@@ -7,6 +7,7 @@ import click
 import questionary
 
 from quarry.lib.schemas import load_schema
+from quarry.lib.session import get_last_schema, set_last_output
 from .executor import ForgeExecutor, write_jsonl
 
 
@@ -69,16 +70,32 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
     if not batch_mode and not schema_file:
         click.echo("🔨 Foundry Forge - Interactive Mode\n", err=True)
         
-        # Prompt for schema file
-        schema_file = questionary.path(
-            "Schema file:",
-            only_files=True,
-            validate=lambda x: Path(x).exists() or "File does not exist"
-        ).ask()
+        # Check if there's a schema from a previous tool invocation
+        last_schema = get_last_schema()
+        if last_schema:
+            from datetime import datetime
+            timestamp = datetime.fromisoformat(last_schema["timestamp"])
+            time_ago = (datetime.now(timestamp.tzinfo) - timestamp).total_seconds()
+            
+            # Only offer if schema was created in the last 5 minutes
+            if time_ago < 300:  # 5 minutes
+                click.echo(f"💡 Found recent schema: {last_schema['path']}", err=True)
+                if click.confirm("Use this schema?", default=True):
+                    schema_file = last_schema["path"]
+                    if last_schema.get("url") and not url:
+                        url = last_schema["url"]
         
+        # Prompt for schema file if not set
         if not schema_file:
-            click.echo("Cancelled", err=True)
-            sys.exit(0)
+            schema_file = questionary.path(
+                "Schema file:",
+                only_files=True,
+                validate=lambda x: Path(x).exists() or "File does not exist"
+            ).ask()
+            
+            if not schema_file:
+                click.echo("Cancelled", err=True)
+                sys.exit(0)
     
     if not schema_file:
         click.echo("❌ Error: No schema file specified", err=True)
@@ -212,10 +229,12 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
             with output_path.open("w", encoding="utf-8") as f:
                 json.dump(items, f, indent=2, ensure_ascii=False)
             click.echo(f"✅ Wrote {len(items)} items to {output} (JSON)", err=True)
+            set_last_output(output, "json", len(items))
         else:
             # JSONL format
             count = write_jsonl(items, output)
             click.echo(f"✅ Wrote {count} items to {output} (JSONL)", err=True)
+            set_last_output(output, "jsonl", count)
         
         # Show stats
         stats = executor.get_stats()
@@ -224,6 +243,24 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
         click.echo(f"   Items extracted: {stats['items_extracted']}", err=True)
         if stats['errors'] > 0:
             click.echo(f"   Errors: {stats['errors']}", err=True)
+        
+        # Offer to run polish next
+        if not batch_mode and not pretty:  # Only for JSONL output
+            click.echo("", err=True)
+            if click.confirm("🔗 Run polish now to clean/transform this data?", default=False):
+                click.echo("", err=True)
+                click.echo("Starting polish...", err=True)
+                click.echo("─" * 50, err=True)
+                
+                # Import here to avoid circular dependency
+                from quarry.tools.polish.cli import polish
+                from click.testing import CliRunner
+                
+                # Run polish
+                ctx = click.get_current_context()
+                runner = CliRunner(mix_stderr=False)
+                result = runner.invoke(polish, [output], standalone_mode=False)
+                sys.exit(result.exit_code if result.exit_code else 0)
     else:
         click.echo("⚠️  No items extracted", err=True)
 
