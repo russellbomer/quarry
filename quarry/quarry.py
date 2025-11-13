@@ -21,12 +21,12 @@ from quarry.tools.polish.cli import polish as polish_command
 from quarry.tools.ship.cli import ship as ship_command
 
 BANNER = """
-[cyan]██████╗ ██╗   ██╗ █████╗ ██████╗ ██████╗ ██╗   ██╗[/cyan]
+[cyan] ██████╗ ██╗   ██╗ █████╗ ██████╗ ██████╗ ██╗   ██╗[/cyan]
 [cyan]██╔═══██╗██║   ██║██╔══██╗██╔══██╗██╔══██╗╚██╗ ██╔╝[/cyan]
-[bright_cyan]██║   ██║██║   ██║███████║██████╔╝██████╔╝ ╚████╔╝[/bright_cyan] 
-[bright_cyan]██║▄▄ ██║██║   ██║██╔══██║██╔══██╗██╔══██╗  ╚██╔╝[/bright_cyan]  
-[blue]╚██████╔╝╚██████╔╝██║  ██║██║  ██║██║  ██║   ██║[/blue]   
-[blue] ╚══▀▀═╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝[/blue]   
+[bright_cyan]██║   ██║██║   ██║███████║██████╔╝██████╔╝ ╚████╔╝ [/bright_cyan]
+[bright_cyan]██║▄▄ ██║██║   ██║██╔══██║██╔══██╗██╔══██╗  ╚██╔╝  [/bright_cyan]
+[blue]╚██████╔╝╚██████╔╝██║  ██║██║  ██║██║  ██║   ██║   [/blue]
+[blue] ╚══▀▀═╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   [/blue]
 [dim]           Web Data Extraction Suite v2.0[/dim]
 """
 
