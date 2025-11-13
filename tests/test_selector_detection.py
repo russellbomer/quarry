@@ -7,7 +7,7 @@ Tests wizard's ability to detect correct selectors on actual websites.
 import pytest
 from bs4 import BeautifulSoup
 
-from scrapesuite.inspector import find_item_selector, generate_field_selector
+from foundry.inspector import find_item_selector, generate_field_selector
 
 
 class TestRealWorldSelectorDetection:

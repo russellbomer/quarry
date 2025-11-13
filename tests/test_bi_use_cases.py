@@ -2,12 +2,12 @@
 Business Intelligence Use Case Tests
 
 Tests real-world BI scenarios with actual public data sources.
-These tests validate that ScrapeSuite can handle common BI extraction needs.
+These tests validate that Foundry can handle common BI extraction needs.
 """
 
 import pytest
-from scrapesuite.tools.probe.analyzer import analyze_page
-from scrapesuite.lib.http import get_html
+from foundry.tools.probe.analyzer import analyze_page
+from foundry.lib.http import get_html
 
 
 class TestFinancialDataExtraction:

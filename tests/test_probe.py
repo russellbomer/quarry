@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from scrapesuite.tools.probe.analyzer import analyze_page
-from scrapesuite.tools.probe.reporter import format_as_json, format_as_terminal
+from foundry.tools.probe.analyzer import analyze_page
+from foundry.tools.probe.reporter import format_as_json, format_as_terminal
 
 
 class TestProbeAnalyzer:

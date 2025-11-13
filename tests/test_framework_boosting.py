@@ -1,6 +1,6 @@
 """Test framework detection and pattern boosting in selector table."""
 
-from scrapesuite.inspector import find_item_selector
+from foundry.inspector import find_item_selector
 
 
 def test_drupal_views_boosting():

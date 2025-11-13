@@ -3,9 +3,9 @@
 import pytest
 from pathlib import Path
 
-from scrapesuite.lib.schemas import ExtractionSchema, FieldSchema, PaginationSchema
-from scrapesuite.tools.forge.parser import SchemaParser
-from scrapesuite.tools.forge.executor import ForgeExecutor
+from foundry.lib.schemas import ExtractionSchema, FieldSchema, PaginationSchema
+from foundry.tools.forge.parser import SchemaParser
+from foundry.tools.forge.executor import ForgeExecutor
 
 
 # Test HTML fixtures

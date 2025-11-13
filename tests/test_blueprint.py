@@ -4,14 +4,14 @@ from pathlib import Path
 
 import pytest
 
-from scrapesuite.lib.schemas import (
+from foundry.lib.schemas import (
     ExtractionSchema,
     FieldSchema,
     load_schema,
     save_schema,
     validate_schema_dict,
 )
-from scrapesuite.tools.blueprint.preview import preview_extraction, format_preview
+from foundry.tools.blueprint.preview import preview_extraction, format_preview
 
 
 class TestSchemaModel:

@@ -36,10 +36,10 @@ def test_generic_connector_basic(monkeypatch):
     def mock_get_html(url):
         return html
     
-    import scrapesuite.connectors.generic
-    monkeypatch.setattr(scrapesuite.connectors.generic, "get_html", mock_get_html)
+    import foundry.connectors.generic
+    monkeypatch.setattr(foundry.connectors.generic, "get_html", mock_get_html)
     
-    from scrapesuite.connectors.generic import GenericConnector
+    from foundry.connectors.generic import GenericConnector
     
     connector = GenericConnector(
         entry_url="https://example.com/",
@@ -83,10 +83,10 @@ def test_generic_connector_attribute_extraction(monkeypatch):
     def mock_get_html(url):
         return html
     
-    import scrapesuite.connectors.generic
-    monkeypatch.setattr(scrapesuite.connectors.generic, "get_html", mock_get_html)
+    import foundry.connectors.generic
+    monkeypatch.setattr(foundry.connectors.generic, "get_html", mock_get_html)
     
-    from scrapesuite.connectors.generic import GenericConnector
+    from foundry.connectors.generic import GenericConnector
     
     connector = GenericConnector(
         entry_url="https://example.com/",
@@ -104,7 +104,7 @@ def test_generic_connector_attribute_extraction(monkeypatch):
 
 def test_generic_connector_missing_selectors():
     """Test error handling for missing selectors config."""
-    from scrapesuite.connectors.generic import GenericConnector
+    from foundry.connectors.generic import GenericConnector
     
     connector = GenericConnector(
         entry_url="https://example.com/",

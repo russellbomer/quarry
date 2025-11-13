@@ -7,8 +7,8 @@ from unittest.mock import patch
 
 import yaml
 
-from scrapesuite.core import load_yaml
-from scrapesuite.wizard import run_wizard
+from foundry.core import load_yaml
+from foundry.wizard import run_wizard
 
 
 def test_wizard_generates_yaml() -> None:
@@ -35,9 +35,9 @@ def test_wizard_generates_yaml() -> None:
             "n",  # skip smoke test
         ]
 
-        with patch("scrapesuite.wizard._prompt_text", side_effect=inputs[1:11]):
-            with patch("scrapesuite.wizard._prompt_select", side_effect=[inputs[0], inputs[8]]):
-                with patch("scrapesuite.wizard._prompt_confirm", return_value=False):
+        with patch("foundry.wizard._prompt_text", side_effect=inputs[1:11]):
+            with patch("foundry.wizard._prompt_select", side_effect=[inputs[0], inputs[8]]):
+                with patch("foundry.wizard._prompt_confirm", return_value=False):
                     # Change to temp dir
                     old_cwd = os.getcwd()
                     try:

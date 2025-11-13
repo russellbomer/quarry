@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from scrapesuite.tools.polish.deduplicator import Deduplicator
-from scrapesuite.tools.polish.transformers import (
+from foundry.tools.polish.deduplicator import Deduplicator
+from foundry.tools.polish.transformers import (
     normalize_text,
     clean_whitespace,
     parse_date,
@@ -13,7 +13,7 @@ from scrapesuite.tools.polish.transformers import (
     remove_html_tags,
     truncate_text,
 )
-from scrapesuite.tools.polish.validators import (
+from foundry.tools.polish.validators import (
     validate_email,
     validate_url,
     validate_date_format,
@@ -21,7 +21,7 @@ from scrapesuite.tools.polish.validators import (
     validate_range,
     validate_record,
 )
-from scrapesuite.tools.polish.processor import PolishProcessor
+from foundry.tools.polish.processor import PolishProcessor
 
 
 class TestDeduplicator:

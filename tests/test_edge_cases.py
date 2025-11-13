@@ -1,6 +1,6 @@
 """Tests for edge cases and error handling."""
 
-from scrapesuite.inspector import find_item_selector, inspect_html, preview_extraction
+from foundry.inspector import find_item_selector, inspect_html, preview_extraction
 
 
 def test_inspect_html_empty_string():

@@ -3,7 +3,7 @@
 import tempfile
 from pathlib import Path
 
-from scrapesuite.state import get_failed_urls, open_db, record_failed_url
+from foundry.state import get_failed_urls, open_db, record_failed_url
 
 # Test constants
 EXPECTED_RETRY_COUNT = 3

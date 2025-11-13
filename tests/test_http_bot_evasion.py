@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from scrapesuite.lib.http import _build_browser_headers, _check_robots_txt, create_session, get_html
+from foundry.lib.http import _build_browser_headers, _check_robots_txt, create_session, get_html
 
 
 def test_user_agent_rotation():
@@ -56,13 +56,13 @@ def test_custom_referrer():
 def test_robots_txt_allowed():
     """URLs allowed by robots.txt pass check."""
     # Mock successful robots.txt fetch
-    with patch("scrapesuite.lib.http.RobotFileParser") as mock_parser_class:
+    with patch("foundry.lib.http.RobotFileParser") as mock_parser_class:
         mock_parser = Mock()
         mock_parser.can_fetch.return_value = True
         mock_parser_class.return_value = mock_parser
         
         # Clear cache to ensure fresh check
-        from scrapesuite.lib.http import _ROBOTS_CACHE
+        from foundry.lib.http import _ROBOTS_CACHE
         _ROBOTS_CACHE.clear()
         
         result = _check_robots_txt("https://example.com/page", "TestBot/1.0")
@@ -71,13 +71,13 @@ def test_robots_txt_allowed():
 
 def test_robots_txt_disallowed():
     """URLs disallowed by robots.txt fail check."""
-    with patch("scrapesuite.lib.http.RobotFileParser") as mock_parser_class:
+    with patch("foundry.lib.http.RobotFileParser") as mock_parser_class:
         mock_parser = Mock()
         mock_parser.can_fetch.return_value = False
         mock_parser_class.return_value = mock_parser
         
         # Clear cache to ensure fresh check
-        from scrapesuite.lib.http import _ROBOTS_CACHE
+        from foundry.lib.http import _ROBOTS_CACHE
         _ROBOTS_CACHE.clear()
         
         result = _check_robots_txt("https://example.com/admin", "TestBot/1.0")
@@ -86,13 +86,13 @@ def test_robots_txt_disallowed():
 
 def test_robots_txt_fetch_failure():
     """If robots.txt fetch fails, assume allowed (permissive)."""
-    with patch("scrapesuite.lib.http.RobotFileParser") as mock_parser_class:
+    with patch("foundry.lib.http.RobotFileParser") as mock_parser_class:
         mock_parser = Mock()
         mock_parser.read.side_effect = Exception("Network error")
         mock_parser_class.return_value = mock_parser
         
         # Clear cache to ensure fresh check
-        from scrapesuite.lib.http import _ROBOTS_CACHE
+        from foundry.lib.http import _ROBOTS_CACHE
         _ROBOTS_CACHE.clear()
         
         # Should not raise, should assume allowed
@@ -112,7 +112,7 @@ def test_create_session():
 
 def test_get_html_respects_robots_txt():
     """get_html checks robots.txt when respect_robots=True."""
-    with patch("scrapesuite.lib.http._check_robots_txt") as mock_check:
+    with patch("foundry.lib.http._check_robots_txt") as mock_check:
         mock_check.return_value = False
         
         with pytest.raises(PermissionError, match="robots.txt disallows"):
@@ -121,8 +121,8 @@ def test_get_html_respects_robots_txt():
 
 def test_get_html_can_skip_robots_txt():
     """get_html can skip robots.txt check for testing."""
-    with patch("scrapesuite.lib.http._check_robots_txt") as mock_check:
-        with patch("scrapesuite.lib.http.requests.Session.get") as mock_get:
+    with patch("foundry.lib.http._check_robots_txt") as mock_check:
+        with patch("foundry.lib.http.requests.Session.get") as mock_get:
             mock_response = Mock()
             mock_response.text = "<html>Test</html>"
             mock_get.return_value = mock_response

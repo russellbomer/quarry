@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from scrapesuite.connectors import custom
-from scrapesuite.core import load_yaml, run_job
-from scrapesuite.state import load_cursor
+from foundry.connectors import custom
+from foundry.core import load_yaml, run_job
+from foundry.state import load_cursor
 
 # Test constants to avoid magic numbers
 MIN_EXPECTED_RECORDS = 3

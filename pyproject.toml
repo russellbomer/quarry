@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "scrapesuite"
-version = "1.0.0"
-description = "A reusable Python toolkit for web/data collection with offline-first testing"
+name = "foundry"
+version = "2.0.0"
+description = "An intuitive web scraping toolkit with intelligent templates and interactive workflows"
 requires-python = ">=3.11"
 dependencies = [
     "requests",
@@ -17,13 +17,22 @@ dependencies = [
     "questionary",
     "pydantic",
     "rich",
+    "click",
 ]
 
+[project.scripts]
+foundry = "foundry.foundry:main"
+"foundry.probe" = "foundry.tools.probe.cli:probe"
+"foundry.blueprint" = "foundry.tools.blueprint.cli:blueprint"
+"foundry.forge" = "foundry.tools.forge.cli:forge"
+"foundry.polish" = "foundry.tools.polish.cli:polish"
+"foundry.crate" = "foundry.tools.crate.cli:crate"
+
 [tool.setuptools]
-packages = ["scrapesuite"]
+packages = ["foundry"]
 
 [tool.setuptools.package-data]
-scrapesuite = ["**/*.json", "**/*.yml", "**/*.yaml"]
+foundry = ["**/*.json", "**/*.yml", "**/*.yaml"]
 
 [tool.ruff]
 line-length = 100
@@ -48,11 +57,11 @@ strict_equality = true
 
 # Per-module options for gradual typing
 [[tool.mypy.overrides]]
-module = "scrapesuite.framework_profiles.*"
+module = "foundry.framework_profiles.*"
 disallow_untyped_defs = true
 
 [[tool.mypy.overrides]]
-module = "scrapesuite.http"
+module = "foundry.http"
 disallow_untyped_defs = true
 
 [[tool.mypy.overrides]]

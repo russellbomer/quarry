@@ -2,8 +2,8 @@
 
 import pytest
 
-import scrapesuite.connectors.custom as custom_mod
-from scrapesuite.connectors import custom, fda, nws
+import foundry.connectors.custom as custom_mod
+from foundry.connectors import custom, fda, nws
 
 # Test constants to avoid magic numbers
 MIN_EXPECTED_RECORDS = 3

@@ -7,8 +7,8 @@ import sqlite3
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from scrapesuite.tools.crate.base import ExporterFactory
-from scrapesuite.tools.crate.exporters import (
+from foundry.tools.crate.base import ExporterFactory
+from foundry.tools.crate.exporters import (
     CSVExporter,
     JSONExporter,
     SQLiteExporter,
