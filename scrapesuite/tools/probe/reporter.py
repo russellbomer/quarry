@@ -46,11 +46,11 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
         url = analysis.get("url", "")
         console.print()
         console.print("╭─────────────────────────────────────────────────────────────╮", style="cyan")
-        console.print("│ [bold cyan]🔍  PROBE ANALYSIS[/bold cyan]                                      │", style="cyan")
+        console.print("│ [bold cyan]PROBE ANALYSIS[/bold cyan]                                         │", style="cyan")
         console.print("╰─────────────────────────────────────────────────────────────╯", style="cyan")
         
         if url:
-            console.print(f"[dim]📍 {url}[/dim]")
+            console.print(f"[dim]{url}[/dim]")
         console.print()
         
         # Metadata section
@@ -65,7 +65,8 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
             
             console.print(Panel(
                 content,
-                title="[bold]📄 Page Info[/bold]",
+                title="Page Info",
+                title_align="left",
                 border_style="blue",
                 padding=(0, 1)
             ))
@@ -75,7 +76,9 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
         frameworks = analysis.get("frameworks", [])
         if frameworks:
             table = Table(
-                title="[bold]🎨 Detected Frameworks[/bold]",
+                title="Detected Frameworks",
+                title_style="bold",
+                title_justify="left",
                 box=box.ROUNDED,
                 show_header=True,
                 header_style="bold cyan",
@@ -98,7 +101,9 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
         containers = analysis.get("containers", [])
         if containers:
             table = Table(
-                title="[bold]📦 Detected Item Containers[/bold]",
+                title="Detected Item Containers",
+                title_style="bold",
+                title_justify="left",
                 box=box.ROUNDED,
                 show_header=True,
                 header_style="bold magenta",
@@ -128,10 +133,11 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
             count = best_container.get("item_count", 0)
             
             console.print(Panel(
-                f"[bold green]✓ Recommended Selector[/bold green]\n\n"
+                f"[bold green]Recommended Selector[/bold green]\n\n"
                 f"[cyan]{selector}[/cyan]\n"
                 f"[dim]Found {count} items matching this pattern[/dim]",
-                title="[bold]💡 Best Container[/bold]",
+                title="Best Container",
+                title_align="left",
                 border_style="green",
                 padding=(0, 1)
             ))
@@ -141,7 +147,9 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
         field_candidates = suggestions.get("field_candidates", [])
         if field_candidates:
             table = Table(
-                title="[bold]🏷️  Suggested Fields[/bold]",
+                title="Suggested Fields",
+                title_style="bold",
+                title_justify="left",
                 box=box.SIMPLE,
                 show_header=True,
                 header_style="bold yellow",
@@ -170,12 +178,11 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
             recommendation = framework_hint.get("recommendation", "")
             confidence = framework_hint.get("confidence", 0)
             
-            conf_icon = "🟢" if confidence > 0.7 else "🟡" if confidence > 0.4 else "🟠"
-            
             console.print(Panel(
-                f"[bold cyan]{name}[/bold cyan] detected {conf_icon}\n\n"
+                f"[bold cyan]{name}[/bold cyan] detected\n\n"
                 f"[white]{recommendation}[/white]",
-                title="[bold]💡 Framework Recommendation[/bold]",
+                title="Framework Recommendation",
+                title_align="left",
                 border_style="yellow",
                 padding=(0, 1)
             ))
@@ -185,12 +192,13 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
         stats = analysis.get("statistics", {})
         if stats:
             console.print(Panel(
-                f"[cyan]●[/cyan] Elements: [bold]{stats.get('total_elements', 0):,}[/bold]\n"
-                f"[cyan]●[/cyan] Links: [bold]{stats.get('total_links', 0):,}[/bold]\n"
-                f"[cyan]●[/cyan] Images: [bold]{stats.get('total_images', 0):,}[/bold]\n"
-                f"[cyan]●[/cyan] Forms: [bold]{stats.get('total_forms', 0):,}[/bold]\n"
-                f"[cyan]●[/cyan] Text: [bold]{stats.get('text_words', 0):,}[/bold] words",
-                title="[bold]📊 Page Statistics[/bold]",
+                f"[cyan]•[/cyan] Elements: [bold]{stats.get('total_elements', 0):,}[/bold]\n"
+                f"[cyan]•[/cyan] Links: [bold]{stats.get('total_links', 0):,}[/bold]\n"
+                f"[cyan]•[/cyan] Images: [bold]{stats.get('total_images', 0):,}[/bold]\n"
+                f"[cyan]•[/cyan] Forms: [bold]{stats.get('total_forms', 0):,}[/bold]\n"
+                f"[cyan]•[/cyan] Text: [bold]{stats.get('text_words', 0):,}[/bold] words",
+                title="Page Statistics",
+                title_align="left",
                 border_style="blue",
                 padding=(0, 1)
             ))
