@@ -66,8 +66,23 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
       quarry excavate schema.yml --file page.html --batch
       quarry excavate schema.yml --max-pages 10
     """
-    # Show error if called without arguments and not in interactive terminal
+    # Show helpful error if called without required argument
+    if not schema_file and not sys.stdin.isatty():
+        # Non-interactive terminal (piped/scripted), show error
+        click.echo("❌ Error: No schema file specified", err=True)
+        click.echo("", err=True)
+        click.echo("Usage: quarry excavate SCHEMA_FILE [OPTIONS]", err=True)
+        click.echo("", err=True)
+        click.echo("Examples:", err=True)
+        click.echo("  quarry excavate schema.yml --url https://example.com", err=True)
+        click.echo("  quarry excavate schema.yml --file page.html", err=True)
+        click.echo("  quarry excavate  # Interactive mode", err=True)
+        click.echo("", err=True)
+        click.echo("Run 'quarry excavate --help' for full options.", err=True)
+        sys.exit(1)
+    
     if not schema_file and batch_mode:
+        # Batch mode without schema, show error
         click.echo("❌ Error: No schema file specified", err=True)
         click.echo("", err=True)
         click.echo("Usage: quarry excavate SCHEMA_FILE [OPTIONS]", err=True)
@@ -84,32 +99,46 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
     if not batch_mode and not schema_file:
         click.echo("🔨 Quarry Excavate - Interactive Mode\n", err=True)
         
-        # Check if there's a schema from a previous tool invocation
-        last_schema = get_last_schema()
-        if last_schema:
-            from datetime import datetime
-            timestamp = datetime.fromisoformat(last_schema["timestamp"])
-            time_ago = (datetime.now(timestamp.tzinfo) - timestamp).total_seconds()
+        try:
+            # Check if there's a schema from a previous tool invocation
+            last_schema = get_last_schema()
+            if last_schema:
+                from datetime import datetime
+                timestamp = datetime.fromisoformat(last_schema["timestamp"])
+                time_ago = (datetime.now(timestamp.tzinfo) - timestamp).total_seconds()
+                
+                # Only offer if schema was created in the last 5 minutes
+                if time_ago < 300:  # 5 minutes
+                    click.echo(f"💡 Found recent schema: {last_schema['path']}", err=True)
+                    if click.confirm("Use this schema?", default=True):
+                        schema_file = last_schema["path"]
+                        if last_schema.get("url") and not url:
+                            url = last_schema["url"]
             
-            # Only offer if schema was created in the last 5 minutes
-            if time_ago < 300:  # 5 minutes
-                click.echo(f"💡 Found recent schema: {last_schema['path']}", err=True)
-                if click.confirm("Use this schema?", default=True):
-                    schema_file = last_schema["path"]
-                    if last_schema.get("url") and not url:
-                        url = last_schema["url"]
-        
-        # Prompt for schema file if not set
-        if not schema_file:
-            schema_file = questionary.path(
-                "Schema file:",
-                only_files=True,
-                validate=lambda x: Path(x).exists() or "File does not exist"
-            ).ask()
-            
+            # Prompt for schema file if not set
             if not schema_file:
-                click.echo("Cancelled", err=True)
-                sys.exit(0)
+                schema_file = questionary.path(
+                    "Schema file:",
+                    only_files=True,
+                    validate=lambda x: Path(x).exists() or "File does not exist"
+                ).ask()
+                
+                if not schema_file:
+                    click.echo("Cancelled", err=True)
+                    sys.exit(0)
+        except (KeyboardInterrupt, EOFError):
+            # Interactive mode failed, show helpful error
+            click.echo("\n", err=True)
+            click.echo("❌ Interactive mode cancelled or unavailable", err=True)
+            click.echo("", err=True)
+            click.echo("Usage: quarry excavate SCHEMA_FILE [OPTIONS]", err=True)
+            click.echo("", err=True)
+            click.echo("Examples:", err=True)
+            click.echo("  quarry excavate schema.yml --url https://example.com", err=True)
+            click.echo("  quarry excavate schema.yml --file page.html", err=True)
+            click.echo("", err=True)
+            click.echo("Run 'quarry excavate --help' for full options.", err=True)
+            sys.exit(1)
     
     # Final check - should not reach here in normal flow
     if not schema_file:

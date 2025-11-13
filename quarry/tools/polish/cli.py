@@ -73,8 +73,23 @@ def polish(input_file, output, dedupe, dedupe_keys, dedupe_strategy, transform, 
       quarry polish data.jsonl --dedupe --skip-invalid --output clean.jsonl
     """
     
-    # Show error if called without arguments in batch mode
+    # Show helpful error if called without required argument
+    if not input_file and not sys.stdin.isatty():
+        # Non-interactive terminal (piped/scripted), show error
+        click.echo("❌ Error: No input file specified", err=True)
+        click.echo("", err=True)
+        click.echo("Usage: quarry polish INPUT_FILE [OPTIONS]", err=True)
+        click.echo("", err=True)
+        click.echo("Examples:", err=True)
+        click.echo("  quarry polish data.jsonl --dedupe", err=True)
+        click.echo("  quarry polish data.jsonl --dedupe-keys title url", err=True)
+        click.echo("  quarry polish  # Interactive mode", err=True)
+        click.echo("", err=True)
+        click.echo("Run 'quarry polish --help' for full options.", err=True)
+        sys.exit(1)
+    
     if not input_file and batch_mode:
+        # Batch mode without input, show error
         click.echo("❌ Error: No input file specified", err=True)
         click.echo("", err=True)
         click.echo("Usage: quarry polish INPUT_FILE [OPTIONS]", err=True)
@@ -91,31 +106,45 @@ def polish(input_file, output, dedupe, dedupe_keys, dedupe_strategy, transform, 
     if not batch_mode and not input_file:
         click.echo("✨ Quarry Polish - Interactive Mode\n", err=True)
         
-        # Check if there's output from a previous tool invocation
-        last_output = get_last_output()
-        if last_output and last_output.get("format") == "jsonl":
-            from datetime import datetime
-            timestamp = datetime.fromisoformat(last_output["timestamp"])
-            time_ago = (datetime.now(timestamp.tzinfo) - timestamp).total_seconds()
+        try:
+            # Check if there's output from a previous tool invocation
+            last_output = get_last_output()
+            if last_output and last_output.get("format") == "jsonl":
+                from datetime import datetime
+                timestamp = datetime.fromisoformat(last_output["timestamp"])
+                time_ago = (datetime.now(timestamp.tzinfo) - timestamp).total_seconds()
+                
+                # Only offer if output was created in the last 5 minutes
+                if time_ago < 300:  # 5 minutes
+                    click.echo(f"💡 Found recent output: {last_output['path']}", err=True)
+                    click.echo(f"   ({last_output['record_count']} records)", err=True)
+                    if click.confirm("Use this file?", default=True):
+                        input_file = last_output["path"]
             
-            # Only offer if output was created in the last 5 minutes
-            if time_ago < 300:  # 5 minutes
-                click.echo(f"💡 Found recent output: {last_output['path']}", err=True)
-                click.echo(f"   ({last_output['record_count']} records)", err=True)
-                if click.confirm("Use this file?", default=True):
-                    input_file = last_output["path"]
-        
-        # Prompt for input file if not set
-        if not input_file:
-            input_file = questionary.path(
-                "Input file (JSONL):",
-                only_files=True,
-                validate=lambda x: Path(x).exists() or "File does not exist"
-            ).ask()
-            
+            # Prompt for input file if not set
             if not input_file:
-                click.echo("Cancelled", err=True)
-                sys.exit(0)
+                input_file = questionary.path(
+                    "Input file (JSONL):",
+                    only_files=True,
+                    validate=lambda x: Path(x).exists() or "File does not exist"
+                ).ask()
+                
+                if not input_file:
+                    click.echo("Cancelled", err=True)
+                    sys.exit(0)
+        except (KeyboardInterrupt, EOFError):
+            # Interactive mode failed, show helpful error
+            click.echo("\n", err=True)
+            click.echo("❌ Interactive mode cancelled or unavailable", err=True)
+            click.echo("", err=True)
+            click.echo("Usage: quarry polish INPUT_FILE [OPTIONS]", err=True)
+            click.echo("", err=True)
+            click.echo("Examples:", err=True)
+            click.echo("  quarry polish data.jsonl --dedupe", err=True)
+            click.echo("  quarry polish data.jsonl --dedupe-keys title url", err=True)
+            click.echo("", err=True)
+            click.echo("Run 'quarry polish --help' for full options.", err=True)
+            sys.exit(1)
         
         # Ask what operations to perform
         operations = questionary.checkbox(
