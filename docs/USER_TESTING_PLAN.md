@@ -1,4 +1,4 @@
-# Foundry User Testing Plan
+# Quarry User Testing Plan
 
 ## Overview
 
@@ -6,7 +6,7 @@ This manual testing plan validates the 4 new framework profiles (Schema.org, Ope
 
 **Testing Environment:** Git Bash on Windows  
 **Total Test Time:** ~30-45 minutes  
-**Prerequisites:** Python 3.12+, foundry installed
+**Prerequisites:** Python 3.12+, quarry installed
 
 ---
 
@@ -15,8 +15,8 @@ This manual testing plan validates the 4 new framework profiles (Schema.org, Ope
 ### 1. Verify Installation
 
 ```bash
-# Navigate to foundry directory
-cd /c/path/to/foundry
+# Navigate to quarry directory
+cd /c/path/to/quarry
 
 # Verify Python version
 python --version
@@ -42,7 +42,7 @@ mkdir -p logs
 mkdir -p results
 
 # Set environment for testing
-export PYTHONPATH=/c/path/to/foundry
+export PYTHONPATH=/c/path/to/quarry
 ```
 
 ---
@@ -62,8 +62,8 @@ export PYTHONPATH=/c/path/to/foundry
 ```bash
 # Test detection
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import detect_framework, detect_all_frameworks
+from quarry.http import get_html
+from quarry.framework_profiles import detect_framework, detect_all_frameworks
 
 url = 'https://www.allrecipes.com/recipe/10813/best-chocolate-chip-cookies/'
 html = get_html(url)
@@ -102,8 +102,8 @@ for fw, score in all_fw[:5]:
 ```bash
 # Test with news article
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import SchemaOrgProfile, detect_framework
+from quarry.http import get_html
+from quarry.framework_profiles import SchemaOrgProfile, detect_framework
 from bs4 import BeautifulSoup
 
 url = 'https://techcrunch.com/2024/01/15/example-article/'  # Use actual URL
@@ -154,8 +154,8 @@ print(f'  itemprop: {itemprop_count}')
 ```bash
 # Test product page
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import detect_all_frameworks
+from quarry.http import get_html
+from quarry.framework_profiles import detect_all_frameworks
 
 url = 'https://www.amazon.com/dp/B08N5WRWNW'  # Use actual product URL
 html = get_html(url)
@@ -204,8 +204,8 @@ if 'itemprop=\"name\"' in html:
 ```bash
 # Test Open Graph extraction
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import OpenGraphProfile, detect_framework
+from quarry.http import get_html
+from quarry.framework_profiles import OpenGraphProfile, detect_framework
 
 url = 'https://medium.com/@example/example-article'  # Use actual URL
 html = get_html(url)
@@ -248,8 +248,8 @@ print(f'\\nOpenGraph score: {score}')
 ```bash
 # Compare OG vs Schema.org detection
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import detect_all_frameworks, OpenGraphProfile, SchemaOrgProfile
+from quarry.http import get_html
+from quarry.framework_profiles import detect_all_frameworks, OpenGraphProfile, SchemaOrgProfile
 
 url = 'https://www.nytimes.com/2024/01/15/world/example.html'  # Use actual URL
 html = get_html(url)
@@ -297,8 +297,8 @@ print(f'Has microdata: {has_microdata}')
 ```bash
 # Test Twitter Cards extraction
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import TwitterCardsProfile, detect_framework
+from quarry.http import get_html
+from quarry.framework_profiles import TwitterCardsProfile, detect_framework
 
 url = 'https://stackoverflow.com/questions/12345678/example'  # Use actual URL
 html = get_html(url)
@@ -341,8 +341,8 @@ print(f'\\nTwitter Cards score: {score}')
 ```bash
 # Compare OG and Twitter Cards
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import OpenGraphProfile, TwitterCardsProfile, detect_all_frameworks
+from quarry.http import get_html
+from quarry.framework_profiles import OpenGraphProfile, TwitterCardsProfile, detect_all_frameworks
 
 url = 'https://www.producthunt.com/posts/example-product'  # Use actual URL
 html = get_html(url)
@@ -396,8 +396,8 @@ if og_meta and twitter_meta:
 ```bash
 # Test WooCommerce detection
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import WooCommerceProfile, WordPressProfile, detect_all_frameworks
+from quarry.http import get_html
+from quarry.framework_profiles import WooCommerceProfile, WordPressProfile, detect_all_frameworks
 
 url = 'https://example-woocommerce-store.com/shop'  # Use actual URL
 html = get_html(url)
@@ -446,8 +446,8 @@ if 'add_to_cart' in html or 'add-to-cart' in html:
 ```bash
 # Test product page field mappings
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import WooCommerceProfile, detect_framework
+from quarry.http import get_html
+from quarry.framework_profiles import WooCommerceProfile, detect_framework
 
 url = 'https://example-store.com/product/example-product/'  # Use actual URL
 html = get_html(url)
@@ -499,7 +499,7 @@ for field, found in checks.items():
 
 ```bash
 # Run wizard interactively
-python -m foundry wizard
+python -m quarry wizard
 
 # When prompted:
 # 1. Enter URL: https://www.allrecipes.com/recipes/
@@ -528,7 +528,7 @@ python -m foundry wizard
 
 ```bash
 # Run wizard with WooCommerce site
-python -m foundry wizard
+python -m quarry wizard
 
 # When prompted:
 # 1. Enter URL: [WooCommerce store URL]
@@ -555,7 +555,7 @@ python -m foundry wizard
 
 ```bash
 # Run wizard with modern news site
-python -m foundry wizard
+python -m quarry wizard
 
 # When prompted:
 # 1. Enter URL: https://techcrunch.com/
@@ -614,7 +614,7 @@ EOF
 
 # Run job (modify URL to use real site)
 # Note: Remove --offline flag to scrape live sites
-python -m foundry run test-schema-recipes.yml
+python -m quarry run test-schema-recipes.yml
 
 # Check results
 head -20 results/schema-recipes.csv
@@ -658,7 +658,7 @@ sink:
 EOF
 
 # Run job (adjust URL to real WooCommerce store)
-python -m foundry run test-woocommerce-products.yml
+python -m quarry run test-woocommerce-products.yml
 
 # Check results
 cat results/woocommerce-products.csv | head -10
@@ -739,8 +739,8 @@ grep -c "PASSED" results/test-results.txt
 ```bash
 # Test with minimal HTML site
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import detect_framework, detect_all_frameworks
+from quarry.http import get_html
+from quarry.framework_profiles import detect_framework, detect_all_frameworks
 
 url = 'http://info.cern.ch/'  # Historic plain HTML site
 html = get_html(url)
@@ -772,7 +772,7 @@ for fw, score in all_fw[:5]:
 ```bash
 # Test with malformed HTML
 python -c "
-from foundry.framework_profiles import detect_framework
+from quarry.framework_profiles import detect_framework
 
 html = '<div itemscope><p itemprop=\"title\">Test</div>'  # Missing closing tags
 framework = detect_framework(html)
@@ -804,8 +804,8 @@ print('✅ No crash on malformed HTML')
 # Test with large page
 python -c "
 import time
-from foundry.http import get_html
-from foundry.framework_profiles import detect_framework
+from quarry.http import get_html
+from quarry.framework_profiles import detect_framework
 
 url = 'https://en.wikipedia.org/wiki/Python_(programming_language)'
 start = time.time()
@@ -862,8 +862,8 @@ EOF
 while IFS= read -r url; do
     echo "Testing: $url"
     python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import detect_all_frameworks
+from quarry.http import get_html
+from quarry.framework_profiles import detect_all_frameworks
 
 url = '$url'
 try:
@@ -910,8 +910,8 @@ done < test-urls.txt
 # (Copy the AngularProfile example and run it)
 
 # Verify type checking works
-cd /c/path/to/foundry
-mypy foundry/framework_profiles/ 2>&1 | tee logs/test-10.1-mypy.log
+cd /c/path/to/quarry
+mypy quarry/framework_profiles/ 2>&1 | tee logs/test-10.1-mypy.log
 
 # Should show 0 errors for framework_profiles
 ```
@@ -930,7 +930,7 @@ mypy foundry/framework_profiles/ 2>&1 | tee logs/test-10.1-mypy.log
 ```bash
 # Collect all results
 cat > results/TEST_REPORT.md << 'EOF'
-# Foundry User Testing Report
+# Quarry User Testing Report
 
 **Date:** $(date +%Y-%m-%d)
 **Tester:** [Your Name]
@@ -1007,7 +1007,7 @@ code results/TEST_REPORT.md  # Or use notepad, vim, etc.
 
 ```bash
 # Create archive
-cd /c/path/to/foundry/testing
+cd /c/path/to/quarry/testing
 tar -czf session-$(date +%Y%m%d)-complete.tar.gz session-$(date +%Y%m%d)/
 
 # List archive contents
@@ -1027,7 +1027,7 @@ python --version && python -m pytest -q
 
 ### Run Single Detection Test
 ```bash
-python -c "from foundry.framework_profiles import detect_framework; from foundry.http import get_html; html = get_html('URL'); print(detect_framework(html).name if detect_framework(html) else 'None')"
+python -c "from quarry.framework_profiles import detect_framework; from quarry.http import get_html; html = get_html('URL'); print(detect_framework(html).name if detect_framework(html) else 'None')"
 ```
 
 ### Run Performance Profiler
@@ -1037,7 +1037,7 @@ python scripts/profile_framework_detection.py
 
 ### Run Wizard
 ```bash
-python -m foundry wizard
+python -m quarry wizard
 ```
 
 ### Check Logs
@@ -1049,11 +1049,11 @@ tail -f logs/*.log
 
 ## Troubleshooting
 
-### Issue: "ModuleNotFoundError: No module named 'foundry'"
+### Issue: "ModuleNotFoundError: No module named 'quarry'"
 
 **Solution:**
 ```bash
-export PYTHONPATH=/c/path/to/foundry
+export PYTHONPATH=/c/path/to/quarry
 # Or use absolute import path
 ```
 
@@ -1065,7 +1065,7 @@ export PYTHONPATH=/c/path/to/foundry
 sleep 2
 
 # Or use offline mode for testing
-python -m foundry run job.yml --offline
+python -m quarry run job.yml --offline
 ```
 
 ### Issue: "BeautifulSoup parse warnings"
@@ -1089,7 +1089,7 @@ export PYTHONHTTPSVERIFY=0
 
 ### Issue: "PermissionError: robots.txt disallows fetching"
 
-**This is expected behavior** - Foundry respects robots.txt by default (ethical scraping).
+**This is expected behavior** - Quarry respects robots.txt by default (ethical scraping).
 
 **Known sites that block bots:**
 - ❌ Medium.com - blocks automated access via robots.txt
@@ -1101,17 +1101,17 @@ export PYTHONHTTPSVERIFY=0
 
 ```bash
 # Option 1: Use interactive mode (prompts when blocked)
-python -m foundry.cli run job.yml --live --interactive
+python -m quarry.cli run job.yml --live --interactive
 
 # Option 2: Bypass robots.txt for testing ONLY (not ethical for production)
-python -m foundry.cli run job.yml --live --ignore-robots
+python -m quarry.cli run job.yml --live --ignore-robots
 
 # Option 3: Use bot-friendly alternative sites (recommended)
 # See "Bot-Friendly Test Sites" section below
 
 # Option 4: Programmatic control with respect_robots parameter
 python -c "
-from foundry.http import get_html
+from quarry.http import get_html
 html = get_html('URL', respect_robots=False)  # Testing only!
 "
 
@@ -1120,7 +1120,7 @@ curl 'URL' -H 'User-Agent: Mozilla/5.0' > test.html
 python -c "
 from pathlib import Path
 html = Path('test.html').read_text()
-from foundry.framework_profiles import detect_all_frameworks
+from quarry.framework_profiles import detect_all_frameworks
 print(detect_all_frameworks(html)[:5])
 "
 ```
@@ -1144,7 +1144,7 @@ print(detect_all_frameworks(html)[:5])
 ```bash
 # Option 1: Increase timeout (default is 30s)
 python -c "
-from foundry.http import get_html
+from quarry.http import get_html
 html = get_html('URL', timeout=60)  # Wait up to 60 seconds
 "
 
@@ -1154,7 +1154,7 @@ html = get_html('URL', timeout=60)  # Wait up to 60 seconds
 
 # Option 3: Use session with cookies (may avoid bot detection)
 python -c "
-from foundry.http import get_html, create_session
+from quarry.http import get_html, create_session
 session = create_session()
 html = get_html('URL', session=session)
 "

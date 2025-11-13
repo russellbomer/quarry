@@ -1,6 +1,6 @@
 """Tests for framework confidence scoring system."""
 
-from foundry.framework_profiles import (
+from quarry.framework_profiles import (
     DjangoAdminProfile,
     DrupalViewsProfile,
     NextJSProfile,

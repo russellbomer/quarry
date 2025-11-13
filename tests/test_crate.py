@@ -7,8 +7,8 @@ import sqlite3
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from foundry.tools.crate.base import ExporterFactory
-from foundry.tools.crate.exporters import (
+from quarry.tools.ship.base import ExporterFactory
+from quarry.tools.ship.exporters import (
     CSVExporter,
     JSONExporter,
     SQLiteExporter,

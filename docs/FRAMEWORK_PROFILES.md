@@ -2,7 +2,7 @@
 
 ## Overview
 
-Foundry integrates **framework detection** directly into the item selector analysis phase. When the wizard analyzes HTML, it automatically detects the underlying CMS/framework (Drupal, WordPress, Bootstrap, etc.) and **prioritizes framework-typical patterns** in the 25-option selector table.
+Quarry integrates **framework detection** directly into the item selector analysis phase. When the wizard analyzes HTML, it automatically detects the underlying CMS/framework (Drupal, WordPress, Bootstrap, etc.) and **prioritizes framework-typical patterns** in the 25-option selector table.
 
 This makes the wizard significantly smarter by guiding users toward the correct selectors immediately, rather than burying them among generic patterns.
 
@@ -11,7 +11,7 @@ This makes the wizard significantly smarter by guiding users toward the correct 
 **New in v2.1**: Framework profiles are now **modular** - organized by category for maintainability.
 
 ```
-foundry/framework_profiles/
+quarry/framework_profiles/
 ├── __init__.py              # Registry & detection functions
 ├── base.py                  # Base class & utilities
 ├── cms/                     # Content Management Systems
@@ -201,7 +201,7 @@ The system now uses 4 confidence levels:
 
 ## Detection Strategies Module
 
-`foundry/detection_strategies.py` provides advanced field detection:
+`quarry/detection_strategies.py` provides advanced field detection:
 
 ### Table Header Detection (Very High Confidence)
 
@@ -424,7 +424,7 @@ User testing FDA URL:
 Returns the best matching framework profile if score >= 40 (threshold).
 
 ```python
-from foundry.framework_profiles import detect_framework
+from quarry.framework_profiles import detect_framework
 
 html = '<div class="views-row"><h2>Title</h2></div>'
 framework = detect_framework(html)
@@ -440,7 +440,7 @@ else:
 Returns list of all matching frameworks with scores, sorted highest first.
 
 ```python
-from foundry.framework_profiles import detect_all_frameworks
+from quarry.framework_profiles import detect_all_frameworks
 
 html = '''
 <article class="post card">
@@ -463,7 +463,7 @@ for framework, score in results:
 Each profile's detect method now returns an int score (0-100):
 
 ```python
-from foundry.framework_profiles import DjangoAdminProfile
+from quarry.framework_profiles import DjangoAdminProfile
 
 html = '<body class="django-admin"><table><tr class="field-name">...</tr></table></body>'
 score = DjangoAdminProfile.detect(html)
@@ -482,7 +482,7 @@ print(f"Django Admin confidence: {score}")  # Output: 60
 Many sites use multiple frameworks (e.g., WordPress + Bootstrap, Next.js + Tailwind):
 
 ```python
-from foundry.framework_profiles import detect_all_frameworks
+from quarry.framework_profiles import detect_all_frameworks
 
 html = """
 <div id="__next" class="flex gap-4 p-6 rounded-lg">
@@ -557,7 +557,7 @@ The primary framework (highest score) is used for selector hints, but you can le
 
 3. **Custom Framework Profiles**
    - Allow users to define their own framework profiles
-   - Save profile configs in `~/.foundry/frameworks/`
+   - Save profile configs in `~/.quarry/frameworks/`
    - Share profiles with community
 
 4. **Visual Framework Indicator**
@@ -579,7 +579,7 @@ wizard:
 
 ## Summary
 
-Framework integration makes Foundry's wizard dramatically more intelligent:
+Framework integration makes Quarry's wizard dramatically more intelligent:
 
 - ✅ **Automatic framework detection** (13 CMS/framework profiles)
 - ✅ **Pattern boosting** (framework patterns appear in top 3 options)

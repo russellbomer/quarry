@@ -2,20 +2,20 @@
 
 ## Summary
 
-Phase 4 of the Foundry suite is complete. The **Polish** tool transforms, cleans, validates, and enriches extracted data using a streaming JSONL → JSONL pipeline.
+Phase 4 of the Quarry suite is complete. The **Polish** tool transforms, cleans, validates, and enriches extracted data using a streaming JSONL → JSONL pipeline.
 
 ## What Was Built
 
 ### 1. Core Components
 
-- **`foundry/tools/polish/deduplicator.py`**: Deduplicator class
+- **`quarry/tools/polish/deduplicator.py`**: Deduplicator class
   - Hash-based duplicate detection
   - Full-record or field-based deduplication
   - "first" or "last" occurrence strategies
   - Ignores `_meta` fields in hashing
   - Statistics tracking
 
-- **`foundry/tools/polish/transformers.py`**: Field transformation functions
+- **`quarry/tools/polish/transformers.py`**: Field transformation functions
   - `normalize_text()`: Clean and normalize text
   - `clean_whitespace()`: Remove extra whitespace
   - `parse_date()`: Parse dates to ISO format (supports 10+ formats)
@@ -24,7 +24,7 @@ Phase 4 of the Foundry suite is complete. The **Polish** tool transforms, cleans
   - `truncate_text()`: Limit text length
   - `apply_transformation()`: Apply named transformations dynamically
 
-- **`foundry/tools/polish/validators.py`**: Validation system
+- **`quarry/tools/polish/validators.py`**: Validation system
   - `validate_email()`: Email format validation
   - `validate_url()`: URL format validation
   - `validate_date_format()`: Date pattern validation
@@ -34,7 +34,7 @@ Phase 4 of the Foundry suite is complete. The **Polish** tool transforms, cleans
   - `validate_record()`: Comprehensive record validation
   - `ValidationError`: Structured error reporting
 
-- **`foundry/tools/polish/processor.py`**: PolishProcessor class
+- **`quarry/tools/polish/processor.py`**: PolishProcessor class
   - Streaming JSONL processing
   - Transformation pipeline orchestration
   - Deduplication integration
@@ -42,7 +42,7 @@ Phase 4 of the Foundry suite is complete. The **Polish** tool transforms, cleans
   - Custom filter functions
   - Comprehensive statistics tracking
 
-- **`foundry/tools/polish/cli.py`**: Click-based CLI
+- **`quarry/tools/polish/cli.py`**: Click-based CLI
   - `polish` command with options:
     - `--dedupe/--no-dedupe`: Toggle deduplication
     - `--dedupe-keys`: Specify fields for deduplication (repeatable)
@@ -98,9 +98,9 @@ Created comprehensive test suite (`tests/test_polish.py`):
 
 ### 4. Integration
 
-- Integrated into `foundry/foundry.py` main CLI
-- Works seamlessly with Forge output
-- Complete pipeline: Probe → Blueprint → Forge → Polish
+- Integrated into `quarry/quarry.py` main CLI
+- Works seamlessly with Excavate output
+- Complete pipeline: Scout → Survey → Excavate → Polish
 
 ## Usage Examples
 
@@ -108,29 +108,29 @@ Created comprehensive test suite (`tests/test_polish.py`):
 
 ```bash
 # Remove duplicates (full record)
-foundry polish data.jsonl --dedupe --output clean.jsonl
+quarry polish data.jsonl --dedupe --output clean.jsonl
 
 # Deduplicate by specific fields
-foundry polish data.jsonl --dedupe --dedupe-keys title --dedupe-keys url
+quarry polish data.jsonl --dedupe --dedupe-keys title --dedupe-keys url
 
 # Keep last occurrence instead of first
-foundry polish data.jsonl --dedupe --dedupe-strategy last
+quarry polish data.jsonl --dedupe --dedupe-strategy last
 ```
 
 ### Field Transformations
 
 ```bash
 # Extract domain from URLs
-foundry polish data.jsonl --transform url:extract_domain
+quarry polish data.jsonl --transform url:extract_domain
 
 # Multiple transformations
-foundry polish data.jsonl \
+quarry polish data.jsonl \
   --transform url:extract_domain \
   --transform description:clean_whitespace \
   --transform description:remove_html_tags
 
 # Chain transformations on same field
-foundry polish data.jsonl \
+quarry polish data.jsonl \
   --transform text:remove_html_tags \
   --transform text:clean_whitespace \
   --transform text:normalize_text
@@ -140,7 +140,7 @@ foundry polish data.jsonl \
 
 ```bash
 # Dedupe + transform + stats
-foundry polish data.jsonl \
+quarry polish data.jsonl \
   --dedupe --dedupe-keys title \
   --transform url:extract_domain \
   --transform description:clean_whitespace \
@@ -161,7 +161,7 @@ foundry polish data.jsonl \
 
 ## Example Workflow
 
-### Input Data (Forge output)
+### Input Data (Excavate output)
 ```jsonl
 {"title": "  Item 1  ", "url": "https://www.example.com/page", "description": "  <p>HTML content</p>  ", "_meta": {...}}
 {"title": "Item 2", "url": "https://another.com/page", "description": "Normal text", "_meta": {...}}
@@ -170,7 +170,7 @@ foundry polish data.jsonl \
 
 ### Command
 ```bash
-foundry polish data.jsonl \
+quarry polish data.jsonl \
   --dedupe --dedupe-keys title url \
   --transform title:clean_whitespace \
   --transform url:extract_domain \
@@ -199,29 +199,29 @@ foundry polish data.jsonl \
 | Phase | Tool | Status |
 |-------|------|--------|
 | 0 | Foundation | ✅ Complete (117 tests) |
-| 1 | **Probe** | ✅ Complete (6 tests) |
-| 2 | **Blueprint** | ✅ Complete (15 tests) |
-| 3 | **Forge** | ✅ Complete (14 tests) |
+| 1 | **Scout** | ✅ Complete (6 tests) |
+| 2 | **Survey** | ✅ Complete (15 tests) |
+| 3 | **Excavate** | ✅ Complete (14 tests) |
 | 4 | **Polish** | ✅ Complete (26 tests) |
-| 5 | Crate | ⏳ Next |
+| 5 | Ship | ⏳ Next |
 
 ## Data Flow
 
 ```
-HTML → Probe → analysis.json
+HTML → Scout → analysis.json
          ↓
-    Blueprint → schema.yml
+    Survey → schema.yml
          ↓
-      Forge → data.jsonl (raw extraction)
+      Excavate → data.jsonl (raw extraction)
          ↓
      Polish → clean_data.jsonl (cleaned & deduplicated)
          ↓
-      Crate → destinations (CSV/DB/API) [Phase 5]
+      Ship → destinations (CSV/DB/API) [Phase 5]
 ```
 
 ## Next Steps
 
-**Phase 5: Crate Tool** (Export destinations)
+**Phase 5: Ship Tool** (Export destinations)
 - CSV export
 - Database export (PostgreSQL, MySQL, SQLite)
 - API export (REST, GraphQL)
@@ -230,16 +230,16 @@ HTML → Probe → analysis.json
 ## Files Created
 
 **Created**:
-- `foundry/tools/polish/deduplicator.py` (115 LOC)
-- `foundry/tools/polish/transformers.py` (210 LOC)
-- `foundry/tools/polish/validators.py` (220 LOC)
-- `foundry/tools/polish/processor.py` (155 LOC)
-- `foundry/tools/polish/cli.py` (125 LOC)
-- `foundry/tools/polish/__init__.py` (20 LOC)
+- `quarry/tools/polish/deduplicator.py` (115 LOC)
+- `quarry/tools/polish/transformers.py` (210 LOC)
+- `quarry/tools/polish/validators.py` (220 LOC)
+- `quarry/tools/polish/processor.py` (155 LOC)
+- `quarry/tools/polish/cli.py` (125 LOC)
+- `quarry/tools/polish/__init__.py` (20 LOC)
 - `tests/test_polish.py` (390 LOC)
 
 **Modified**:
-- `foundry/foundry.py` (integrated polish command)
+- `quarry/quarry.py` (integrated polish command)
 
 ## Statistics
 
@@ -250,18 +250,18 @@ HTML → Probe → analysis.json
 
 ## Validated Workflows
 
-✅ **Forge → Polish Pipeline**
+✅ **Excavate → Polish Pipeline**
 ```bash
 # Extract data
-foundry forge schema.yml --file page.html --output raw.jsonl
+quarry excavate schema.yml --file page.html --output raw.jsonl
 
 # Clean and deduplicate
-foundry polish raw.jsonl --dedupe --transform url:extract_domain --output clean.jsonl
+quarry polish raw.jsonl --dedupe --transform url:extract_domain --output clean.jsonl
 ```
 
 ✅ **Multiple Transformations**
 ```bash
-foundry polish data.jsonl \
+quarry polish data.jsonl \
   --transform description:remove_html_tags \
   --transform description:clean_whitespace \
   --output clean.jsonl
@@ -270,10 +270,10 @@ foundry polish data.jsonl \
 ✅ **Deduplication Strategies**
 ```bash
 # Keep first occurrence
-foundry polish data.jsonl --dedupe --dedupe-keys title
+quarry polish data.jsonl --dedupe --dedupe-keys title
 
 # Keep last occurrence
-foundry polish data.jsonl --dedupe --dedupe-strategy last
+quarry polish data.jsonl --dedupe --dedupe-strategy last
 ```
 
 ## Performance Notes
@@ -287,4 +287,4 @@ foundry polish data.jsonl --dedupe --dedupe-strategy last
 
 **Phase 4 Complete!** 🎉
 
-Polish tool is production-ready with deduplication, transformations, validation, and comprehensive testing. The Foundry suite now has 4/5 tools operational!
+Polish tool is production-ready with deduplication, transformations, validation, and comprehensive testing. The Quarry suite now has 4/5 tools operational!

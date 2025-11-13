@@ -1,6 +1,6 @@
 # Finding API Endpoints for Infinite Scroll Sites
 
-Many modern websites use infinite scroll to load content dynamically via JavaScript. Instead of adding complex browser automation to Foundry, you can often find and scrape the underlying API endpoints directly.
+Many modern websites use infinite scroll to load content dynamically via JavaScript. Instead of adding complex browser automation to Quarry, you can often find and scrape the underlying API endpoints directly.
 
 ## Why This Approach?
 
@@ -8,7 +8,7 @@ Many modern websites use infinite scroll to load content dynamically via JavaScr
 - **Cleaner data**: JSON responses are easier to parse than HTML
 - **More reliable**: No need to handle JavaScript execution
 - **Lower resource usage**: No browser overhead
-- **Stays within Foundry's design**: Lightweight HTTP + parsing
+- **Stays within Quarry's design**: Lightweight HTTP + parsing
 
 ## Step-by-Step Guide
 
@@ -186,7 +186,7 @@ GET /api/feed?cursor=abc123&count=20
 - `count` or `limit` parameter
 - May require authentication
 
-## Creating a Foundry Schema for API Data
+## Creating a Quarry Schema for API Data
 
 ### For JSON APIs (Most Common)
 
@@ -223,7 +223,7 @@ Some APIs return HTML snippets instead of JSON:
 }
 ```
 
-You can still use Foundry:
+You can still use Quarry:
 1. Extract the HTML from the JSON response
 2. Parse with BeautifulSoup as normal
 3. Loop through pages by incrementing offset/page

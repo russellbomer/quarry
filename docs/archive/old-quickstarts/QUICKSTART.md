@@ -1,4 +1,4 @@
-# Foundry Quickstart Guide
+# Quarry Quickstart Guide
 
 **Get scraping in 2 minutes.**
 
@@ -14,7 +14,7 @@ pip install -e .
 Run a pre-built example offline (no network, uses cached HTML):
 
 ```bash
-python -m foundry.cli run examples/jobs/fda.yml --offline
+python -m quarry.cli run examples/jobs/fda.yml --offline
 ```
 
 **Output:**
@@ -45,12 +45,12 @@ print(f'\nTotal records: {len(df)}')
 "
 
 # Check job state
-python -m foundry.cli state
+python -m quarry.cli state
 ```
 
 ## Available Parsers (Connectors)
 
-Foundry has 3 built-in parsers:
+Quarry has 3 built-in parsers:
 
 | Parser | Description | Example URL |
 |--------|-------------|-------------|
@@ -63,7 +63,7 @@ Foundry has 3 built-in parsers:
 Interactive wizard guides you:
 
 ```bash
-python -m foundry.cli init
+python -m quarry.cli init
 ```
 
 **Prompts you for:**
@@ -112,7 +112,7 @@ policy:
 - Can't scrape new URLs
 
 ```bash
-python -m foundry.cli run jobs/my_job.yml --offline
+python -m quarry.cli run jobs/my_job.yml --offline
 ```
 
 **Live (careful, hits real URLs):**
@@ -122,7 +122,7 @@ python -m foundry.cli run jobs/my_job.yml --offline
 - Requires allowlist in job YAML
 
 ```bash
-python -m foundry.cli run jobs/my_job.yml --live
+python -m quarry.cli run jobs/my_job.yml --live
 ```
 
 ## Advanced Features
@@ -151,9 +151,9 @@ Check what's cached:
 
 ```bash
 python -c "
-from foundry.robots import RobotsCache
+from quarry.robots import RobotsCache
 cache = RobotsCache()
-is_ok = cache.is_allowed('https://github.com/explore', 'Foundry')
+is_ok = cache.is_allowed('https://github.com/explore', 'Quarry')
 delay = cache.get_crawl_delay('github.com')
 print(f'Allowed: {is_ok}, Crawl-delay: {delay}s')
 "
@@ -164,7 +164,7 @@ print(f'Allowed: {is_ok}, Crawl-delay: {delay}s')
 Automatically logs failures to SQLite:
 
 ```python
-from foundry import get_failed_urls
+from quarry import get_failed_urls
 
 failures = get_failed_urls('my_job')
 for f in failures:
@@ -175,38 +175,38 @@ for f in failures:
 
 ```bash
 # Run one job offline
-python -m foundry.cli run jobs/fda.yml --offline
+python -m quarry.cli run jobs/fda.yml --offline
 
 # Run one job live (careful!)
-python -m foundry.cli run jobs/fda.yml --live --max-items 10
+python -m quarry.cli run jobs/fda.yml --live --max-items 10
 
 # Run all jobs in jobs/ directory
-python -m foundry.cli run-all --offline
+python -m quarry.cli run-all --offline
 
 # Create new job interactively
-python -m foundry.cli init
+python -m quarry.cli init
 
 # View job state
-python -m foundry.cli state
+python -m quarry.cli state
 
 # Batch scrape URL list
-python -m foundry.cli batch urls.txt output.jsonl --offline
+python -m quarry.cli batch urls.txt output.jsonl --offline
 ```
 
 ## Troubleshooting Commands
 
 ```bash
 # Check if a URL is allowed by robots.txt
-python -m foundry.cli check-robots https://github.com/explore
+python -m quarry.cli check-robots https://github.com/explore
 
 # Inspect a job without running it
-python -m foundry.cli inspect jobs/my_job.yml
+python -m quarry.cli inspect jobs/my_job.yml
 
 # View failed URLs for a job
-python -m foundry.cli failed fda_recalls
+python -m quarry.cli failed fda_recalls
 
 # Show cache information
-python -m foundry.cli cache-info
+python -m quarry.cli cache-info
 ```
 
 ## Output Formats
@@ -240,7 +240,7 @@ sink:
 
 3. **Explore the Python API:**
    ```python
-   from foundry import run_job
+   from quarry import run_job
    
    job_dict = {...}  # Load from YAML
    df, next_cursor = run_job(job_dict, offline=True)
@@ -256,7 +256,7 @@ sink:
 
 **Something not working?**
 
-1. Check job state: `python -m foundry.cli state`
+1. Check job state: `python -m quarry.cli state`
 2. Look at test examples: `tests/test_run_job.py`
 3. Verify YAML syntax: `cat jobs/yourjob.yml`
 4. Run in offline mode first to test logic

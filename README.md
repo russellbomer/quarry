@@ -1,4 +1,4 @@
-# Foundry
+# Quarry
 
 **A modern, production-ready Python toolkit for web data extraction, transformation, and export.**
 
@@ -10,10 +10,10 @@
 
 ## 🌟 Overview
 
-Foundry combines **two powerful toolkits** for different web scraping workflows:
+Quarry combines **two powerful toolkits** for different web scraping workflows:
 
 1. **🧙 Legacy Wizard Suite** - YAML-driven declarative scraping with interactive job generation
-2. **⚒️ Foundry Suite** - Modern command-line tools for extraction pipelines
+2. **⚒️ Quarry Suite** - Modern command-line tools for extraction pipelines
 
 Choose the approach that fits your workflow, or use both together!
 
@@ -23,22 +23,22 @@ Choose the approach that fits your workflow, or use both together!
 
 ```bash
 # Clone and install
-git clone https://github.com/russellbomer/foundry.git
-cd foundry
+git clone https://github.com/russellbomer/quarry.git
+cd quarry
 pip install -r requirements.txt
 
 # Option 1: Use the Wizard (guided scraper creation)
-foundry init
+quarry init
 
-# Option 2: Use Foundry tools (command-line pipeline)
-foundry probe https://example.com
+# Option 2: Use Quarry tools (command-line pipeline)
+quarry scout https://example.com
 ```
 
 **Requirements**: Python 3.12+
 
 ---
 
-## ⚒️ Foundry Suite (v2.0)
+## ⚒️ Quarry Suite (v2.0)
 
 A complete toolkit for building extraction pipelines with **5 integrated tools**:
 
@@ -46,50 +46,50 @@ A complete toolkit for building extraction pipelines with **5 integrated tools**
 
 | Tool | Purpose | Usage |
 |------|---------|-------|
-| **📡 Probe** | Analyze HTML & detect patterns | `foundry probe <url\|file>` |
-| **📐 Blueprint** | Design extraction schemas | `foundry blueprint create schema.yml` |
-| **🔨 Forge** | Execute data extraction | `foundry forge schema.yml --url <url>` |
-| **✨ Polish** | Transform & clean data | `foundry polish data.jsonl --dedupe` |
-| **📦 Crate** | Export to multiple formats | `foundry crate data.jsonl output.csv` |
+| **📡 Scout** | Analyze HTML & detect patterns | `quarry scout <url\|file>` |
+| **📐 Survey** | Design extraction schemas | `quarry survey create schema.yml` |
+| **🔨 Excavate** | Execute data extraction | `quarry excavate schema.yml --url <url>` |
+| **✨ Polish** | Transform & clean data | `quarry polish data.jsonl --dedupe` |
+| **📦 Ship** | Export to multiple formats | `quarry ship data.jsonl output.csv` |
 
 ### Complete Pipeline Example
 
 ```bash
 # 1. Analyze HTML structure
-foundry probe https://example.com/blog --format json --output analysis.json
+quarry scout https://example.com/blog --format json --output analysis.json
 
 # 2. Design extraction schema
-foundry blueprint create blog_schema.yml
+quarry survey create blog_schema.yml
 # (Interactive editor opens - define containers & fields)
 
 # 3. Preview extraction
-foundry blueprint preview blog_schema.yml --file page.html
+quarry survey preview blog_schema.yml --file page.html
 
 # 4. Execute extraction
-foundry forge blog_schema.yml --url https://example.com/blog --output raw.jsonl
+quarry excavate blog_schema.yml --url https://example.com/blog --output raw.jsonl
 
 # 5. Clean & deduplicate
-foundry polish raw.jsonl --dedupe --dedupe-keys title --output clean.jsonl
+quarry polish raw.jsonl --dedupe --dedupe-keys title --output clean.jsonl
 
 # 6. Export to CSV
-foundry crate clean.jsonl blog_posts.csv
+quarry ship clean.jsonl blog_posts.csv
 ```
 
 ### Tool Features
 
-**🔍 Probe** - HTML Analysis
+**🔍 Scout** - HTML Analysis
 - Framework detection (React, WordPress, Django, etc.)
 - Container pattern finding with confidence scores
 - Field suggestions based on HTML structure
 - JSON/terminal output formats
 
-**📐 Blueprint** - Schema Designer  
+**📐 Survey** - Schema Designer  
 - Interactive schema builder with validation
 - Live extraction preview
 - Pydantic-based schema validation
 - Pagination configuration support
 
-**🔨 Forge** - Extraction Engine
+**🔨 Excavate** - Extraction Engine
 - Schema-driven extraction
 - Built-in pagination support
 - Rate limiting & robots.txt compliance
@@ -101,13 +101,13 @@ foundry crate clean.jsonl blog_posts.csv
 - Validation rules (email, URL, date, pattern matching)
 - Field filtering & statistics
 
-**📦 Crate** - Data Export
+**📦 Ship** - Data Export
 - CSV, JSON, SQLite exports
 - Format auto-detection
 - Custom table names & schema options
 - PostgreSQL/MySQL ready (coming soon)
 
-**📚 Detailed Foundry Documentation**: [docs/FOUNDRY_COMPLETE.md](docs/FOUNDRY_COMPLETE.md)
+**📚 Detailed Quarry Documentation**: [docs/QUARRY_COMPLETE.md](docs/QUARRY_COMPLETE.md)
 
 ---
 
@@ -151,7 +151,7 @@ Interactive, YAML-driven scraping with zero coding required.
 
 ```bash
 # Launch interactive wizard
-foundry init
+quarry init
 
 # The wizard will:
 # 1. Ask for URL to scrape
@@ -161,10 +161,10 @@ foundry init
 # 5. Generate YAML job file
 
 # Run generated job
-foundry run jobs/my_job.yml --live --max-items 20
+quarry run jobs/my_job.yml --live --max-items 20
 
 # View state & results
-foundry state
+quarry state
 ```
 
 ### Example Job File
@@ -204,7 +204,7 @@ sink:
 ```
 Total Tests:        197 (100% passing)
 Total Code:         ~5,000 LOC
-Tools:              5 Foundry + Legacy CLI
+Tools:              5 Quarry + Legacy CLI
 Export Formats:     CSV, JSON, SQLite, Parquet
 Frameworks:         9 detected
 Python Version:     3.12+
@@ -215,32 +215,32 @@ Python Version:     3.12+
 ## 📁 Project Structure
 
 ```
-foundry/
-├── foundry/              # Main package
+quarry/
+├── quarry/              # Main package
 │   ├── lib/                  # Foundation library
 │   │   ├── http.py          # HTTP client with rate limiting
 │   │   ├── ratelimit.py     # Token bucket rate limiter
 │   │   ├── selectors.py     # CSS selector utilities
 │   │   ├── robots.py        # Robots.txt parser
 │   │   └── policy.py        # Policy enforcement
-│   ├── tools/                # Foundry suite
-│   │   ├── probe/           # HTML analysis tool
-│   │   ├── blueprint/       # Schema designer
-│   │   ├── forge/           # Extraction engine
+│   ├── tools/                # Quarry suite
+│   │   ├── scout/           # HTML analysis tool
+│   │   ├── survey/       # Schema designer
+│   │   ├── excavate/           # Extraction engine
 │   │   ├── polish/          # Data transformation
-│   │   └── crate/           # Data export
+│   │   └── ship/           # Data export
 │   ├── framework_profiles/   # Framework detection
 │   ├── connectors/          # Data source connectors
 │   ├── transforms/          # Data transformations
 │   ├── sinks/               # Output writers
-│   ├── foundry.py           # Foundry CLI
+│   ├── quarry.py           # Quarry CLI
 │   ├── cli.py               # Legacy CLI
 │   ├── wizard.py            # Interactive wizard
 │   ├── inspector.py         # HTML analysis
 │   └── core.py              # Job runner
 ├── tests/                    # Test suite (197 tests)
 ├── docs/                     # Documentation
-│   ├── FOUNDRY_COMPLETE.md  # Foundry guide
+│   ├── QUARRY_COMPLETE.md  # Quarry guide
 │   ├── WIZARD.md            # Wizard guide
 │   ├── FRAMEWORK_PROFILES.md
 │   ├── ARCHITECTURE_V2.md
@@ -255,7 +255,7 @@ foundry/
 ## 📖 Documentation
 
 ### User Guides
-- **[Foundry Suite](docs/FOUNDRY.md)** - Complete guide to the 5 extraction tools
+- **[Quarry Suite](docs/QUARRY.md)** - Complete guide to the 5 extraction tools
 - **[Framework Profiles](docs/FRAMEWORK_PROFILES.md)** - Understanding framework detection
 - **[Infinite Scroll API Guide](docs/INFINITE_SCROLL_API_GUIDE.md)** - Finding API endpoints for dynamic sites
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
@@ -280,7 +280,7 @@ foundry/
 pytest
 
 # Run with coverage
-pytest --cov=foundry --cov-report=html
+pytest --cov=quarry --cov-report=html
 
 # Run specific tool tests
 pytest tests/test_probe.py -v
@@ -341,7 +341,7 @@ class AngularProfile(FrameworkProfile):
 ## 🗺️ Roadmap
 
 ### Completed ✅
-- Foundry Suite (5 tools)
+- Quarry Suite (5 tools)
 - Multi-framework detection
 - 197 comprehensive tests
 - Complete pipeline support
@@ -381,6 +381,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 - **Documentation**: [docs/](docs/)
 - **Examples**: [examples/jobs/](examples/jobs/)
-- **Issues**: [GitHub Issues](https://github.com/russellbomer/foundry/issues)
+- **Issues**: [GitHub Issues](https://github.com/russellbomer/quarry/issues)
 
 **Happy Scraping! 🎉**

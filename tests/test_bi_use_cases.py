@@ -6,8 +6,8 @@ These tests validate that Foundry can handle common BI extraction needs.
 """
 
 import pytest
-from foundry.tools.probe.analyzer import analyze_page
-from foundry.lib.http import get_html
+from quarry.tools.scout.analyzer import analyze_page
+from quarry.lib.http import get_html
 
 
 class TestFinancialDataExtraction:

@@ -1,13 +1,13 @@
 """Tests for new framework profiles (Django, Next.js, React, Vue.js)."""
 
-from foundry.framework_profiles import (
+from quarry.framework_profiles import (
     DjangoAdminProfile,
     NextJSProfile,
     ReactComponentProfile,
     VueJSProfile,
     detect_framework,
 )
-from foundry.inspector import find_item_selector
+from quarry.inspector import find_item_selector
 
 
 def test_django_admin_detection():

@@ -1,9 +1,9 @@
-# Foundry Wizard Development Log
+# Quarry Wizard Development Log
 
 ## Session: November 9, 2025
 
 ### Project Goal
-Build an interactive CLI wizard (`python -m foundry.wizard`) that enables non-programmers to create web scrapers by:
+Build an interactive CLI wizard (`python -m quarry.wizard`) that enables non-programmers to create web scrapers by:
 1. Entering a URL
 2. Automatically analyzing HTML structure
 3. Suggesting CSS selectors for repeated items
@@ -57,7 +57,7 @@ Relative time        -> small                 ✓ Detects "2 hours ago"
 ### Current State
 
 **What Works**:
-✅ Wizard executes: `python -m foundry.wizard`
+✅ Wizard executes: `python -m quarry.wizard`
 ✅ Interactive prompts with helpful explanatory text
 ✅ HTML analysis and selector generation for most sites
 ✅ Handles tricky structures (vote buttons, breadcrumbs, unicode, emoji)
@@ -95,7 +95,7 @@ Relative time        -> small                 ✓ Detects "2 hours ago"
 **Debugging Approach**:
 ```python
 # Test selector detection on real FDA HTML
-from foundry.inspector import find_item_selector
+from quarry.inspector import find_item_selector
 # Get real HTML (may need to bypass protection)
 candidates = find_item_selector(html, min_items=3)
 # Check if correct selector is in candidates
@@ -113,10 +113,10 @@ candidates = find_item_selector(html, min_items=3)
 ### Technical Architecture
 
 **Key Files Modified**:
-- `foundry/wizard.py`: Main wizard flow, prompts, YAML generation
-- `foundry/inspector.py`: HTML analysis, selector generation, preview extraction
-- `foundry/http.py`: HTTP client with browser headers, retry logic, rate limiting
-- `foundry/connectors/generic.py`: YAML-driven connector using CSS selectors
+- `quarry/wizard.py`: Main wizard flow, prompts, YAML generation
+- `quarry/inspector.py`: HTML analysis, selector generation, preview extraction
+- `quarry/http.py`: HTTP client with browser headers, retry logic, rate limiting
+- `quarry/connectors/generic.py`: YAML-driven connector using CSS selectors
 
 **Dependencies**:
 - `questionary`: Enhanced interactive prompts (with fallback to input())
@@ -159,13 +159,13 @@ MAX_RPS = 2.0
 
 ```bash
 # Run wizard
-python -m foundry.wizard
+python -m quarry.wizard
 
 # Run specific tests
 python -m pytest tests/test_wizard_smoke.py -v
 
 # Test selector detection on fixture
-python -c "from foundry.inspector import find_item_selector; import open; html = open('tests/fixtures/fda_list.html').read(); print(find_item_selector(html))"
+python -c "from quarry.inspector import find_item_selector; import open; html = open('tests/fixtures/fda_list.html').read(); print(find_item_selector(html))"
 
 # Format code
 python -m ruff format .

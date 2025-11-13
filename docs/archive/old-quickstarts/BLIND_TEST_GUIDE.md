@@ -37,16 +37,16 @@ venv\Scripts\Activate.ps1
 ```bash
 # 1. Verify you're in the right directory
 pwd
-# Linux/Mac: /path/to/foundry
-# Windows Git Bash: /c/Projects/foundry
-# Windows WSL: /mnt/c/Projects/foundry
+# Linux/Mac: /path/to/quarry
+# Windows Git Bash: /c/Projects/quarry
+# Windows WSL: /mnt/c/Projects/quarry
 
 # 2. Verify all tests pass
 python -m pytest -q
 # Should show: 32 passed
 
 # 3. Verify no lint errors on critical files
-python -m ruff check foundry/wizard.py foundry/inspector.py foundry/connectors/generic.py
+python -m ruff check quarry/wizard.py quarry/inspector.py quarry/connectors/generic.py
 # Should show: All checks passed! (or just warnings, not errors)
 ```
 
@@ -57,7 +57,7 @@ python -m ruff check foundry/wizard.py foundry/inspector.py foundry/connectors/g
 ### Step 1: Start the wizard
 
 ```bash
-python -m foundry.wizard
+python -m quarry.wizard
 ```
 
 **Expected**: You see a welcome banner and template selection.
@@ -306,7 +306,7 @@ selectors:
 
 ```bash
 python -c "
-from foundry.core import load_yaml, run_job
+from quarry.core import load_yaml, run_job
 spec = load_yaml('jobs/hackernews_stories.yml')
 df, cursor = run_job(spec, max_items=5, offline=False)
 print(f'\n✓ Collected {len(df)} items\n')
@@ -340,7 +340,7 @@ print(df[['title', 'url']].to_string())
 ### Quick Test
 
 ```bash
-python -m foundry.wizard
+python -m quarry.wizard
 ```
 
 **Settings**:
@@ -360,7 +360,7 @@ python -m foundry.wizard
 **Then test**:
 ```bash
 python -c "
-from foundry.core import load_yaml, run_job
+from quarry.core import load_yaml, run_job
 spec = load_yaml('jobs/producthunt_test.yml')
 df, cursor = run_job(spec, max_items=3, offline=False)
 print(f'\n✓ Collected {len(df)} items\n')
@@ -380,7 +380,7 @@ print(df[['title', 'url']].to_string())
 
 ```bash
 python -c "
-from foundry.policy import check_robots
+from quarry.policy import check_robots
 url = 'https://www.reddit.com/'
 allowed = check_robots(url)
 print(f'Reddit scraping allowed: {allowed}')
@@ -393,7 +393,7 @@ print(f'Reddit scraping allowed: {allowed}')
 
 ```bash
 python -c "
-from foundry.policy import check_robots
+from quarry.policy import check_robots
 url = 'https://github.com/'
 allowed = check_robots(url)
 print(f'GitHub scraping allowed: {allowed}')
@@ -411,7 +411,7 @@ print(f'GitHub scraping allowed: {allowed}')
 ### Test 1: Bad URL
 
 ```bash
-python -m foundry.wizard
+python -m quarry.wizard
 ```
 
 **Enter**:
@@ -427,7 +427,7 @@ python -m foundry.wizard
 Some sites with heavy JavaScript won't work:
 
 ```bash
-python -m foundry.wizard
+python -m quarry.wizard
 ```
 
 **Enter**:
@@ -481,13 +481,13 @@ The test scripts now automatically detect Windows and use UTF-8 encoding.
 pip install -r requirements.txt
 ```
 
-### Problem: "No module named foundry"
+### Problem: "No module named quarry"
 
 **Fix**:
 ```bash
 # Make sure you're in the right directory
-cd /workspaces/foundry
-pwd  # Should show /workspaces/foundry
+cd /workspaces/quarry
+pwd  # Should show /workspaces/quarry
 ```
 
 ### Problem: Wizard extracts wrong data
@@ -511,13 +511,13 @@ df, cursor = run_job(spec, max_items=5, offline=False)
 ```bash
 # Check if the site blocks you
 python -c "
-from foundry.policy import check_robots
+from quarry.policy import check_robots
 print(check_robots('https://YOURSITE.com/'))
 "
 
 # Try fetching manually
 python -c "
-from foundry.http import get_html
+from quarry.http import get_html
 html = get_html('https://YOURSITE.com/')
 print(f'Fetched {len(html)} bytes')
 print(html[:500])  # First 500 chars
@@ -555,13 +555,13 @@ After running all tests, you should have:
 
 ```bash
 # Start wizard
-python -m foundry.wizard
+python -m quarry.wizard
 
 # Test a job
-python -c "from foundry.core import load_yaml, run_job; spec = load_yaml('jobs/JOBNAME.yml'); df, _ = run_job(spec, max_items=5, offline=False); print(df)"
+python -c "from quarry.core import load_yaml, run_job; spec = load_yaml('jobs/JOBNAME.yml'); df, _ = run_job(spec, max_items=5, offline=False); print(df)"
 
 # Check robots.txt
-python -c "from foundry.policy import check_robots; print(check_robots('https://example.com/'))"
+python -c "from quarry.policy import check_robots; print(check_robots('https://example.com/'))"
 
 # Run all tests
 python -m pytest -q
@@ -576,7 +576,7 @@ If `python -c "..."` doesn't work, create a file `test_job.py`:
 
 ```python
 # test_job.py
-from foundry.core import load_yaml, run_job
+from quarry.core import load_yaml, run_job
 
 spec = load_yaml('jobs/JOBNAME.yml')
 df, _ = run_job(spec, max_items=5, offline=False)

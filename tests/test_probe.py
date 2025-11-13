@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from foundry.tools.probe.analyzer import analyze_page
-from foundry.tools.probe.reporter import format_as_json, format_as_terminal
+from quarry.tools.scout.analyzer import analyze_page
+from quarry.tools.scout.reporter import format_as_json, format_as_terminal
 
 
 class TestProbeAnalyzer:

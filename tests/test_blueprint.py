@@ -4,14 +4,14 @@ from pathlib import Path
 
 import pytest
 
-from foundry.lib.schemas import (
+from quarry.lib.schemas import (
     ExtractionSchema,
     FieldSchema,
     load_schema,
     save_schema,
     validate_schema_dict,
 )
-from foundry.tools.blueprint.preview import preview_extraction, format_preview
+from quarry.tools.survey.preview import preview_extraction, format_preview
 
 
 class TestSchemaModel:

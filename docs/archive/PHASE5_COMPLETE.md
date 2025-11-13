@@ -1,21 +1,21 @@
-# Phase 5 Complete: Crate Export Tool ✅
+# Phase 5 Complete: Ship Export Tool ✅
 
-## 🎉 FOUNDRY SUITE COMPLETE! 🎉
+## 🎉 QUARRY SUITE COMPLETE! 🎉
 
-Phase 5 is complete. The **Crate** export tool enables data export to multiple destinations (CSV, JSON, SQLite, and extensible to PostgreSQL/MySQL). **All 5 tools are now operational!**
+Phase 5 is complete. The **Ship** export tool enables data export to multiple destinations (CSV, JSON, SQLite, and extensible to PostgreSQL/MySQL). **All 5 tools are now operational!**
 
 ## What Was Built
 
 ### 1. Core Components
 
-- **`foundry/tools/crate/base.py`**: Base exporter framework
+- **`quarry/tools/ship/base.py`**: Base exporter framework
   - Abstract `Exporter` class with export() interface
   - `_read_jsonl()` helper for streaming JSONL input
   - Statistics tracking (read/written/failed)
   - `ExporterFactory` for automatic format detection
   - Support for file extensions and connection strings
 
-- **`foundry/tools/crate/exporters.py`**: Concrete exporters
+- **`quarry/tools/ship/exporters.py`**: Concrete exporters
   - **CSVExporter**: CSV file export
     - Automatic header detection from all records
     - Custom delimiter support
@@ -38,8 +38,8 @@ Phase 5 is complete. The **Crate** export tool enables data export to multiple d
   - **PostgreSQLExporter**: Placeholder for future
   - **MySQLExporter**: Placeholder for future
 
-- **`foundry/tools/crate/cli.py`**: Click-based CLI
-  - `crate` command with options:
+- **`quarry/tools/ship/cli.py`**: Click-based CLI
+  - `ship` command with options:
     - `--table`: Database table name
     - `--if-exists`: replace/append/fail mode
     - `--delimiter`: CSV delimiter
@@ -92,8 +92,8 @@ Created comprehensive test suite (`tests/test_crate.py`):
 
 ### 4. Integration
 
-- Integrated into `foundry/foundry.py` main CLI
-- Complete pipeline: **Probe → Blueprint → Forge → Polish → Crate**
+- Integrated into `quarry/quarry.py` main CLI
+- Complete pipeline: **Scout → Survey → Excavate → Polish → Ship**
 - All 5 tools operational!
 
 ## Usage Examples
@@ -102,59 +102,59 @@ Created comprehensive test suite (`tests/test_crate.py`):
 
 ```bash
 # Basic CSV export
-foundry crate data.jsonl output.csv
+quarry ship data.jsonl output.csv
 
 # Custom delimiter
-foundry crate data.jsonl output.csv --delimiter "|"
+quarry ship data.jsonl output.csv --delimiter "|"
 
 # Include metadata
-foundry crate data.jsonl output.csv --include-meta
+quarry ship data.jsonl output.csv --include-meta
 ```
 
 ### JSON Export
 
 ```bash
 # Compact JSON
-foundry crate data.jsonl output.json
+quarry ship data.jsonl output.json
 
 # Pretty-printed JSON
-foundry crate data.jsonl output.json --pretty
+quarry ship data.jsonl output.json --pretty
 
 # Exclude metadata
-foundry crate data.jsonl output.json --exclude-meta
+quarry ship data.jsonl output.json --exclude-meta
 ```
 
 ### SQLite Export
 
 ```bash
 # Basic database export
-foundry crate data.jsonl output.db
+quarry ship data.jsonl output.db
 
 # Custom table name
-foundry crate data.jsonl output.db --table products
+quarry ship data.jsonl output.db --table products
 
 # Append to existing table
-foundry crate data.jsonl output.db --if-exists append
+quarry ship data.jsonl output.db --if-exists append
 
 # Using connection string
-foundry crate data.jsonl sqlite://data.db --table records
+quarry ship data.jsonl sqlite://data.db --table records
 ```
 
 ## Complete Pipeline Example
 
 ```bash
-# 1. Extract data with Forge
-foundry forge schema.yml --url https://example.com --output raw.jsonl
+# 1. Extract data with Excavate
+quarry excavate schema.yml --url https://example.com --output raw.jsonl
 
 # 2. Clean and deduplicate with Polish
-foundry polish raw.jsonl --dedupe --dedupe-keys title url \
+quarry polish raw.jsonl --dedupe --dedupe-keys title url \
   --transform url:extract_domain \
   --output clean.jsonl
 
-# 3. Export with Crate
-foundry crate clean.jsonl output.csv --stats
-foundry crate clean.jsonl output.db --table records
-foundry crate clean.jsonl output.json --pretty
+# 3. Export with Ship
+quarry ship clean.jsonl output.csv --stats
+quarry ship clean.jsonl output.db --table records
+quarry ship clean.jsonl output.json --pretty
 ```
 
 ## Supported Export Formats
@@ -186,16 +186,16 @@ class ExporterFactory:
         # ...
 ```
 
-## Complete Foundry Suite Status
+## Complete Quarry Suite Status
 
 | Phase | Tool | Status | Tests | Features |
 |-------|------|--------|-------|----------|
 | 0 | Foundation | ✅ Complete | 117 | lib/ structure, imports |
-| 1 | **Probe** | ✅ Complete | 6 | HTML analysis, framework detection |
-| 2 | **Blueprint** | ✅ Complete | 15 | Schema designer, validation |
-| 3 | **Forge** | ✅ Complete | 14 | Extraction engine, pagination |
+| 1 | **Scout** | ✅ Complete | 6 | HTML analysis, framework detection |
+| 2 | **Survey** | ✅ Complete | 15 | Schema designer, validation |
+| 3 | **Excavate** | ✅ Complete | 14 | Extraction engine, pagination |
 | 4 | **Polish** | ✅ Complete | 26 | Transformations, deduplication |
-| 5 | **Crate** | ✅ Complete | 19 | Export to CSV/JSON/SQLite |
+| 5 | **Ship** | ✅ Complete | 19 | Export to CSV/JSON/SQLite |
 | **TOTAL** | **ALL 5 TOOLS** | ✅ **COMPLETE** | **197** | **Full pipeline operational** |
 
 ## Data Flow
@@ -203,19 +203,19 @@ class ExporterFactory:
 ```
 Raw HTML
    ↓
-📡 Probe
+📡 Scout
    ↓ analysis.json (framework detection, suggestions)
    ↓
-📐 Blueprint
+📐 Survey
    ↓ schema.yml (extraction schema)
    ↓
-🔨 Forge
+🔨 Excavate
    ↓ data.jsonl (raw extracted data)
    ↓
 ✨ Polish
    ↓ clean.jsonl (deduplicated & transformed)
    ↓
-📦 Crate
+📦 Ship
    ↓
 ┌─────────────┬─────────────┬─────────────┐
 │   CSV       │    JSON     │   SQLite    │
@@ -225,7 +225,7 @@ Raw HTML
 
 ## Example Workflow Output
 
-### Input (Forge output)
+### Input (Excavate output)
 ```jsonl
 {"title": "Item 1", "url": "https://example.com/1", "_meta": {...}}
 {"title": "Item 2", "url": "https://example.com/2", "_meta": {...}}
@@ -271,14 +271,14 @@ Item 2  | example.com
 ## Files Created
 
 **Created**:
-- `foundry/tools/crate/base.py` (120 LOC)
-- `foundry/tools/crate/exporters.py` (250 LOC)
-- `foundry/tools/crate/cli.py` (105 LOC)
-- `foundry/tools/crate/__init__.py` (15 LOC)
+- `quarry/tools/ship/base.py` (120 LOC)
+- `quarry/tools/ship/exporters.py` (250 LOC)
+- `quarry/tools/ship/cli.py` (105 LOC)
+- `quarry/tools/ship/__init__.py` (15 LOC)
 - `tests/test_crate.py` (410 LOC)
 
 **Modified**:
-- `foundry/foundry.py` (integrated crate command)
+- `quarry/quarry.py` (integrated ship command)
 
 ## Statistics
 
@@ -291,28 +291,28 @@ Item 2  | example.com
 
 ✅ **Complete Pipeline**
 ```bash
-foundry forge schema.yml --file page.html --output raw.jsonl
-foundry polish raw.jsonl --dedupe --output clean.jsonl
-foundry crate clean.jsonl output.csv
+quarry excavate schema.yml --file page.html --output raw.jsonl
+quarry polish raw.jsonl --dedupe --output clean.jsonl
+quarry ship clean.jsonl output.csv
 ```
 
 ✅ **Multi-Format Export**
 ```bash
-foundry crate data.jsonl output.csv
-foundry crate data.jsonl output.json --pretty
-foundry crate data.jsonl output.db --table records
+quarry ship data.jsonl output.csv
+quarry ship data.jsonl output.json --pretty
+quarry ship data.jsonl output.db --table records
 ```
 
 ✅ **Database Operations**
 ```bash
 # Replace table
-foundry crate data.jsonl output.db --if-exists replace
+quarry ship data.jsonl output.db --if-exists replace
 
 # Append to table
-foundry crate data.jsonl output.db --if-exists append
+quarry ship data.jsonl output.db --if-exists append
 
 # Fail if exists
-foundry crate data.jsonl output.db --if-exists fail
+quarry ship data.jsonl output.db --if-exists fail
 ```
 
 ## Extensibility
@@ -336,12 +336,12 @@ def create(destination: str, **options) -> Exporter:
 
 ## 🎉 PROJECT COMPLETE! 🎉
 
-**Foundry Web Data Extraction Suite** is fully operational with all 5 tools:
-- 📡 **Probe**: Analyze HTML
-- 📐 **Blueprint**: Design schemas
-- 🔨 **Forge**: Extract data
+**Quarry Web Data Extraction Suite** is fully operational with all 5 tools:
+- 📡 **Scout**: Analyze HTML
+- 📐 **Survey**: Design schemas
+- 🔨 **Excavate**: Extract data
 - ✨ **Polish**: Transform & clean
-- 📦 **Crate**: Export anywhere
+- 📦 **Ship**: Export anywhere
 
 **197 tests passing | 5 tools | End-to-end pipeline working**
 

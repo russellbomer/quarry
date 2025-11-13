@@ -1,4 +1,4 @@
-# Foundry 2.0: Architecture & Implementation Plan
+# Quarry 2.0: Architecture & Implementation Plan
 
 **Date:** November 11, 2025  
 **Version:** 2.0 (Refactor from v1.0)  
@@ -9,7 +9,7 @@
 ## Table of Contents
 
 1. [Product Vision](#product-vision)
-2. [Architecture Blueprint](#architecture-blueprint)
+2. [Architecture Survey](#architecture-survey)
 3. [Integration Map](#integration-map)
 4. [Implementation Roadmap](#implementation-roadmap)
 5. [Success Criteria](#success-criteria)
@@ -20,7 +20,7 @@
 
 ### Overview
 
-Foundry 2.0 is a **suite of 5 integrated CLI tools** for intelligent web scraping. Each tool:
+Quarry 2.0 is a **suite of 5 integrated CLI tools** for intelligent web scraping. Each tool:
 - **Works independently** (useful on its own)
 - **Chains together** (seamless data flow)
 - **Implies workflow** (numbered sequence: inspect → design → fetch → transform → export)
@@ -62,12 +62,12 @@ URLs + schema → [fetch] → raw.jsonl
 
 ---
 
-## Architecture Blueprint
+## Architecture Survey
 
 ### Directory Structure (Target)
 
 ```
-foundry/
+quarry/
 ├── lib/                          # Shared libraries (extracted from current code)
 │   ├── __init__.py
 │   ├── http.py                   # HTTP client with retry/rate limiting (KEEP AS-IS)
@@ -325,10 +325,10 @@ foundry/
 - **Why replace:** Wrong command structure (flat commands, not subcommands)
 - **Current:**
   ```bash
-  foundry init
-  foundry run job.yml
-  foundry state
-  foundry batch urls.txt
+  quarry init
+  quarry run job.yml
+  quarry state
+  quarry batch urls.txt
   ```
 - **New:**
   ```bash
@@ -399,9 +399,9 @@ foundry/
 
 2. Move core libraries (no code changes)
    ```bash
-   mv foundry/http.py lib/http.py
-   mv foundry/ratelimit.py lib/ratelimit.py
-   mv foundry/selector_builder.py lib/selectors.py
+   mv quarry/http.py lib/http.py
+   mv quarry/ratelimit.py lib/ratelimit.py
+   mv quarry/selector_builder.py lib/selectors.py
    ```
 
 3. Create lib/__init__.py with clean exports
@@ -413,8 +413,8 @@ foundry/
 
 4. Update imports in framework_profiles/ to use lib/
    ```python
-   # Old: from foundry.http import get_html
-   # New: from foundry.lib import get_html
+   # Old: from quarry.http import get_html
+   # New: from quarry.lib import get_html
    ```
 
 5. Create new CLI skeleton
@@ -454,7 +454,7 @@ foundry/
 1. **Extract inspector logic** (2 days)
    ```bash
    # Create analyzer.py from inspector.py
-   cp foundry/inspector.py tools/inspect/analyzer.py
+   cp quarry/inspector.py tools/inspect/analyzer.py
    ```
    
    Refactor analyzer.py:
@@ -911,7 +911,7 @@ scrape fetch schemas/hackernews.yml --urls urls.txt --output hn.jsonl
 1. **Extend file sinks** (2 days)
    ```python
    # tools/export/sinks/files.py
-   # Move from foundry/sinks/
+   # Move from quarry/sinks/
    # Add: ExcelSink, SQLiteSink
    ```
 
@@ -1031,7 +1031,7 @@ scrape fetch schemas/hackernews.yml --urls urls.txt --output hn.jsonl
 
 ### MVP Definition
 
-Foundry 2.0 MVP is complete when:
+Quarry 2.0 MVP is complete when:
 
 1. **All 5 tools work independently**
    - `scrape inspect URL` → analysis.json

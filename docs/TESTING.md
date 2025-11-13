@@ -1,8 +1,8 @@
-# Foundry Testing Guide
+# Quarry Testing Guide
 
 ## Blind Testing: Wizard + Bot Evasion
 
-This guide helps you test Foundry's wizard and bot evasion features on real websites.
+This guide helps you test Quarry's wizard and bot evasion features on real websites.
 
 ---
 
@@ -10,8 +10,8 @@ This guide helps you test Foundry's wizard and bot evasion features on real webs
 
 ### 1. Run the Wizard
 ```bash
-cd /workspaces/foundry
-python -m foundry wizard
+cd /workspaces/quarry
+python -m quarry wizard
 ```
 
 ### 2. Provide Your URL
@@ -42,13 +42,13 @@ cat jobs/your_job_name.yml
 
 ### 1. Run Wizard (as above)
 ```bash
-python -m foundry wizard
+python -m quarry wizard
 ```
 
 ### 2. Run the Generated Job
 ```bash
 # Use the job name you created
-python -m foundry run jobs/your_job_name.yml
+python -m quarry run jobs/your_job_name.yml
 ```
 
 ### 3. Check Output
@@ -73,7 +73,7 @@ cat data/cache/custom/LATEST.csv
 ```bash
 # Should work
 python -c "
-from foundry.http import get_html
+from quarry.http import get_html
 html = get_html('YOUR_URL_HERE', respect_robots=True)
 print(f'Success! Fetched {len(html)} bytes')
 "
@@ -83,7 +83,7 @@ print(f'Success! Fetched {len(html)} bytes')
 ```bash
 # Should raise PermissionError
 python -c "
-from foundry.http import get_html
+from quarry.http import get_html
 try:
     html = get_html('YOUR_DISALLOWED_URL', respect_robots=True)
 except PermissionError as e:
@@ -102,7 +102,7 @@ curl YOUR_DOMAIN/robots.txt
 ```bash
 # Run multiple times, check for different UAs
 python -c "
-from foundry.http import _build_browser_headers
+from quarry.http import _build_browser_headers
 for i in range(5):
     headers = _build_browser_headers('https://example.com')
     print(f'{i+1}. {headers[\"User-Agent\"][:50]}...')
@@ -116,7 +116,7 @@ Expected output: Different browsers (Chrome, Firefox, Safari, Edge)
 ```bash
 # Verify cookies are maintained
 python -c "
-from foundry.http import create_session, get_html
+from quarry.http import create_session, get_html
 
 session = create_session()
 print('Cookies before:', session.cookies)
@@ -136,7 +136,7 @@ print('Cookies after request 2:', session.cookies)
 ```bash
 # Run multiple times to see variation
 python -c "
-from foundry.http import _build_browser_headers
+from quarry.http import _build_browser_headers
 for i in range(10):
     headers = _build_browser_headers('https://example.com')
     referer = headers.get('Referer', 'None')
@@ -269,7 +269,7 @@ When testing reveals problems, note:
 
 ```bash
 # 1. Start wizard
-python -m foundry wizard
+python -m quarry wizard
 
 # Provide URL when prompted:
 # https://news.ycombinator.com
@@ -283,7 +283,7 @@ python -m foundry wizard
 # - Generates jobs/hackernews.yml
 
 # 2. Run the job
-python -m foundry run jobs/hackernews.yml
+python -m quarry run jobs/hackernews.yml
 
 # 3. Check output
 python -c "

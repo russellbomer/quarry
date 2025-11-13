@@ -3,7 +3,7 @@
 import pytest
 from bs4 import BeautifulSoup
 
-from foundry.lib.selectors import (
+from quarry.lib.selectors import (
     build_robust_selector,
     _looks_dynamic,
     _get_stable_marker,

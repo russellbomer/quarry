@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from foundry.connectors import custom
-from foundry.core import load_yaml, run_job
-from foundry.state import load_cursor
+from quarry.connectors import custom
+from quarry.core import load_yaml, run_job
+from quarry.state import load_cursor
 
 # Test constants to avoid magic numbers
 MIN_EXPECTED_RECORDS = 3

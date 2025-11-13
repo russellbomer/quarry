@@ -8,7 +8,7 @@
 - Added wizard guardrails: listing vs detail URL validation and auto-include entry netloc in allowlist
 - Moved example jobs (fda*.yml, nws*.yml) from jobs/ to examples/jobs/
 - Updated all tests: FDA URL parsing assertions, deprecation warnings, custom connector behavior
-- Fixed core registry imports: transforms now correctly import from foundry.transforms.*
+- Fixed core registry imports: transforms now correctly import from quarry.transforms.*
 - Updated fixtures: fda_list.html with realistic synthetic URLs (2 relative + 1 absolute)
 
 ## Decisions (source of truth)
@@ -22,14 +22,14 @@
 ## Next 3 actions (bulletproof handoff)
 1. Stage B: Implement generic selector connector (YAML-only fallback path)
 2. Stage C: Implement wizard connector generator (guided codegen for new connectors)
-3. Stage D: Add CLI `foundry demo` command with bundled fixtures
+3. Stage D: Add CLI `quarry demo` command with bundled fixtures
 
 ## Quick runbook
 ```powershell
 python -m ruff format .
 python -m ruff check .
 pytest -q
-python -m foundry.cli init
-python -m foundry.cli run .\jobs\custom_*.yml --offline true --max-items 10
+python -m quarry.cli init
+python -m quarry.cli run .\jobs\custom_*.yml --offline true --max-items 10
 python -c "import glob,pandas as pd; p=sorted(glob.glob(r'data\cache\**\*.parquet', recursive=True))[-1]; print(p); df=pd.read_parquet(p); print(df[['id','title','url']].head(5).to_string(index=False))"
 ```

@@ -1,43 +1,43 @@
-# Package Refactor: ScrapeSuite → Foundry
+# Package Refactor: ScrapeSuite → Quarry
 
 **Date**: November 13, 2025  
-**Branch**: `refactor-to-foundry`  
+**Branch**: `refactor-to-quarry`  
 **Backup**: `pre-refactor-backup`  
 **Version**: 2.0.0
 
 ## 🎯 Objectives Completed
 
-1. ✅ **Package Rename**: `scrapesuite` → `foundry`
+1. ✅ **Package Rename**: `scrapesuite` → `quarry`
 2. ✅ **Clean Command Interface**: New entry points for all tools
-3. ✅ **Interactive Mode**: Forge now defaults to prompts (preserves CLI flags)
-4. ✅ **Backward Compatibility**: `python -m foundry.foundry` still works
+3. ✅ **Interactive Mode**: Excavate now defaults to prompts (preserves CLI flags)
+4. ✅ **Backward Compatibility**: `python -m quarry.quarry` still works
 5. ✅ **Complete Documentation Update**: All docs, examples, tests updated
 
 ## 📦 Package Changes
 
 ### New Package Structure
 ```
-foundry/                  (was: scrapesuite/)
+quarry/                  (was: scrapesuite/)
 ├── __init__.py
-├── foundry.py           (main CLI dispatcher)
+├── quarry.py           (main CLI dispatcher)
 ├── tools/
-│   ├── probe/
-│   ├── blueprint/
-│   ├── forge/           ← Interactive mode added
+│   ├── scout/
+│   ├── survey/
+│   ├── excavate/           ← Interactive mode added
 │   ├── polish/
-│   └── crate/
+│   └── ship/
 └── lib/
 ```
 
 ### Entry Points (pyproject.toml)
 ```toml
 [project.scripts]
-foundry = "foundry.foundry:main"
-foundry.probe = "foundry.tools.probe.cli:probe"
-foundry.blueprint = "foundry.tools.blueprint.cli:blueprint"
-foundry.forge = "foundry.tools.forge.cli:forge"
-foundry.polish = "foundry.tools.polish.cli:polish"
-foundry.crate = "foundry.tools.crate.cli:crate"
+quarry = "quarry.quarry:main"
+quarry.scout = "quarry.tools.scout.cli:scout"
+quarry.survey = "quarry.tools.survey.cli:survey"
+quarry.excavate = "quarry.tools.excavate.cli:excavate"
+quarry.polish = "quarry.tools.polish.cli:polish"
+quarry.ship = "quarry.tools.ship.cli:ship"
 ```
 
 ## 🔄 Command Migration
@@ -46,21 +46,21 @@ foundry.crate = "foundry.tools.crate.cli:crate"
 
 | Old | New (Recommended) | Alt (Backward Compatible) |
 |-----|-------------------|---------------------------|
-| `python -m scrapesuite.foundry probe <url>` | `foundry probe <url>` | `python -m foundry.foundry probe <url>` |
-| `python -m scrapesuite.foundry forge schema.yml` | `foundry forge` (interactive) or `foundry.forge schema.yml` | `python -m foundry.foundry forge` |
-| `python -m scrapesuite.foundry blueprint create` | `foundry blueprint create` | `python -m foundry.foundry blueprint create` |
-| `python -m scrapesuite.cli run job.yml` | `foundry run job.yml` | `python -m foundry.cli run job.yml` |
+| `python -m scrapesuite.quarry scout <url>` | `quarry scout <url>` | `python -m quarry.quarry scout <url>` |
+| `python -m scrapesuite.quarry excavate schema.yml` | `quarry excavate` (interactive) or `quarry.excavate schema.yml` | `python -m quarry.quarry excavate` |
+| `python -m scrapesuite.quarry survey create` | `quarry survey create` | `python -m quarry.quarry survey create` |
+| `python -m scrapesuite.cli run job.yml` | `quarry run job.yml` | `python -m quarry.cli run job.yml` |
 
 ### Interactive Mode Example
 
 **Old (CLI flags required)**:
 ```bash
-python -m scrapesuite.foundry forge schema.yml --file page.html --output data.jsonl
+python -m scrapesuite.quarry excavate schema.yml --file page.html --output data.jsonl
 ```
 
 **New (Interactive - default)**:
 ```bash
-foundry forge
+quarry excavate
 # → Schema file: schema.yml
 # → Data source: Local file
 # → HTML file path: page.html
@@ -69,7 +69,7 @@ foundry forge
 
 **New (Batch mode - for automation)**:
 ```bash
-foundry.forge schema.yml --file page.html --output data.jsonl --batch
+quarry.excavate schema.yml --file page.html --output data.jsonl --batch
 ```
 
 ## 🔧 Breaking Changes
@@ -78,11 +78,11 @@ foundry.forge schema.yml --file page.html --output data.jsonl --batch
 ```python
 # OLD
 from scrapesuite.lib.http import get_html
-from scrapesuite.tools.probe.analyzer import analyze_page
+from scrapesuite.tools.scout.analyzer import analyze_page
 
 # NEW
-from foundry.lib.http import get_html
-from foundry.tools.probe.analyzer import analyze_page
+from quarry.lib.http import get_html
+from quarry.tools.scout.analyzer import analyze_page
 ```
 
 ### Environment Variables
@@ -92,14 +92,14 @@ export SCRAPESUITE_IGNORE_ROBOTS=1
 export SCRAPESUITE_INTERACTIVE=1
 
 # NEW
-export FOUNDRY_IGNORE_ROBOTS=1
-export FOUNDRY_INTERACTIVE=1
+export QUARRY_IGNORE_ROBOTS=1
+export QUARRY_INTERACTIVE=1
 ```
 
 ### User-Agent String
 ```python
 # OLD: "ScrapeSuite/1.0 (+https://github.com/russellbomer/scrapesuite)"
-# NEW: "Foundry/2.0 (+https://github.com/russellbomer/foundry)"
+# NEW: "Quarry/2.0 (+https://github.com/russellbomer/quarry)"
 ```
 
 ## �� Files Changed
@@ -114,21 +114,21 @@ export FOUNDRY_INTERACTIVE=1
 ### Installation Test
 ```bash
 $ pip install -e .
-Successfully installed foundry-2.0.0
+Successfully installed quarry-2.0.0
 
-$ which foundry
-/home/codespace/.python/current/bin/foundry
+$ which quarry
+/home/codespace/.python/current/bin/quarry
 
-$ foundry --version
-foundry, version 2.0.0
+$ quarry --version
+quarry, version 2.0.0
 ```
 
 ### Command Tests
 ```bash
-$ foundry --help  # ✅ Works
-$ foundry probe --help  # ✅ Works
-$ foundry.forge --help  # ✅ Works
-$ python -m foundry.foundry --help  # ✅ Backward compatible
+$ quarry --help  # ✅ Works
+$ quarry scout --help  # ✅ Works
+$ quarry.excavate --help  # ✅ Works
+$ python -m quarry.quarry --help  # ✅ Backward compatible
 ```
 
 ### Test Suite
@@ -140,10 +140,10 @@ $ python -m pytest tests/test_probe.py -v
 ## 🚀 Next Steps (Future Enhancements)
 
 ### Not Implemented (Deferred)
-- [ ] Interactive mode for probe (could add --interactive flag)
-- [ ] Interactive mode for blueprint (already partly interactive)
+- [ ] Interactive mode for scout (could add --interactive flag)
+- [ ] Interactive mode for survey (already partly interactive)
 - [ ] Interactive mode for polish (transform selection)
-- [ ] Interactive mode for crate (destination selection)
+- [ ] Interactive mode for ship (destination selection)
 
 ### Recommended
 These tools work well with CLI flags and can add interactive modes later if needed.
@@ -151,36 +151,36 @@ These tools work well with CLI flags and can add interactive modes later if need
 ## 📝 Migration Guide for Users
 
 ### Quick Migration (5 minutes)
-1. Update imports: Find/replace `scrapesuite` → `foundry`
-2. Update env vars: `SCRAPESUITE_*` → `FOUNDRY_*`
-3. Update commands: Use `foundry` instead of `python -m scrapesuite.foundry`
+1. Update imports: Find/replace `scrapesuite` → `quarry`
+2. Update env vars: `SCRAPESUITE_*` → `QUARRY_*`
+3. Update commands: Use `quarry` instead of `python -m scrapesuite.quarry`
 4. Reinstall: `pip install -e .`
 
 ### For Library Users
 ```python
 # Update your code
-import foundry  # was: import scrapesuite
-from foundry.lib.http import get_html  # was: from scrapesuite.lib.http
+import quarry  # was: import scrapesuite
+from quarry.lib.http import get_html  # was: from scrapesuite.lib.http
 ```
 
 ### For CLI Users
 ```bash
 # Old workflow
-python -m scrapesuite.foundry probe https://example.com
-python -m scrapesuite.foundry forge schema.yml --url https://example.com
+python -m scrapesuite.quarry scout https://example.com
+python -m scrapesuite.quarry excavate schema.yml --url https://example.com
 
 # New workflow (shorter!)
-foundry probe https://example.com
-foundry forge  # Interactive prompts guide you
+quarry scout https://example.com
+quarry excavate  # Interactive prompts guide you
 ```
 
 ## 🎯 Key Benefits
 
-1. **Cleaner branding**: Single name (Foundry) instead of ScrapeSuite/Foundry mix
+1. **Cleaner branding**: Single name (Quarry) instead of ScrapeSuite/Quarry mix
 2. **Better UX**: Interactive mode makes it accessible to non-coders
-3. **Professional**: Clean entry points (`foundry` vs `python -m ...`)
+3. **Professional**: Clean entry points (`quarry` vs `python -m ...`)
 4. **Backward compatible**: Old commands still work for power users
-5. **Memorable**: `foundry.forge`, `foundry.probe` pattern is intuitive
+5. **Memorable**: `quarry.excavate`, `quarry.scout` pattern is intuitive
 
 ## �� Rollback Plan
 

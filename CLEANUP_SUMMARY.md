@@ -36,7 +36,7 @@ Comprehensive codebase cleanup to remove redundancy, consolidate documentation, 
 
 ### New README.md
 Created comprehensive README covering:
-- Both Foundry Suite and Legacy Wizard
+- Both Quarry Suite and Legacy Wizard
 - Quick start guides for each
 - Tool features and usage examples
 - Project statistics (197 tests, 5000 LOC)
@@ -55,7 +55,7 @@ Moved to `docs/archive/`:
 **Root**: `README.md`, `CONTRIBUTING.md`
 
 **docs/**: 
-- `FOUNDRY_COMPLETE.md` - Primary Foundry guide
+- `QUARRY_COMPLETE.md` - Primary Quarry guide
 - `WIZARD.md` - Legacy wizard guide
 - `ARCHITECTURE_V2.md` - System architecture
 - `FRAMEWORK_PROFILES.md` - Framework detection
@@ -109,17 +109,17 @@ scrapesuite/
 │   │   ├── selectors.py    # CSS selector utilities
 │   │   ├── robots.py       # Robots.txt parser (moved here)
 │   │   └── policy.py       # Policy enforcement (moved here)
-│   ├── tools/              # Foundry suite
-│   │   ├── probe/          # HTML analysis
-│   │   ├── blueprint/      # Schema designer
-│   │   ├── forge/          # Data extraction
+│   ├── tools/              # Quarry suite
+│   │   ├── scout/          # HTML analysis
+│   │   ├── survey/      # Schema designer
+│   │   ├── excavate/          # Data extraction
 │   │   ├── polish/         # Data transformation
-│   │   └── crate/          # Data export
+│   │   └── ship/          # Data export
 │   ├── framework_profiles/ # Framework detection
 │   ├── connectors/         # Data sources
 │   ├── transforms/         # Data transforms
 │   ├── sinks/              # Output writers
-│   ├── foundry.py          # Foundry CLI
+│   ├── quarry.py          # Quarry CLI
 │   ├── cli.py              # Legacy CLI
 │   ├── wizard.py           # Interactive wizard
 │   ├── inspector.py        # HTML analysis
@@ -127,7 +127,7 @@ scrapesuite/
 │
 ├── tests/                   # 197 tests
 ├── docs/                    # Documentation
-│   ├── FOUNDRY_COMPLETE.md
+│   ├── QUARRY_COMPLETE.md
 │   ├── WIZARD.md
 │   ├── ARCHITECTURE_V2.md
 │   └── archive/            # Old docs

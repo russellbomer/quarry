@@ -1,28 +1,28 @@
-# Phase 3 Complete: Forge Extraction Engine ✅
+# Phase 3 Complete: Excavate Extraction Engine ✅
 
 ## Summary
 
-Phase 3 of the Foundry suite is complete. The **Forge** tool is a schema-driven extraction engine that pulls structured data from web pages using Blueprint schemas.
+Phase 3 of the Quarry suite is complete. The **Excavate** tool is a schema-driven extraction engine that pulls structured data from web pages using Survey schemas.
 
 ## What Was Built
 
 ### 1. Core Components
 
-- **`foundry/tools/forge/parser.py`**: SchemaParser class
+- **`quarry/tools/excavate/parser.py`**: SchemaParser class
   - Parses HTML using ExtractionSchema definitions
   - Extracts text or attribute values
   - Handles required/optional fields
   - Validates item completeness
 
-- **`foundry/tools/forge/executor.py`**: ForgeExecutor class
+- **`quarry/tools/excavate/executor.py`**: ExcavateExecutor class
   - Orchestrates extraction workflow
   - Supports pagination (URL-based)
   - Handles metadata injection
   - Exports to JSONL format
   - Tracks extraction statistics
 
-- **`foundry/tools/forge/cli.py`**: Click-based CLI
-  - `forge` command with options:
+- **`quarry/tools/excavate/cli.py`**: Click-based CLI
+  - `excavate` command with options:
     - `--url`: Extract from URL
     - `--file`: Extract from local HTML file
     - `--output`: Output file path
@@ -33,7 +33,7 @@ Phase 3 of the Foundry suite is complete. The **Forge** tool is a schema-driven 
 ### 2. Features
 
 ✅ **Schema-Driven Extraction**
-- Uses Blueprint schemas (YAML format)
+- Uses Survey schemas (YAML format)
 - Supports CSS selectors
 - Handles text and attribute extraction
 - Required/optional field validation
@@ -76,8 +76,8 @@ Created comprehensive test suite (`tests/test_forge.py`):
 
 ### 4. Integration
 
-- Integrated into `foundry/foundry.py` main CLI
-- Works with Blueprint schemas
+- Integrated into `quarry/quarry.py` main CLI
+- Works with Survey schemas
 - Ready for Polish (Phase 4) integration
 
 ## Usage Examples
@@ -86,27 +86,27 @@ Created comprehensive test suite (`tests/test_forge.py`):
 
 ```bash
 # From URL (with schema URL)
-foundry forge schema.yml
+quarry excavate schema.yml
 
 # From specific URL
-foundry forge schema.yml --url https://example.com
+quarry excavate schema.yml --url https://example.com
 
 # From local file
-foundry forge schema.yml --file page.html --output data.jsonl
+quarry excavate schema.yml --file page.html --output data.jsonl
 ```
 
 ### With Pagination
 
 ```bash
 # Extract up to 10 pages
-foundry forge schema.yml --max-pages 10
+quarry excavate schema.yml --max-pages 10
 ```
 
 ### Without Metadata
 
 ```bash
 # Clean output without _meta field
-foundry forge schema.yml --no-metadata
+quarry excavate schema.yml --no-metadata
 ```
 
 ## Example Schema
@@ -150,24 +150,24 @@ pagination:
 | Phase | Tool | Status |
 |-------|------|--------|
 | 0 | Foundation | ✅ Complete (117 tests) |
-| 1 | **Probe** | ✅ Complete (6 tests) |
-| 2 | **Blueprint** | ✅ Complete (15 tests) |
-| 3 | **Forge** | ✅ Complete (14 tests) |
+| 1 | **Scout** | ✅ Complete (6 tests) |
+| 2 | **Survey** | ✅ Complete (15 tests) |
+| 3 | **Excavate** | ✅ Complete (14 tests) |
 | 4 | Polish | ⏳ Next |
-| 5 | Crate | ⏳ Pending |
+| 5 | Ship | ⏳ Pending |
 
 ## Data Flow
 
 ```
-HTML → Probe → analysis.json
+HTML → Scout → analysis.json
          ↓
-    Blueprint → schema.yml
+    Survey → schema.yml
          ↓
-      Forge → data.jsonl
+      Excavate → data.jsonl
          ↓
      Polish → clean_data.jsonl
          ↓
-      Crate → destinations (CSV/DB/API)
+      Ship → destinations (CSV/DB/API)
 ```
 
 ## Next Steps
@@ -182,14 +182,14 @@ HTML → Probe → analysis.json
 ## Files Changed
 
 **Created**:
-- `foundry/tools/forge/parser.py` (150 LOC)
-- `foundry/tools/forge/executor.py` (120 LOC)
-- `foundry/tools/forge/cli.py` (140 LOC)
-- `foundry/tools/forge/__init__.py` (10 LOC)
+- `quarry/tools/excavate/parser.py` (150 LOC)
+- `quarry/tools/excavate/executor.py` (120 LOC)
+- `quarry/tools/excavate/cli.py` (140 LOC)
+- `quarry/tools/excavate/__init__.py` (10 LOC)
 - `tests/test_forge.py` (390 LOC)
 
 **Modified**:
-- `foundry/foundry.py` (integrated forge command)
+- `quarry/quarry.py` (integrated excavate command)
 
 ## Statistics
 

@@ -385,4 +385,4 @@ examples/jobs/
 
 ---
 
-This would transform Foundry from a **framework for developers** into a **tool for users** who can scrape sites just by writing YAML configs!
+This would transform Quarry from a **framework for developers** into a **tool for users** who can scrape sites just by writing YAML configs!

@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "foundry"
+name = "quarry"
 version = "2.0.0"
 description = "An intuitive web scraping toolkit with intelligent templates and interactive workflows"
 requires-python = ">=3.11"
@@ -21,18 +21,18 @@ dependencies = [
 ]
 
 [project.scripts]
-foundry = "foundry.foundry:main"
-"foundry.probe" = "foundry.tools.probe.cli:probe"
-"foundry.blueprint" = "foundry.tools.blueprint.cli:blueprint"
-"foundry.forge" = "foundry.tools.forge.cli:forge"
-"foundry.polish" = "foundry.tools.polish.cli:polish"
-"foundry.crate" = "foundry.tools.crate.cli:crate"
+quarry = "quarry.quarry:main"
+"quarry.scout" = "quarry.tools.scout.cli:scout"
+"quarry.survey" = "quarry.tools.survey.cli:survey"
+"quarry.excavate" = "quarry.tools.excavate.cli:excavate"
+"quarry.polish" = "quarry.tools.polish.cli:polish"
+"quarry.ship" = "quarry.tools.ship.cli:ship"
 
 [tool.setuptools]
-packages = ["foundry"]
+packages = ["quarry"]
 
 [tool.setuptools.package-data]
-foundry = ["**/*.json", "**/*.yml", "**/*.yaml"]
+quarry = ["**/*.json", "**/*.yml", "**/*.yaml"]
 
 [tool.ruff]
 line-length = 100
@@ -57,11 +57,11 @@ strict_equality = true
 
 # Per-module options for gradual typing
 [[tool.mypy.overrides]]
-module = "foundry.framework_profiles.*"
+module = "quarry.framework_profiles.*"
 disallow_untyped_defs = true
 
 [[tool.mypy.overrides]]
-module = "foundry.http"
+module = "quarry.http"
 disallow_untyped_defs = true
 
 [[tool.mypy.overrides]]

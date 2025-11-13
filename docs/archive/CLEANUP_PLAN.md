@@ -1,4 +1,4 @@
-# Foundry Codebase Cleanup & Consolidation Plan
+# Quarry Codebase Cleanup & Consolidation Plan
 
 **Date**: November 10, 2025  
 **Branch**: chore/context-freeze  
@@ -75,10 +75,10 @@ YAML_SELECTORS_VISION.md        - Archive (vision doc, mostly implemented)
 ### C. Internal Directive Files
 
 **Current**: 4 .txt files in root with internal directives
-- `foundry_cleanup.txt`
-- `foundry_conscientious_prompt.txt`
-- `foundry_eod_directive.txt`
-- `foundry_master_directive.txt`
+- `quarry_cleanup.txt`
+- `quarry_conscientious_prompt.txt`
+- `quarry_eod_directive.txt`
+- `quarry_master_directive.txt`
 
 **Action**:
 1. Move to `.internal/` directory (git ignored)
@@ -124,7 +124,7 @@ YAML_SELECTORS_VISION.md        - Archive (vision doc, mostly implemented)
 
 **Action**:
 ```python
-foundry/framework_profiles/
+quarry/framework_profiles/
 ├── __init__.py          # Exports, detect_framework, detect_all_frameworks
 ├── base.py              # FrameworkProfile base class
 ├── cms/
@@ -173,7 +173,7 @@ foundry/framework_profiles/
 2. Add caching for repeated operations
 3. Split into modules:
    ```python
-   foundry/inspector/
+   quarry/inspector/
    ├── __init__.py
    ├── core.py           # Main inspection functions
    ├── strategies.py     # Detection strategies

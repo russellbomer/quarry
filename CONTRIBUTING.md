@@ -1,6 +1,6 @@
-# Contributing to Foundry
+# Contributing to Quarry
 
-Thank you for your interest in contributing to Foundry! This guide will help you add new framework profiles, fix bugs, and improve the codebase.
+Thank you for your interest in contributing to Quarry! This guide will help you add new framework profiles, fix bugs, and improve the codebase.
 
 ## Table of Contents
 
@@ -26,8 +26,8 @@ Thank you for your interest in contributing to Foundry! This guide will help you
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/foundry.git
-cd foundry
+git clone https://github.com/yourusername/quarry.git
+cd quarry
 
 # Install dependencies
 pip install -r requirements.txt
@@ -39,8 +39,8 @@ python -m pytest -q
 ### Repository Structure
 
 ```
-foundry/
-├── foundry/              # Main package
+quarry/
+├── quarry/              # Main package
 │   ├── cli.py               # Command-line interface
 │   ├── wizard.py            # Interactive wizard
 │   ├── inspector.py         # HTML analysis
@@ -79,17 +79,17 @@ python -m pytest -q
 python -m pytest tests/test_framework_profiles.py -v
 
 # Run with coverage
-python -m pytest --cov=foundry tests/
+python -m pytest --cov=quarry tests/
 ```
 
 ### 4. Check Type Safety
 
 ```bash
 # Check mypy (strict mode for framework_profiles and http)
-mypy foundry/framework_profiles/ foundry/http.py
+mypy quarry/framework_profiles/ quarry/http.py
 
 # Check all modules
-mypy foundry/
+mypy quarry/
 ```
 
 ### 5. Format Code
@@ -147,12 +147,12 @@ Place your profile in the appropriate category:
 Example: Adding AngularProfile
 
 ```python
-# foundry/framework_profiles/frameworks/angular.py
+# quarry/framework_profiles/frameworks/angular.py
 """Angular / AngularJS framework profile."""
 
 from bs4 import Tag
 
-from foundry.framework_profiles.base import FrameworkProfile
+from quarry.framework_profiles.base import FrameworkProfile
 
 
 class AngularProfile(FrameworkProfile):
@@ -251,7 +251,7 @@ class AngularProfile(FrameworkProfile):
 
 ### Step 3: Register the Profile
 
-Add your profile to `foundry/framework_profiles/__init__.py`:
+Add your profile to `quarry/framework_profiles/__init__.py`:
 
 ```python
 # Add import
@@ -309,7 +309,7 @@ Add an HTML fixture for testing:
 
 from pathlib import Path
 
-from foundry.framework_profiles import AngularProfile, detect_framework
+from quarry.framework_profiles import AngularProfile, detect_framework
 
 
 def test_angular_detection():
@@ -357,7 +357,7 @@ python -m pytest tests/test_angular_profile.py -v
 python -m pytest -q
 
 # Check type safety
-mypy foundry/framework_profiles/
+mypy quarry/framework_profiles/
 ```
 
 ### Step 7: Document Your Profile
@@ -426,7 +426,7 @@ def detect(cls, html: str, item_element: Tag | None = None) -> int:
 Use the `_get_element_classes()` helper for type safety:
 
 ```python
-from foundry.framework_profiles.base import _get_element_classes
+from quarry.framework_profiles.base import _get_element_classes
 
 # ✅ Good - Type safe
 classes = _get_element_classes(element)
@@ -565,7 +565,7 @@ python -m pytest tests/test_angular_profile.py -v
 python -m pytest tests/test_angular_profile.py::test_detection_threshold -v
 
 # Run with coverage
-python -m pytest --cov=foundry --cov-report=html tests/
+python -m pytest --cov=quarry --cov-report=html tests/
 
 # View coverage report
 open htmlcov/index.html
@@ -590,12 +590,12 @@ Use these sites for testing - they allow bot access and have good framework dive
 **Testing command:**
 ```bash
 # Interactive mode - prompts when robots.txt blocks
-python -m foundry.cli run job.yml --live --interactive
+python -m quarry.cli run job.yml --live --interactive
 
 # Direct URL test
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import detect_all_frameworks
+from quarry.http import get_html
+from quarry.framework_profiles import detect_all_frameworks
 
 html = get_html('https://github.com/explore')
 frameworks = detect_all_frameworks(html)
@@ -621,16 +621,16 @@ curl 'URL' -H 'User-Agent: Mozilla/5.0' > test.html
 python -c "
 from pathlib import Path
 html = Path('test.html').read_text()
-from foundry.framework_profiles import detect_all_frameworks
+from quarry.framework_profiles import detect_all_frameworks
 print(detect_all_frameworks(html)[:5])
 "
 
 # Option 3: Interactive mode (prompts before bypassing)
-python -m foundry.cli run job.yml --live --interactive
+python -m quarry.cli run job.yml --live --interactive
 
 # Option 4: Testing only (NOT for production)
 python -c "
-from foundry.http import get_html
+from quarry.http import get_html
 html = get_html('URL', respect_robots=False)  # Testing only!
 "
 ```
@@ -653,7 +653,7 @@ These sites may timeout or require very slow crawling:
 ```bash
 # Increase timeout (default is 30s)
 python -c "
-from foundry.http import get_html
+from quarry.http import get_html
 html = get_html('URL', timeout=60)  # Wait up to 60 seconds
 "
 
@@ -663,7 +663,7 @@ html = get_html('URL', timeout=60)  # Wait up to 60 seconds
 
 # Use session with cookies (may avoid bot detection)
 python -c "
-from foundry.http import get_html, create_session
+from quarry.http import get_html, create_session
 session = create_session()
 html = get_html('URL', session=session)
 "
@@ -686,8 +686,8 @@ Example test with bot-friendly site:
 """Test framework detection with GitHub (bot-friendly)."""
 
 import pytest
-from foundry.http import get_html
-from foundry.framework_profiles import detect_all_frameworks
+from quarry.http import get_html
+from quarry.framework_profiles import detect_all_frameworks
 
 
 @pytest.mark.live  # Mark as live test (optional to skip in CI)
@@ -779,7 +779,7 @@ Use the profiling script:
 ```bash
 # Add your fixture to tests/fixtures/
 # Then run profiler
-PYTHONPATH=/workspaces/foundry python scripts/profile_framework_detection.py
+PYTHONPATH=/workspaces/quarry python scripts/profile_framework_detection.py
 ```
 
 **Target performance:**
@@ -920,4 +920,4 @@ By contributing, you agree that your contributions will be licensed under the sa
 
 ---
 
-Thank you for contributing to Foundry! 🎉
+Thank you for contributing to Quarry! 🎉

@@ -1,4 +1,4 @@
-# 🎉 FOUNDRY SUITE - PROJECT COMPLETE 🎉
+# 🎉 QUARRY SUITE - PROJECT COMPLETE 🎉
 
 **A Modern Web Data Extraction Toolkit**
 
@@ -6,16 +6,16 @@
 
 ## Overview
 
-The **Foundry Suite** is a complete, production-ready toolkit for web data extraction, transformation, and export. It provides 5 integrated tools that work together in a seamless pipeline.
+The **Quarry Suite** is a complete, production-ready toolkit for web data extraction, transformation, and export. It provides 5 integrated tools that work together in a seamless pipeline.
 
 ## The 5 Tools
 
-### 📡 1. Probe - HTML Analysis
+### 📡 1. Scout - HTML Analysis
 **Analyze web pages and detect patterns**
 
 ```bash
-foundry probe https://example.com
-foundry probe --file page.html --format json --output analysis.json
+quarry scout https://example.com
+quarry scout --file page.html --format json --output analysis.json
 ```
 
 **Features:**
@@ -25,13 +25,13 @@ foundry probe --file page.html --format json --output analysis.json
 - Statistics and insights
 - JSON and terminal output
 
-### 📐 2. Blueprint - Schema Designer
+### 📐 2. Survey - Schema Designer
 **Design extraction schemas interactively**
 
 ```bash
-foundry blueprint create schema.yml
-foundry blueprint validate schema.yml
-foundry blueprint preview schema.yml --file page.html
+quarry survey create schema.yml
+quarry survey validate schema.yml
+quarry survey preview schema.yml --file page.html
 ```
 
 **Features:**
@@ -41,13 +41,13 @@ foundry blueprint preview schema.yml --file page.html
 - YAML format
 - Pagination support
 
-### 🔨 3. Forge - Extraction Engine
+### 🔨 3. Excavate - Extraction Engine
 **Execute extraction at scale**
 
 ```bash
-foundry forge schema.yml --url https://example.com
-foundry forge schema.yml --file page.html --output data.jsonl
-foundry forge schema.yml --max-pages 10
+quarry excavate schema.yml --url https://example.com
+quarry excavate schema.yml --file page.html --output data.jsonl
+quarry excavate schema.yml --max-pages 10
 ```
 
 **Features:**
@@ -61,9 +61,9 @@ foundry forge schema.yml --max-pages 10
 **Clean, deduplicate, and enrich data**
 
 ```bash
-foundry polish data.jsonl --dedupe --dedupe-keys title
-foundry polish data.jsonl --transform url:extract_domain
-foundry polish data.jsonl --dedupe --stats --output clean.jsonl
+quarry polish data.jsonl --dedupe --dedupe-keys title
+quarry polish data.jsonl --transform url:extract_domain
+quarry polish data.jsonl --dedupe --stats --output clean.jsonl
 ```
 
 **Features:**
@@ -73,13 +73,13 @@ foundry polish data.jsonl --dedupe --stats --output clean.jsonl
 - Filtering
 - Statistics
 
-### 📦 5. Crate - Data Export
+### 📦 5. Ship - Data Export
 **Export to multiple destinations**
 
 ```bash
-foundry crate data.jsonl output.csv
-foundry crate data.jsonl output.json --pretty
-foundry crate data.jsonl output.db --table records
+quarry ship data.jsonl output.csv
+quarry ship data.jsonl output.json --pretty
+quarry ship data.jsonl output.db --table records
 ```
 
 **Features:**
@@ -95,28 +95,28 @@ foundry crate data.jsonl output.db --table records
 
 ```bash
 # 1. Analyze the page
-foundry probe https://example.com/blog --output analysis.json
+quarry scout https://example.com/blog --output analysis.json
 
 # 2. Create extraction schema
-foundry blueprint create blog_schema.yml
+quarry survey create blog_schema.yml
 
 # 3. Extract data
-foundry forge blog_schema.yml \
+quarry excavate blog_schema.yml \
   --url https://example.com/blog \
   --max-pages 10 \
   --output raw_posts.jsonl
 
 # 4. Clean and transform
-foundry polish raw_posts.jsonl \
+quarry polish raw_posts.jsonl \
   --dedupe --dedupe-keys title url \
   --transform url:extract_domain \
   --transform date:parse_date \
   --output clean_posts.jsonl
 
 # 5. Export to multiple formats
-foundry crate clean_posts.jsonl posts.csv
-foundry crate clean_posts.jsonl posts.json --pretty
-foundry crate clean_posts.jsonl posts.db --table blog_posts
+quarry ship clean_posts.jsonl posts.csv
+quarry ship clean_posts.jsonl posts.json --pretty
+quarry ship clean_posts.jsonl posts.db --table blog_posts
 ```
 
 ---
@@ -167,28 +167,28 @@ foundry crate clean_posts.jsonl posts.db --table blog_posts
 | Tool | Tests | Status |
 |------|-------|--------|
 | Foundation | 117 | ✅ |
-| Probe | 6 | ✅ |
-| Blueprint | 15 | ✅ |
-| Forge | 14 | ✅ |
+| Scout | 6 | ✅ |
+| Survey | 15 | ✅ |
+| Excavate | 14 | ✅ |
 | Polish | 26 | ✅ |
-| Crate | 19 | ✅ |
+| Ship | 19 | ✅ |
 | **Total** | **197** | ✅ |
 
 ### File Structure
 ```
-foundry/
+quarry/
 ├── lib/                    # Core libraries
 │   ├── http.py            # HTTP client
 │   ├── ratelimit.py       # Rate limiting
 │   ├── selectors.py       # CSS selector builder
 │   └── schemas.py         # Pydantic models
 ├── tools/
-│   ├── probe/             # HTML analysis (6 tests)
-│   ├── blueprint/         # Schema designer (15 tests)
-│   ├── forge/             # Extraction engine (14 tests)
+│   ├── scout/             # HTML analysis (6 tests)
+│   ├── survey/         # Schema designer (15 tests)
+│   ├── excavate/             # Extraction engine (14 tests)
 │   ├── polish/            # Data transformation (26 tests)
-│   └── crate/             # Export tool (19 tests)
-├── foundry.py             # Main CLI entry point
+│   └── ship/             # Export tool (19 tests)
+├── quarry.py             # Main CLI entry point
 └── ...
 
 tests/                      # 197 comprehensive tests
@@ -241,8 +241,8 @@ docs/                       # Phase completion docs
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/foundry.git
-cd foundry
+git clone https://github.com/yourusername/quarry.git
+cd quarry
 
 # Install dependencies
 pip install -r requirements.txt
@@ -251,7 +251,7 @@ pip install -r requirements.txt
 pytest
 
 # Use the tools
-python -m foundry.foundry --help
+python -m quarry.quarry --help
 ```
 
 ---
@@ -260,19 +260,19 @@ python -m foundry.foundry --help
 
 ```bash
 # 1. Analyze a page
-foundry probe https://example.com
+quarry scout https://example.com
 
 # 2. Create a schema
-foundry blueprint create my_schema.yml
+quarry survey create my_schema.yml
 
 # 3. Extract data
-foundry forge my_schema.yml --url https://example.com
+quarry excavate my_schema.yml --url https://example.com
 
 # 4. Clean the data
-foundry polish output.jsonl --dedupe
+quarry polish output.jsonl --dedupe
 
 # 5. Export it
-foundry crate output_polished.jsonl data.csv
+quarry ship output_polished.jsonl data.csv
 ```
 
 ---
@@ -321,11 +321,11 @@ Extract meta tags, headings, and content structure from target pages.
 ## Documentation
 
 - **Phase 0**: [Foundation](PHASE0_COMPLETE.md)
-- **Phase 1**: [Probe Tool](docs/PHASE1_COMPLETE.md)
-- **Phase 2**: [Blueprint Tool](docs/PHASE2_COMPLETE.md)
-- **Phase 3**: [Forge Tool](docs/PHASE3_COMPLETE.md)
+- **Phase 1**: [Scout Tool](docs/PHASE1_COMPLETE.md)
+- **Phase 2**: [Survey Tool](docs/PHASE2_COMPLETE.md)
+- **Phase 3**: [Excavate Tool](docs/PHASE3_COMPLETE.md)
 - **Phase 4**: [Polish Tool](docs/PHASE4_COMPLETE.md)
-- **Phase 5**: [Crate Tool](docs/PHASE5_COMPLETE.md)
+- **Phase 5**: [Ship Tool](docs/PHASE5_COMPLETE.md)
 
 ---
 
@@ -348,7 +348,7 @@ All 5 tools are production-ready with comprehensive testing and documentation.
 ## Get Started
 
 ```bash
-python -m foundry.foundry --help
+python -m quarry.quarry --help
 ```
 
 🎉 **Happy Extracting!** 🎉

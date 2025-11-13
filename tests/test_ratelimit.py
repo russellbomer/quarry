@@ -2,7 +2,7 @@
 
 import time
 
-from foundry.lib.ratelimit import DomainRateLimiter, TokenBucket
+from quarry.lib.ratelimit import DomainRateLimiter, TokenBucket
 
 # Test constants
 DEFAULT_RPS = 2.0

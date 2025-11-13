@@ -3,9 +3,9 @@
 import pytest
 from pathlib import Path
 
-from foundry.lib.schemas import ExtractionSchema, FieldSchema, PaginationSchema
-from foundry.tools.forge.parser import SchemaParser
-from foundry.tools.forge.executor import ForgeExecutor
+from quarry.lib.schemas import ExtractionSchema, FieldSchema, PaginationSchema
+from quarry.tools.excavate.parser import SchemaParser
+from quarry.tools.excavate.executor import ForgeExecutor
 
 
 # Test HTML fixtures

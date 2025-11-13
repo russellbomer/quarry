@@ -2,12 +2,12 @@
 
 ## Overview
 
-The Foundry wizard helps you create custom scraping jobs for **any website** through an interactive, guided experience. You don't need to know CSS selectors or write Python code - the wizard analyzes the HTML structure and helps you build the configuration.
+The Quarry wizard helps you create custom scraping jobs for **any website** through an interactive, guided experience. You don't need to know CSS selectors or write Python code - the wizard analyzes the HTML structure and helps you build the configuration.
 
 ## Quick Start
 
 ```bash
-python -m foundry.wizard
+python -m quarry.wizard
 ```
 
 The wizard will guide you through:
@@ -28,7 +28,7 @@ Here's what the wizard flow looks like for Hacker News:
 ### Step 1: Start the wizard
 
 ```bash
-python -m foundry.wizard
+python -m quarry.wizard
 ```
 
 ### Step 2: Select template
@@ -187,7 +187,7 @@ selectors:
 ### Step 10: Run the job
 
 ```bash
-python -c "from foundry.core import load_yaml, run_job; \
+python -c "from quarry.core import load_yaml, run_job; \
 spec = load_yaml('jobs/hackernews.yml'); \
 df, cursor = run_job(spec, max_items=10, offline=False); \
 print(df)"
@@ -243,7 +243,7 @@ Always check the preview data. If extraction looks wrong:
 
 ```bash
 # Check if site allows scraping
-python -c "from foundry.policy import check_robots; \
+python -c "from quarry.policy import check_robots; \
 print('Allowed' if check_robots('https://example.com/') else 'Blocked')"
 ```
 
@@ -302,7 +302,7 @@ selectors:
 The HTML structure might be too dynamic (JavaScript-rendered). Try:
 1. View the page source (Ctrl+U)
 2. If you see `<div id="root"></div>` with no content, the site uses JavaScript rendering
-3. Foundry currently only supports static HTML (server-rendered pages)
+3. Quarry currently only supports static HTML (server-rendered pages)
 
 ### "Extraction shows empty values"
 
@@ -374,7 +374,7 @@ selectors:
 
 ## Next Steps
 
-1. **Run the wizard**: `python -m foundry.wizard`
+1. **Run the wizard**: `python -m quarry.wizard`
 2. **Test your config**: Start with `max_items=5` to verify extraction
 3. **Scale up**: Once verified, increase to 100-1000 items
 4. **Schedule jobs**: Use cron/systemd to run jobs periodically
@@ -382,14 +382,14 @@ selectors:
 
 ## Limitations
 
-- **JavaScript-rendered sites**: Foundry only parses server-rendered HTML. Sites using React/Vue/Angular that render client-side won't work without additional tools.
+- **JavaScript-rendered sites**: Quarry only parses server-rendered HTML. Sites using React/Vue/Angular that render client-side won't work without additional tools.
 - **Authentication**: No login/session support yet
 - **Pagination**: Currently fetches single pages. For multi-page scraping, manually adjust the entry URL or implement pagination logic.
-- **Rate limits**: Respect site policies. Foundry enforces `robots.txt` but you must configure appropriate delays.
+- **Rate limits**: Respect site policies. Quarry enforces `robots.txt` but you must configure appropriate delays.
 
 ## Getting Help
 
 - Check `TROUBLESHOOTING.md` for common issues
 - Review `ARCHITECTURE_LIMITATIONS.md` for technical details
 - Inspect generated YAML configs in `jobs/` directory
-- Use `foundry inspect <job>` to validate configs
+- Use `quarry inspect <job>` to validate configs

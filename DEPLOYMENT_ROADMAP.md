@@ -1,8 +1,8 @@
-# Foundry v2.0 - Deployment Roadmap
+# Quarry v2.0 - Deployment Roadmap
 
 **Status**: Pre-deployment preparation  
 **Target**: Production-ready release  
-**Current Branch**: `refactor-to-foundry`
+**Current Branch**: `refactor-to-quarry`
 
 ---
 
@@ -25,12 +25,12 @@
 #### Day 1-2: Complete Test Suite Validation
 - [ ] **Run full test suite** - Verify all 197 tests pass
   ```bash
-  python -m pytest tests/ -v --cov=foundry --cov-report=html
+  python -m pytest tests/ -v --cov=quarry --cov-report=html
   ```
 - [ ] **Fix any failing tests** from refactor
 - [ ] **Add missing test coverage** for critical paths
-  - [ ] Interactive mode in forge (mock questionary inputs)
-  - [ ] Entry point commands (foundry, foundry.probe, etc.)
+  - [ ] Interactive mode in excavate (mock questionary inputs)
+  - [ ] Entry point commands (quarry, quarry.scout, etc.)
   - [ ] Error handling in interactive flows
 - [ ] **Integration tests** for real-world scenarios
   - [ ] Run all 14 BI use case tests: `pytest tests/test_bi_use_cases.py -m integration -v`
@@ -38,25 +38,25 @@
   - [ ] Test template system (all 15 templates)
 
 #### Day 3-4: Feature Parity Verification
-- [ ] **Foundry Suite Tools** - Verify each works end-to-end
-  - [ ] Probe: Analyze HTML, detect frameworks, suggest selectors
-  - [ ] Blueprint: Create schemas (interactive + template-based)
-  - [ ] Forge: Extract data (interactive mode + batch mode)
+- [ ] **Quarry Suite Tools** - Verify each works end-to-end
+  - [ ] Scout: Analyze HTML, detect frameworks, suggest selectors
+  - [ ] Survey: Create schemas (interactive + template-based)
+  - [ ] Excavate: Extract data (interactive mode + batch mode)
   - [ ] Polish: Deduplicate, transform, validate data
-  - [ ] Crate: Export to CSV/JSON/SQLite/Parquet
+  - [ ] Ship: Export to CSV/JSON/SQLite/Parquet
   
 - [ ] **Legacy Wizard Suite** - Verify backward compatibility
-  - [ ] `foundry init` - Initialize workspace
-  - [ ] `foundry run job.yml --offline` - Run with fixtures
-  - [ ] `foundry run job.yml --live` - Live scraping
-  - [ ] `foundry state` - View job state
-  - [ ] `foundry wizard` - Interactive job creation
+  - [ ] `quarry init` - Initialize workspace
+  - [ ] `quarry run job.yml --offline` - Run with fixtures
+  - [ ] `quarry run job.yml --live` - Live scraping
+  - [ ] `quarry state` - View job state
+  - [ ] `quarry wizard` - Interactive job creation
 
 - [ ] **Library API** - Verify programmatic usage
   ```python
-  from foundry import get_html, run_job
-  from foundry.lib.schemas import load_schema
-  from foundry.tools.probe.analyzer import analyze_page
+  from quarry import get_html, run_job
+  from quarry.lib.schemas import load_schema
+  from quarry.tools.scout.analyzer import analyze_page
   ```
 
 #### Day 5: Edge Cases & Error Handling
@@ -76,25 +76,25 @@
 ### Must-Have Before Deployment
 
 #### 1. Interactive Mode Completion (High Priority)
-**Current**: Only forge has interactive mode  
+**Current**: Only excavate has interactive mode  
 **Goal**: All tools should offer interactive mode when called without arguments
 
 **Tasks**:
-- [ ] **Probe Interactive Mode**
+- [ ] **Scout Interactive Mode**
   ```bash
-  foundry probe
+  quarry scout
   # → Analyze URL or file: [URL/Local file]
   # → Enter URL: _
   # → Output format: [Terminal/JSON]
   # → Save to file? [y/N]: _
   ```
-  - Implementation: `foundry/tools/probe/cli.py`
+  - Implementation: `quarry/tools/scout/cli.py`
   - Add questionary prompts when `url_or_file` is None
   - Preserve `--url`, `--file`, `--format` flags for batch mode
 
-- [ ] **Blueprint Interactive Mode** (Partially done - enhance)
+- [ ] **Survey Interactive Mode** (Partially done - enhance)
   ```bash
-  foundry blueprint create
+  quarry survey create
   # → Schema name: _
   # → Use template? [y/N]: _
   # → Template type: [article/product/financial_data/...]
@@ -107,25 +107,25 @@
 
 - [ ] **Polish Interactive Mode**
   ```bash
-  foundry polish
+  quarry polish
   # → Input file: _
   # → Operations: [☐ Deduplicate ☐ Transform ☐ Validate]
   # → Dedupe keys: _
   # → Output file: _
   ```
-  - Implementation: `foundry/tools/polish/cli.py`
+  - Implementation: `quarry/tools/polish/cli.py`
   - Multi-select for operations
   - Conditional prompts based on selections
 
-- [ ] **Crate Interactive Mode**
+- [ ] **Ship Interactive Mode**
   ```bash
-  foundry crate
+  quarry ship
   # → Input file: _
   # → Export format: [CSV/JSON/SQLite/Parquet/Excel]
   # → Output destination: _
   # → Options: (format-specific prompts)
   ```
-  - Implementation: `foundry/tools/crate/cli.py`
+  - Implementation: `quarry/tools/ship/cli.py`
   - Dynamic prompts based on format
   - Validate destination before export
 
@@ -135,23 +135,23 @@
 **Tasks**:
 - [ ] **Search and replace** remaining env vars
   ```bash
-  grep -r "SCRAPESUITE" foundry/ tests/
+  grep -r "SCRAPESUITE" quarry/ tests/
   ```
 - [ ] **Update all references**:
-  - `SCRAPESUITE_IGNORE_ROBOTS` → `FOUNDRY_IGNORE_ROBOTS`
-  - `SCRAPESUITE_INTERACTIVE` → `FOUNDRY_INTERACTIVE`
+  - `SCRAPESUITE_IGNORE_ROBOTS` → `QUARRY_IGNORE_ROBOTS`
+  - `SCRAPESUITE_INTERACTIVE` → `QUARRY_INTERACTIVE`
 - [ ] **Add backward compatibility** warning (deprecate old names)
   ```python
   if os.getenv("SCRAPESUITE_IGNORE_ROBOTS"):
-      warnings.warn("SCRAPESUITE_* env vars deprecated, use FOUNDRY_*")
+      warnings.warn("SCRAPESUITE_* env vars deprecated, use QUARRY_*")
   ```
 
 #### 3. Repository Rename (Critical for Deployment)
 **Current**: GitHub repo is still `scrapesuite`  
-**Goal**: Rename to `foundry` for consistency
+**Goal**: Rename to `quarry` for consistency
 
 **Tasks**:
-- [ ] **GitHub rename** `scrapesuite` → `foundry`
+- [ ] **GitHub rename** `scrapesuite` → `quarry`
   - Settings → General → Repository name
   - GitHub will set up redirect
 - [ ] **Update all URLs** in code/docs
@@ -164,13 +164,13 @@
 **Decision needed**: Package name on PyPI
 
 **Options**:
-- [ ] Option A: `foundry` (ideal, check availability)
-- [ ] Option B: `foundry-web` (if foundry taken)
-- [ ] Option C: `web-foundry` (fallback)
-- [ ] Option D: `foundry-scraper` (descriptive)
+- [ ] Option A: `quarry` (ideal, check availability)
+- [ ] Option B: `quarry-web` (if quarry taken)
+- [ ] Option C: `web-quarry` (fallback)
+- [ ] Option D: `quarry-scraper` (descriptive)
 
 **Tasks**:
-- [ ] **Check PyPI availability**: `pip search foundry` (deprecated, check pypi.org)
+- [ ] **Check PyPI availability**: `pip search quarry` (deprecated, check pypi.org)
 - [ ] **Reserve name**: Create placeholder package if needed
 - [ ] **Update pyproject.toml** with final name
 - [ ] **Prepare PyPI deployment**:
@@ -187,37 +187,37 @@
 ### Comprehensive Test Plan
 
 #### Unit Tests (Target: 95% coverage)
-- [ ] **Core library** (`foundry/lib/`)
+- [ ] **Core library** (`quarry/lib/`)
   - [x] HTTP client (test_http_bot_evasion.py - 6 passing)
   - [x] Rate limiting (test_ratelimit.py)
   - [x] Selectors (test_selector_builder.py)
   - [ ] Schemas validation edge cases
   - [ ] Robots.txt parsing edge cases
 
-- [ ] **Framework profiles** (`foundry/framework_profiles/`)
+- [ ] **Framework profiles** (`quarry/framework_profiles/`)
   - [x] Existing tests (test_new_framework_profiles.py, etc.)
   - [ ] Add tests for new ecommerce profiles
   - [ ] Verify scoring algorithm accuracy
 
-- [ ] **Foundry tools**
-  - [x] Probe (test_probe.py - 6 passing)
-  - [x] Blueprint (test_blueprint.py)
-  - [x] Forge (test_forge.py)
+- [ ] **Quarry tools**
+  - [x] Scout (test_probe.py - 6 passing)
+  - [x] Survey (test_blueprint.py)
+  - [x] Excavate (test_forge.py)
   - [x] Polish (test_polish.py)
-  - [x] Crate (test_crate.py)
+  - [x] Ship (test_crate.py)
   - [ ] Interactive mode tests (with mocked inputs)
 
 #### Integration Tests
 - [x] **BI use cases** (test_bi_use_cases.py - 14 scenarios)
 - [ ] **End-to-end workflows**
-  - [ ] Probe → Blueprint → Forge → Polish → Crate pipeline
+  - [ ] Scout → Survey → Excavate → Polish → Ship pipeline
   - [ ] Template-based schema → extraction → export
   - [ ] Infinite scroll detection → API guide usage
   - [ ] Multi-page pagination extraction
 
 #### Manual Testing (Following MANUAL_TESTING.md)
 - [ ] **Part 1: Business Intelligence Features** (Tests 1-10)
-- [ ] **Part 2: Foundry Suite Core** (Tests 11-21)
+- [ ] **Part 2: Quarry Suite Core** (Tests 11-21)
 - [ ] **Part 3: Integration Testing - BI Workflows** (Tests 22-24)
 - [ ] **Part 4: Infinite Scroll & API Discovery** (Tests 25-28)
 - [ ] **Part 5: Error Handling** (Tests 29-30)
@@ -244,11 +244,11 @@
 ### Current Features Audit
 
 #### ✅ Fully Working
-- [x] Probe tool (HTML analysis, framework detection)
-- [x] Blueprint tool (schema creation with templates)
-- [x] Forge tool (extraction engine with pagination)
+- [x] Scout tool (HTML analysis, framework detection)
+- [x] Survey tool (schema creation with templates)
+- [x] Excavate tool (extraction engine with pagination)
 - [x] Polish tool (deduplication, transforms, validation)
-- [x] Crate tool (CSV/JSON/SQLite/Parquet export)
+- [x] Ship tool (CSV/JSON/SQLite/Parquet export)
 - [x] 15 BI templates (financial, real estate, etc.)
 - [x] Infinite scroll detection (60%+ confidence)
 - [x] API discovery guide (`--find-api`)
@@ -258,10 +258,10 @@
 - [x] Legacy wizard suite
 
 #### 🚧 Needs Completion
-- [ ] **Interactive modes** for probe/blueprint/polish/crate
+- [ ] **Interactive modes** for scout/survey/polish/ship
 - [ ] **Error recovery** in interactive flows
 - [ ] **Progress indicators** for long operations
-- [ ] **Configuration file** support (`~/.foundry/config.yml`)
+- [ ] **Configuration file** support (`~/.quarry/config.yml`)
 - [ ] **Plugin system** (future - not critical)
 
 #### 🎯 Nice-to-Have (Post v2.0)
@@ -312,7 +312,7 @@
 
 #### Developer Documentation
 - [x] **ARCHITECTURE_V2.md** - System design ✅
-- [x] **FOUNDRY_COMPLETE.md** - Foundry suite overview ✅
+- [x] **QUARRY_COMPLETE.md** - Quarry suite overview ✅
 - [x] **INFINITE_SCROLL_API_GUIDE.md** - API discovery ✅
 - [ ] **PLUGIN_DEVELOPMENT.md** - Plugin API (future)
 - [ ] **TESTING_GUIDE.md** - Testing best practices
@@ -344,7 +344,7 @@
   
   💡 Did you mean:
      • /path/to/schemas/schema.yml
-     • Create new: foundry blueprint create schema.yml
+     • Create new: quarry survey create schema.yml
   ```
 
 - [ ] **Progress bars** for long operations
@@ -395,14 +395,14 @@
 - [ ] **Merge to main branch**
   ```bash
   git checkout main
-  git merge refactor-to-foundry
+  git merge refactor-to-quarry
   git tag v2.0.0-alpha.1
   git push origin main --tags
   ```
 
 - [ ] **Install from source** testing
   ```bash
-  pip install git+https://github.com/russellbomer/foundry.git@v2.0.0-alpha.1
+  pip install git+https://github.com/russellbomer/quarry.git@v2.0.0-alpha.1
   ```
 
 - [ ] **Docker image** (optional but recommended)
@@ -411,12 +411,12 @@
   WORKDIR /app
   COPY . .
   RUN pip install -e .
-  ENTRYPOINT ["foundry"]
+  ENTRYPOINT ["quarry"]
   ```
 
 - [ ] **Documentation site** (optional - GitHub Pages)
   - Use MkDocs or Sphinx
-  - Deploy to foundry.readthedocs.io or GitHub Pages
+  - Deploy to quarry.readthedocs.io or GitHub Pages
   - API documentation from docstrings
 
 #### Beta Release (Limited Users)
@@ -439,16 +439,16 @@
   ## [2.0.0] - 2025-11-XX
   
   ### Breaking Changes
-  - Package renamed from scrapesuite to foundry
-  - All imports changed to use `foundry` namespace
-  - Environment variables renamed SCRAPESUITE_* → FOUNDRY_*
+  - Package renamed from scrapesuite to quarry
+  - All imports changed to use `quarry` namespace
+  - Environment variables renamed SCRAPESUITE_* → QUARRY_*
   
   ### Added
   - Interactive mode for all tools
   - 15 BI templates for common use cases
   - Infinite scroll detection
   - API discovery guide
-  - Clean entry points (foundry, foundry.probe, etc.)
+  - Clean entry points (quarry, quarry.scout, etc.)
   
   ### Changed
   - Improved error messages
@@ -474,8 +474,8 @@
   ```bash
   python -m build
   ls dist/
-  # foundry-2.0.0.tar.gz
-  # foundry-2.0.0-py3-none-any.whl
+  # quarry-2.0.0.tar.gz
+  # quarry-2.0.0-py3-none-any.whl
   ```
 
 - [ ] **Upload to PyPI**
@@ -485,8 +485,8 @@
 
 - [ ] **Verify installation**
   ```bash
-  pip install foundry
-  foundry --version  # Should show 2.0.0
+  pip install quarry
+  quarry --version  # Should show 2.0.0
   ```
 
 - [ ] **Tag final release** `v2.0.0`
@@ -555,7 +555,7 @@
 
 ### Critical (Do First)
 1. [ ] **Run full test suite** and fix any failures
-2. [ ] **Complete interactive modes** for probe/polish/crate
+2. [ ] **Complete interactive modes** for scout/polish/ship
 3. [ ] **Test all 15 BI templates** with real websites
 4. [ ] **Verify all entry points** work correctly
 
@@ -598,7 +598,7 @@
 - ✅ Docstrings on all public functions
 
 ### Features
-- ✅ All 5 Foundry tools fully functional
+- ✅ All 5 Quarry tools fully functional
 - ✅ Interactive mode for all tools
 - ✅ 15 BI templates working
 - ✅ Infinite scroll detection
@@ -628,9 +628,9 @@
 ### Identified Risks
 
 1. **PyPI Name Conflict**
-   - Risk: `foundry` name might be taken
+   - Risk: `quarry` name might be taken
    - Mitigation: Check now, have backup names ready
-   - Fallback: `foundry-web`, `web-foundry`, `foundry-scraper`
+   - Fallback: `quarry-web`, `web-quarry`, `quarry-scraper`
 
 2. **Breaking Changes Impact**
    - Risk: Users on scrapesuite might break

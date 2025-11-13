@@ -1,4 +1,4 @@
-# Foundry
+# Quarry
 
 A reusable Python toolkit for web/data collection with offline-first testing.
 
@@ -6,7 +6,7 @@ A reusable Python toolkit for web/data collection with offline-first testing.
 
 **🚀 Want to scrape ANY website? Check out [WIZARD_USAGE.md](WIZARD_USAGE.md) for the interactive wizard guide.**
 
-Foundry is a production-quality library and CLI for defining scraping jobs in YAML, running connectors with retry/backoff and rate limits, transforming raw records into normalized tables, and writing outputs to sinks (Parquet/CSV). It maintains idempotent state in SQLite for per-job cursors and deduplication.
+Quarry is a production-quality library and CLI for defining scraping jobs in YAML, running connectors with retry/backoff and rate limits, transforming raw records into normalized tables, and writing outputs to sinks (Parquet/CSV). It maintains idempotent state in SQLite for per-job cursors and deduplication.
 
 ---
 
@@ -45,7 +45,7 @@ pip install -r requirements.txt
 
 ```bash
 make init
-# Or: python -m foundry.cli init
+# Or: python -m quarry.cli init
 ```
 
 Follow the prompts to generate a job YAML file in `jobs/`.
@@ -54,19 +54,19 @@ Follow the prompts to generate a job YAML file in `jobs/`.
 
 ```bash
 make run-fda
-# Or: python -m foundry.cli run jobs/fda.yml --offline true --max-items 100
+# Or: python -m quarry.cli run jobs/fda.yml --offline true --max-items 100
 ```
 
 ### 3. Run all jobs
 
 ```bash
-python -m foundry.cli run-all --offline true
+python -m quarry.cli run-all --offline true
 ```
 
 ### 4. Check job state
 
 ```bash
-python -m foundry.cli state
+python -m quarry.cli state
 ```
 
 ## Example Job YAML
@@ -101,7 +101,7 @@ policy:
     weather.gov: 0.5      # 0.5 requests/sec for weather.gov
 ```
 
-**Note**: robots.txt checking is automatic. Foundry will:
+**Note**: robots.txt checking is automatic. Quarry will:
 - Fetch and cache robots.txt per domain (24-hour TTL)
 - Match against User-Agent directives
 - Respect Disallow rules
@@ -125,7 +125,7 @@ make build-batches
 
 ## Policy and Live Mode
 
-When running in live mode (`--offline false`), Foundry enforces:
+When running in live mode (`--offline false`), Quarry enforces:
 
 - **Allowlist**: All outbound URLs must be in the `policy.allowlist` (required for live mode)
 - **Per-domain rate limiting**: Token bucket algorithm with configurable rates per domain
@@ -137,10 +137,10 @@ When running in live mode (`--offline false`), Foundry enforces:
 
 ## Error Handling
 
-Foundry tracks failed URLs in SQLite:
+Quarry tracks failed URLs in SQLite:
 
 ```python
-from foundry import get_failed_urls
+from quarry import get_failed_urls
 
 # Get all failed URLs for a job
 failures = get_failed_urls("fda_recalls")

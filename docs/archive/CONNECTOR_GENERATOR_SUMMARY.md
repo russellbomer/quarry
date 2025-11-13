@@ -6,7 +6,7 @@ The interactive wizard system for generating custom scraping connectors from ANY
 
 ## New Components
 
-### 1. HTML Inspector (`foundry/inspector.py`)
+### 1. HTML Inspector (`quarry/inspector.py`)
 
 Analyzes HTML structure to detect patterns and suggest selectors:
 
@@ -16,7 +16,7 @@ Analyzes HTML structure to detect patterns and suggest selectors:
 - **`preview_extraction(html, item_selector, field_selectors)`** - Shows sample extracted data before saving config
 - **`suggest_field_name(selector, sample_text)`** - Suggests meaningful field names based on selectors
 
-### 2. Generic Connector (`foundry/connectors/generic.py`)
+### 2. Generic Connector (`quarry/connectors/generic.py`)
 
 YAML-driven connector that works with ANY website:
 
@@ -35,7 +35,7 @@ class GenericConnector:
 - `a::attr(href)` - Extract attribute value
 - `::attr(id)` - Extract attribute from item container itself
 
-### 3. Enhanced Wizard (`foundry/wizard.py`)
+### 3. Enhanced Wizard (`quarry/wizard.py`)
 
 Interactive flow with HTML analysis:
 
@@ -55,7 +55,7 @@ Interactive flow with HTML analysis:
 - Embeds selectors config in generated YAML
 - Skips manual parser/normalize prompts
 
-### 4. Generic Transform (`foundry/transforms/generic.py`)
+### 4. Generic Transform (`quarry/transforms/generic.py`)
 
 Simple pass-through transform for GenericConnector:
 
@@ -68,13 +68,13 @@ def normalize(records):
 
 ## Core Changes
 
-### `foundry/core.py`
+### `quarry/core.py`
 
 - Added `generic.GenericConnector` to `_CONNECTOR_REGISTRY`
 - Added `generic_transforms.normalize` to `_TRANSFORM_REGISTRY`
 - Updated `_resolve_connector()` to pass full `config` dict to connectors
 
-### `foundry/connectors/__init__.py`
+### `quarry/connectors/__init__.py`
 
 - Exported `GenericConnector`
 
@@ -114,7 +114,7 @@ selectors:
 
 **Command**:
 ```python
-from foundry.core import load_yaml, run_job
+from quarry.core import load_yaml, run_job
 spec = load_yaml('jobs/hackernews_test.yml')
 df, cursor = run_job(spec, max_items=5, offline=False)
 ```
@@ -190,8 +190,8 @@ Zero lint errors.
 
 1. User wants to scrape example.com
 2. User has to:
-   - Write custom parser in `foundry/connectors/example.py`
-   - Write custom transform in `foundry/transforms/example.py`
+   - Write custom parser in `quarry/connectors/example.py`
+   - Write custom transform in `quarry/transforms/example.py`
    - Register in `_CONNECTOR_REGISTRY` and `_TRANSFORM_REGISTRY`
    - Manually test with browser DevTools
 3. Total time: 2-4 hours for developer
@@ -200,7 +200,7 @@ Zero lint errors.
 ### New Way (Working)
 
 1. User wants to scrape example.com
-2. User runs: `python -m foundry.wizard`
+2. User runs: `python -m quarry.wizard`
 3. Wizard guides through:
    - Enter URL
    - Pick detected pattern
@@ -233,21 +233,21 @@ Zero lint errors.
 ## Files Changed/Created
 
 ### Created (7 files):
-- `foundry/inspector.py` (250 lines)
-- `foundry/connectors/generic.py` (110 lines)
-- `foundry/transforms/generic.py` (40 lines)
+- `quarry/inspector.py` (250 lines)
+- `quarry/connectors/generic.py` (110 lines)
+- `quarry/transforms/generic.py` (40 lines)
 - `WIZARD_USAGE.md` (550 lines)
 - `test_inspector.py` (60 lines)
 - `jobs/hackernews_test.yml` (20 lines)
 - `docs/CONNECTOR_GENERATOR_SUMMARY.md` (this file)
 
 ### Modified (3 files):
-- `foundry/wizard.py` - Added `_analyze_html_and_build_selectors()`, updated wizard flow
-- `foundry/core.py` - Registered GenericConnector and generic transform, pass config to connectors
-- `foundry/connectors/__init__.py` - Exported GenericConnector
+- `quarry/wizard.py` - Added `_analyze_html_and_build_selectors()`, updated wizard flow
+- `quarry/core.py` - Registered GenericConnector and generic transform, pass config to connectors
+- `quarry/connectors/__init__.py` - Exported GenericConnector
 
 ## Conclusion
 
-The **interactive wizard for generic scraping** is now **production-ready**. Users can scrape ANY website by simply running the wizard and following prompts - no coding required. This achieves the original vision of making Foundry accessible to non-programmers through a guided, interactive experience.
+The **interactive wizard for generic scraping** is now **production-ready**. Users can scrape ANY website by simply running the wizard and following prompts - no coding required. This achieves the original vision of making Quarry accessible to non-programmers through a guided, interactive experience.
 
 The infrastructure (robots.txt parsing, per-domain rate limiting, error tracking) built earlier provides a solid foundation for this wizard-driven approach, ensuring responsible and reliable scraping at scale.

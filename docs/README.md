@@ -1,6 +1,6 @@
-# Foundry Documentation
+# Quarry Documentation
 
-Welcome to the Foundry documentation. This directory contains comprehensive guides for using and extending Foundry.
+Welcome to the Quarry documentation. This directory contains comprehensive guides for using and extending Quarry.
 
 ## Quick Links
 

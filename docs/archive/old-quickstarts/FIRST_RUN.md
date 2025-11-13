@@ -1,11 +1,11 @@
 # 🚀 First Run - Quick Demo
 
-**See Foundry in action in 60 seconds.**
+**See Quarry in action in 60 seconds.**
 
 ## Step 1: Run the Example
 
 ```bash
-python -m foundry.cli run examples/jobs/fda.yml --offline --max-items 10
+python -m quarry.cli run examples/jobs/fda.yml --offline --max-items 10
 ```
 
 You should see:
@@ -17,7 +17,7 @@ fda_recalls: 6 new, 3 in batch, next_cursor=acme-foods...
 
 ```bash
 # View job state
-python -m foundry.cli state
+python -m quarry.cli state
 
 # Find the output file
 ls -lh data/cache/fda/
@@ -36,7 +36,7 @@ print(f'\nTotal: {len(df)} records')
 ## Step 3: Create Your Own Job
 
 ```bash
-python -m foundry.cli init
+python -m quarry.cli init
 ```
 
 Follow the prompts to create a job in `jobs/YOUR_JOB.yml`.
@@ -45,10 +45,10 @@ Follow the prompts to create a job in `jobs/YOUR_JOB.yml`.
 
 ```bash
 # Test offline first (uses fixtures if available)
-python -m foundry.cli run jobs/YOUR_JOB.yml --offline
+python -m quarry.cli run jobs/YOUR_JOB.yml --offline
 
 # Then try live mode (careful! hits real URLs)
-python -m foundry.cli run jobs/YOUR_JOB.yml --live --max-items 5
+python -m quarry.cli run jobs/YOUR_JOB.yml --live --max-items 5
 ```
 
 ## What Just Happened?

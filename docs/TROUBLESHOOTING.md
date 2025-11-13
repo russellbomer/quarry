@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-Foundry includes built-in troubleshooting commands to help diagnose issues.
+Quarry includes built-in troubleshooting commands to help diagnose issues.
 
 ## Quick Diagnostics
 
@@ -9,7 +9,7 @@ Foundry includes built-in troubleshooting commands to help diagnose issues.
 Before scraping a URL, check if it's allowed:
 
 ```bash
-python -m foundry.cli check-robots https://example.com/page
+python -m quarry.cli check-robots https://example.com/page
 ```
 
 **Output shows:**
@@ -19,14 +19,14 @@ python -m foundry.cli check-robots https://example.com/page
 
 **Example:**
 ```bash
-$ python -m foundry.cli check-robots https://github.com/explore
+$ python -m quarry.cli check-robots https://github.com/explore
 
         Robots.txt Check: github.com
 ┏━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Property    ┃ Value                      ┃
 ┡━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
 │ URL         │ https://github.com/explore │
-│ User-Agent  │ Foundry                │
+│ User-Agent  │ Quarry                │
 │ Allowed     │ ✅ YES                     │
 │ Crawl-delay │ 1.0s                       │
 └─────────────┴────────────────────────────┘
@@ -34,7 +34,7 @@ $ python -m foundry.cli check-robots https://github.com/explore
 
 **Custom User-Agent:**
 ```bash
-python -m foundry.cli check-robots https://example.com -ua "MyBot/1.0"
+python -m quarry.cli check-robots https://example.com -ua "MyBot/1.0"
 ```
 
 ---
@@ -44,7 +44,7 @@ python -m foundry.cli check-robots https://example.com -ua "MyBot/1.0"
 Validate a job YAML without running it:
 
 ```bash
-python -m foundry.cli inspect jobs/my_job.yml
+python -m quarry.cli inspect jobs/my_job.yml
 ```
 
 **Shows:**
@@ -55,7 +55,7 @@ python -m foundry.cli inspect jobs/my_job.yml
 
 **Example:**
 ```bash
-$ python -m foundry.cli inspect examples/jobs/fda_advanced.yml
+$ python -m quarry.cli inspect examples/jobs/fda_advanced.yml
 
           Job Inspection: examples/jobs/fda_advanced.yml
 ┏━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -80,10 +80,10 @@ See which URLs failed to fetch and why:
 
 ```bash
 # All failed URLs
-python -m foundry.cli failed
+python -m quarry.cli failed
 
 # Failures for specific job
-python -m foundry.cli failed fda_recalls
+python -m quarry.cli failed fda_recalls
 ```
 
 **Shows:**
@@ -94,7 +94,7 @@ python -m foundry.cli failed fda_recalls
 
 **Example:**
 ```bash
-$ python -m foundry.cli failed
+$ python -m quarry.cli failed
 
                   All Failed URLs
 ┏━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━┓
@@ -114,7 +114,7 @@ Total failed URLs: 2
 View what's cached in SQLite:
 
 ```bash
-python -m foundry.cli cache-info
+python -m quarry.cli cache-info
 ```
 
 **Shows:**
@@ -123,7 +123,7 @@ python -m foundry.cli cache-info
 
 **Example:**
 ```bash
-$ python -m foundry.cli cache-info
+$ python -m quarry.cli cache-info
 
 Cache Information
 
@@ -189,10 +189,10 @@ Error: Unknown parser 'xyz'. Available: fda_list, nws_list, custom_list
 find data/cache -name "*.parquet" -mtime -1
 
 # Check job state
-python -m foundry.cli state
+python -m quarry.cli state
 
 # Inspect configuration
-python -m foundry.cli inspect jobs/your_job.yml
+python -m quarry.cli inspect jobs/your_job.yml
 ```
 
 **Common causes:**
@@ -216,7 +216,7 @@ policy:
 **Fix 2:** Check robots.txt crawl-delay:
 
 ```bash
-python -m foundry.cli check-robots https://example.com
+python -m quarry.cli check-robots https://example.com
 ```
 
 If crawl-delay is 2.0s, use `default_rps: 0.5` (1/2 = 0.5)
@@ -228,7 +228,7 @@ If crawl-delay is 2.0s, use `default_rps: 0.5` (1/2 = 0.5)
 **Symptom:** URL shows ❌ NO when checking
 
 ```bash
-$ python -m foundry.cli check-robots https://reddit.com/r/python
+$ python -m quarry.cli check-robots https://reddit.com/r/python
 ⚠️  This URL is disallowed by robots.txt
 ```
 
@@ -244,7 +244,7 @@ $ python -m foundry.cli check-robots https://reddit.com/r/python
 **Symptom:** Same URL failing repeatedly
 
 ```bash
-python -m foundry.cli failed
+python -m quarry.cli failed
 # Shows: example.com/page - Retries: 15
 ```
 
@@ -262,11 +262,11 @@ Run with verbose output:
 
 ```bash
 # Run and see detailed timing
-python -m foundry.cli run jobs/my_job.yml --offline -n 5
+python -m quarry.cli run jobs/my_job.yml --offline -n 5
 
 # Check state immediately after
-python -m foundry.cli state
-python -m foundry.cli failed my_job
+python -m quarry.cli state
+python -m quarry.cli failed my_job
 ```
 
 ---
@@ -294,16 +294,16 @@ rm -rf data/cache/*/
 
 ## Getting More Help
 
-1. **Inspect your job:** `python -m foundry.cli inspect jobs/your_job.yml`
-2. **Check robots.txt:** `python -m foundry.cli check-robots YOUR_URL`
-3. **View failures:** `python -m foundry.cli failed`
-4. **Check cache:** `python -m foundry.cli cache-info`
+1. **Inspect your job:** `python -m quarry.cli inspect jobs/your_job.yml`
+2. **Check robots.txt:** `python -m quarry.cli check-robots YOUR_URL`
+3. **View failures:** `python -m quarry.cli failed`
+4. **Check cache:** `python -m quarry.cli cache-info`
 5. **Read the logs:** Output shows success/failure for each run
 
 All commands have `--help`:
 
 ```bash
-python -m foundry.cli check-robots --help
-python -m foundry.cli inspect --help
-python -m foundry.cli failed --help
+python -m quarry.cli check-robots --help
+python -m quarry.cli inspect --help
+python -m quarry.cli failed --help
 ```

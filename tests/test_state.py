@@ -4,7 +4,7 @@ import sqlite3
 import tempfile
 from pathlib import Path
 
-from foundry.state import load_cursor, save_cursor, upsert_items
+from quarry.state import load_cursor, save_cursor, upsert_items
 
 # Test constants
 EXPECTED_NEW_COUNT_FIRST = 2

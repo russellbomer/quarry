@@ -5,8 +5,8 @@
 ### ✅ Correct: get_html(url)
 
 ```python
-from foundry.http import get_html
-from foundry.framework_profiles import detect_framework
+from quarry.http import get_html
+from quarry.framework_profiles import detect_framework
 
 # Fetch and detect
 html = get_html('https://example.com')
@@ -63,8 +63,8 @@ html2 = get_html(url2, session=session)
 ```bash
 # Single framework
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import detect_framework
+from quarry.http import get_html
+from quarry.framework_profiles import detect_framework
 
 html = get_html('https://www.allrecipes.com/recipe/10813/best-chocolate-chip-cookies/')
 fw = detect_framework(html)
@@ -77,8 +77,8 @@ print(fw.name if fw else 'None')
 ```bash
 # All frameworks with scores
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import detect_all_frameworks
+from quarry.http import get_html
+from quarry.framework_profiles import detect_all_frameworks
 
 html = get_html('https://techcrunch.com/')
 for fw, score in detect_all_frameworks(html)[:5]:
@@ -91,8 +91,8 @@ for fw, score in detect_all_frameworks(html)[:5]:
 ```bash
 # Open Graph
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import OpenGraphProfile
+from quarry.http import get_html
+from quarry.framework_profiles import OpenGraphProfile
 
 html = get_html('https://medium.com/')
 metadata = OpenGraphProfile.extract_metadata(html)
@@ -106,8 +106,8 @@ for k, v in list(metadata.items())[:5]:
 ```bash
 # Schema.org microdata
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import SchemaOrgProfile
+from quarry.http import get_html
+from quarry.framework_profiles import SchemaOrgProfile
 from bs4 import BeautifulSoup
 
 html = get_html('https://www.allrecipes.com/recipes/')
@@ -187,13 +187,13 @@ html = get_html(url, respect_robots=False)  # Testing only!
 
 ```bash
 # Run wizard
-python -m foundry wizard
+python -m quarry wizard
 
 # Run job
-python -m foundry run job.yml
+python -m quarry run job.yml
 
 # Run with offline mode (uses fixtures)
-python -m foundry run job.yml --offline
+python -m quarry run job.yml --offline
 
 # Run tests
 python -m pytest -q
@@ -207,11 +207,11 @@ The `--offline` flag is valid for **CLI commands** but not for the `get_html()` 
 
 ```bash
 # Complete test
-cd /c/path/to/foundry
+cd /c/path/to/quarry
 
 python -c "
-from foundry.http import get_html
-from foundry.framework_profiles import (
+from quarry.http import get_html
+from quarry.framework_profiles import (
     detect_framework,
     detect_all_frameworks,
     SchemaOrgProfile,
