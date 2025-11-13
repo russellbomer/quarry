@@ -101,7 +101,6 @@ def scout(url_or_file, file, output, format, pretty, find_api, batch_mode):
         else:  # Local file
             file = questionary.path(
                 "HTML file path:",
-                only_files=True,
                 validate=lambda x: Path(x).exists() or "File does not exist"
             ).ask()
             if not file:

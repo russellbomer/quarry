@@ -128,7 +128,6 @@ def ship(input_file, destination, table, if_exists, delimiter, pretty, exclude_m
             if not input_file:
                 input_file = questionary.path(
                     "Input file (JSONL):",
-                    only_files=True,
                     validate=lambda x: Path(x).exists() or "File does not exist"
                 ).ask()
                 

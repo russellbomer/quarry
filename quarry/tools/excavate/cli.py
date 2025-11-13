@@ -119,7 +119,6 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
             if not schema_file:
                 schema_file = questionary.path(
                     "Schema file:",
-                    only_files=True,
                     validate=lambda x: Path(x).exists() or "File does not exist"
                 ).ask()
                 
@@ -174,7 +173,6 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
         elif source_type == "Local file":
             file = questionary.path(
                 "HTML file path:",
-                only_files=True,
                 validate=lambda x: Path(x).exists() or "File does not exist"
             ).ask()
             if not file:
