@@ -7,6 +7,7 @@ import click
 import questionary
 
 from quarry.lib.session import get_last_output
+from quarry.lib.prompts import prompt_file, prompt_choice, prompt_text, prompt_confirm
 from .base import ExporterFactory
 
 
@@ -126,10 +127,10 @@ def ship(input_file, destination, table, if_exists, delimiter, pretty, exclude_m
             
             # Prompt for input file if not set
             if not input_file:
-                input_file = questionary.path(
+                input_file = prompt_file(
                     "Input file (JSONL):",
-                    validate=lambda x: Path(x).exists() or "File does not exist"
-                ).ask()
+                    allow_cancel=True
+                )
                 
                 if not input_file:
                     click.echo("Cancelled", err=True)
@@ -150,15 +151,16 @@ def ship(input_file, destination, table, if_exists, delimiter, pretty, exclude_m
     
     if not batch_mode and not destination:
         # Prompt for export format
-        format_choice = questionary.select(
+        format_choice = prompt_choice(
             "Export format:",
             choices=[
                 "CSV",
                 "JSON",
                 "SQLite database",
                 "Parquet"
-            ]
-        ).ask()
+            ],
+            allow_cancel=True
+        )
         
         if not format_choice:
             click.echo("Cancelled", err=True)

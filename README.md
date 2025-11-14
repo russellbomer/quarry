@@ -54,40 +54,30 @@ quarry ship output.jsonl results.csv
 | Tool | Purpose | Example |
 |------|---------|---------|
 | **📡 Scout** | Analyze HTML & detect patterns | `quarry scout <url>` |
-| **📐 Survey** | Design extraction schemas | `quarry survey create schema.yml` |
+| **📐 Survey** | Design extraction schemas & jobs | `quarry survey create` |
 | **🔨 Excavate** | Execute data extraction | `quarry excavate schema.yml --url <url>` |
 | **✨ Polish** | Transform & clean data | `quarry polish data.jsonl --dedupe` |
 | **📦 Ship** | Export to CSV/JSON/SQLite | `quarry ship data.jsonl output.csv` |
+
+**Survey Commands**:
+- `quarry survey create` - Build schema interactively (with --job flag for job YAML)
+- `quarry survey to-job schema.yml -n my_job` - Convert schema to job file
+- `quarry survey preview schema.yml --url <url>` - Test extraction before running
+- `quarry survey validate schema.yml` - Check schema validity
 
 **Complete pipeline**:
 ```bash
 quarry scout <url> | quarry excavate | quarry polish --dedupe | quarry ship results.csv
 ```
 
-📚 **Detailed docs**: [docs/QUARRY_COMPLETE.md](docs/QUARRY_COMPLETE.md)
-
----
-
-## 🧙 Wizard Mode
-
-**Zero-code scraping** with automatic framework detection:
-
+**Job Creation**:
 ```bash
-# Launch interactive wizard
-quarry init
-
-# Wizard will:
-# 1. Detect framework (React, WordPress, etc.)
-# 2. Suggest selectors
-# 3. Generate YAML job file
-
-# Run generated job
-quarry run jobs/my_job.yml --live
+# Create job YAML for scheduled/batch extraction
+quarry survey create --job --job-name my_scraper
+quarry run jobs/my_scraper.yml --live
 ```
 
-**Supports 9 frameworks**: WordPress, Drupal, React, Vue, Next.js, Bootstrap, Tailwind, Shopify, Django
-
-📚 **Wizard guide**: [docs/WIZARD.md](docs/WIZARD.md)
+📚 **Detailed docs**: [docs/QUARRY_COMPLETE.md](docs/QUARRY_COMPLETE.md)
 
 ---
 

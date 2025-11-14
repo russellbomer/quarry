@@ -1,0 +1,26 @@
+version: '1'
+job: example_job
+source:
+  kind: html
+  entry: https://example.com
+  parser: generic
+  rate_limit_rps: 1.0
+  cursor:
+    field: link
+    stop_when_seen: true
+selectors:
+  item: .item
+  fields:
+    title: h2.title
+    link: a::attr(href)
+    date: time.published::attr(datetime)
+transform:
+  pipeline:
+  - normalize: generic
+sink:
+  kind: parquet
+  path: data/cache/example_job/%Y%m%dT%H%M%SZ.parquet
+policy:
+  robots: allow
+  allowlist:
+  - example.com

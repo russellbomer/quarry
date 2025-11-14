@@ -8,6 +8,7 @@ import questionary
 
 from quarry.lib.http import get_html
 from quarry.lib.session import set_last_schema
+from quarry.lib.prompts import prompt_url, prompt_file, prompt_choice, prompt_confirm
 from .analyzer import analyze_page
 from .reporter import format_as_json, format_as_terminal
 
@@ -81,50 +82,42 @@ def scout(url_or_file, file, output, format, pretty, find_api, batch_mode):
     if not batch_mode and not url_or_file and not file:
         click.echo("🔍 Quarry Scout - Interactive Mode\n", err=True)
         
-        # Prompt for source type
-        source_type = questionary.select(
+        # Prompt for source type (with retry)
+        source_type = prompt_choice(
             "Analyze:",
-            choices=["URL", "Local file"]
-        ).ask()
+            choices=["URL", "Local file"],
+            allow_cancel=True
+        )
         
         if not source_type:
             click.echo("Cancelled", err=True)
             sys.exit(0)
         
         if source_type == "URL":
-            url_or_file = questionary.text(
-                "Enter URL:",
-                validate=lambda x: (x.startswith("http://") or x.startswith("https://")) or "URL must start with http:// or https://"
-            ).ask()
+            url_or_file = prompt_url("Enter URL:", allow_cancel=True)
             if not url_or_file:
                 sys.exit(0)
         else:  # Local file
-            file = questionary.path(
-                "HTML file path:",
-                validate=lambda x: Path(x).exists() or "File does not exist"
-            ).ask()
+            file = prompt_file("HTML file path:", allow_cancel=True)
             if not file:
                 sys.exit(0)
         
         # Ask about output
-        save_output = questionary.confirm(
-            "Save results to file?",
-            default=False
-        ).ask()
+        save_output = prompt_confirm("Save results to file?", default=False)
         
         if save_output:
             output = questionary.text(
                 "Output file:",
-                default="probe_analysis.json"
+                default="scout_analysis.json"
             ).ask()
             
             if output:
                 # Suggest JSON format if saving
-                format = questionary.select(
+                format = prompt_choice(
                     "Output format:",
                     choices=["json", "terminal"],
-                    default="json"
-                ).ask() or "json"
+                    allow_cancel=False
+                ) or "json"
     
     # Validate required arguments in batch mode
     if not url_or_file and not file:

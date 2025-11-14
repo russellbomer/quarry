@@ -6,10 +6,19 @@ Provides foundational utilities used by all scraping tools:
 - Token bucket rate limiter for per-domain request throttling  
 - CSS selector utilities for robust element targeting
 - Robots.txt parsing and policy enforcement
+- Interactive prompts with validation and retry logic
 """
 
 from .http import create_session, get_html, get_rate_limiter, set_rate_limiter
 from .policy import check_robots, is_allowed_domain
+from .prompts import (
+    RetryablePrompt,
+    prompt_choice,
+    prompt_confirm,
+    prompt_file,
+    prompt_text,
+    prompt_url,
+)
 from .ratelimit import DomainRateLimiter, TokenBucket
 from .robots import RobotsCache
 from .selectors import (
@@ -30,6 +39,13 @@ __all__ = [
     # Rate limiting
     "DomainRateLimiter",
     "TokenBucket",
+    # Interactive prompts
+    "RetryablePrompt",
+    "prompt_url",
+    "prompt_file",
+    "prompt_choice",
+    "prompt_text",
+    "prompt_confirm",
     # Selector utilities
     "SelectorChain",
     "build_robust_selector",
