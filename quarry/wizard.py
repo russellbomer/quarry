@@ -9,16 +9,20 @@ import questionary
 from rich.console import Console
 from rich.panel import Panel
 
+from quarry.lib.http import get_html
 from quarry.lib.schemas import load_schema, save_schema
 from quarry.lib.session import (
     get_last_output,
     get_last_schema,
+    get_last_analysis,
     set_last_output,
     set_last_schema,
+    set_last_analysis,
 )
 from quarry.tools.excavate.executor import ExcavateExecutor, write_jsonl
 from quarry.tools.polish.processor import PolishProcessor
 from quarry.tools.ship.base import ExporterFactory
+from quarry.tools.scout.analyzer import analyze_page
 from quarry.tools.survey.builder import build_schema_interactive
 
 console = Console()
@@ -83,6 +87,7 @@ def _create_schema_flow() -> str | None:
     url = questionary.text("Target URL (optional)", default="").ask()
     html_path = questionary.path("Local HTML file (optional)", default="").ask()
     html_content: str | None = None
+    analysis: dict[str, Any] | None = None
 
     if html_path:
         try:
@@ -90,8 +95,47 @@ def _create_schema_flow() -> str | None:
         except OSError as err:
             console.print(f"[red]Failed to read HTML file: {err}[/red]")
             html_content = None
+    elif url:
+        try:
+            console.print("[dim]Running Scout analysis...[/dim]")
+            html_content = get_html(url)
+        except Exception as err:  # noqa: BLE001
+            console.print(f"[red]Failed to fetch URL: {err}[/red]")
+            html_content = None
 
-    schema = build_schema_interactive(url=url or None, analysis=None, html=html_content)
+    if html_content:
+        try:
+            analysis = analyze_page(html_content, url=url or None)
+        except Exception as err:  # noqa: BLE001
+            console.print(f"[yellow]Scout analysis failed: {err}[/yellow]")
+            analysis = None
+
+    if analysis:
+        frameworks = analysis.get("frameworks") or []
+        framework_summary = (
+            ", ".join(f"{fw['name']} ({fw['confidence'] * 100:.0f}%)" for fw in frameworks[:2])
+            if frameworks
+            else "None detected"
+        )
+        container_count = len(analysis.get("containers") or [])
+        suggested_selector = (analysis.get("suggestions") or {}).get("item_selector") or "n/a"
+        console.print(
+            Panel(
+                f"Frameworks: {framework_summary}\n"
+                f"Candidate containers: {container_count}\n"
+                f"Suggested selector: {suggested_selector}",
+                title="Scout Summary",
+                title_align="left",
+                border_style="blue",
+                expand=False,
+            )
+        )
+
+    schema = build_schema_interactive(
+        url=url or None,
+        analysis=analysis,
+        html=html_content,
+    )
     output_default = Path("schemas") / f"{schema.name}.yml"
     output_path = questionary.path(
         "Save schema as",
@@ -103,7 +147,27 @@ def _create_schema_flow() -> str | None:
         return None
 
     save_schema(schema, output_path)
-    set_last_schema(output_path, schema.url)
+    set_last_schema(
+        output_path,
+        schema.url,
+        metadata={
+            "name": schema.name,
+            "fields": list(schema.fields.keys()),
+            "item_selector": schema.item_selector,
+        },
+    )
+    if analysis:
+        set_last_analysis(
+            {
+                "url": schema.url or url,
+                "frameworks": analysis.get("frameworks"),
+                "suggested_selector": (analysis.get("suggestions") or {}).get("item_selector"),
+                "field_candidates": (analysis.get("suggestions") or {}).get("field_candidates"),
+                "containers": analysis.get("containers"),
+                "schema_name": schema.name,
+                "schema_fields": list(schema.fields.keys()),
+            }
+        )
     console.print(f"[green]Schema saved to {output_path}[/green]")
     return str(Path(output_path).absolute())
 
@@ -125,6 +189,25 @@ def _run_extraction_flow(schema_path: str) -> str | None:
     except Exception as err:  # noqa: BLE001
         console.print(f"[red]Failed to load schema: {err}[/red]")
         return None
+
+    last_analysis = get_last_analysis()
+    if last_analysis:
+        frameworks = last_analysis.get("frameworks") or []
+        framework_summary = (
+            ", ".join(fw.get("name", "") for fw in frameworks[:2]) if frameworks else "n/a"
+        )
+        suggested_selector = last_analysis.get("suggested_selector") or "n/a"
+        console.print(
+            Panel(
+                f"Schema: {last_analysis.get('schema_name', schema.name)}\n"
+                f"Framework hint: {framework_summary}\n"
+                f"Suggested selector: {suggested_selector}",
+                title="Extraction Context",
+                title_align="left",
+                border_style="blue",
+                expand=False,
+            )
+        )
 
     default_url = schema.url or ""
     target_url = questionary.text("URL to extract", default=default_url).ask()
@@ -216,9 +299,21 @@ def _run_polish_flow(input_path: str) -> str | None:
     dedupe_strategy = "first"
 
     if dedupe:
+        suggested_fields: list[str] = []
+        last_schema = get_last_schema()
+        if last_schema and last_schema.get("path") and Path(last_schema["path"]).exists():
+            try:
+                schema = load_schema(last_schema["path"])
+                for candidate in ("id", "link", "url", "slug"):
+                    if candidate in schema.fields:
+                        suggested_fields = [candidate]
+                        break
+            except Exception:  # pragma: no cover - advisory only
+                suggested_fields = []
+
         fields_answer = questionary.text(
             "Comma-separated fields for dedupe (blank = full record)",
-            default="",
+            default=", ".join(suggested_fields) if suggested_fields else "",
         ).ask()
         if fields_answer:
             dedupe_fields = [field.strip() for field in fields_answer.split(",") if field.strip()]
@@ -271,6 +366,19 @@ def _run_export_flow(input_path: str) -> None:
     if not destination:
         console.print("[yellow]Export skipped[/yellow]")
         return
+
+    last_output = get_last_output()
+    if last_output:
+        console.print(
+            Panel(
+                f"Records ready: {last_output.get('record_count', 'n/a')}\n"
+                f"Source file: {last_output.get('path', '')}",
+                title="Current Dataset",
+                title_align="left",
+                border_style="blue",
+                expand=False,
+            )
+        )
 
     options: dict[str, Any] = {}
 

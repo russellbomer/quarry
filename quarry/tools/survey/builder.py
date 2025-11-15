@@ -12,6 +12,73 @@ from quarry.tools.scout.analyzer import analyze_page
 from .templates import list_templates, get_template, create_from_template, suggest_template
 
 
+def _clone_fields(fields: dict[str, FieldSchema]) -> dict[str, FieldSchema]:
+    """Create a deep copy of template fields."""
+
+    return {name: schema.model_copy() for name, schema in fields.items()}
+
+
+def _merge_template_fields(
+    template_fields: dict[str, FieldSchema],
+    candidates: list[dict[str, Any]],
+) -> tuple[dict[str, FieldSchema], list[dict[str, Any]]]:
+    """Merge Scout field candidates into template field definitions."""
+
+    if not candidates:
+        return _clone_fields(template_fields), []
+
+    normalized_candidates: list[tuple[str, dict[str, Any]]] = []
+    for cand in candidates:
+        name = cand.get("name")
+        if not name:
+            continue
+        normalized_candidates.append((name.replace("_", " ").lower(), cand))
+
+    merged = _clone_fields(template_fields)
+    applied: list[dict[str, Any]] = []
+    used_indices: set[int] = set()
+
+    for field_name, schema in merged.items():
+        target = field_name.replace("_", " ").lower()
+        match_idx: int | None = None
+        match_candidate: dict[str, Any] | None = None
+
+        for idx, (candidate_name, candidate) in enumerate(normalized_candidates):
+            if idx in used_indices:
+                continue
+            if candidate_name == target or candidate_name in target or target in candidate_name:
+                match_idx = idx
+                match_candidate = candidate
+                break
+
+        if match_idx is None or match_candidate is None:
+            continue
+
+        selector = match_candidate.get("selector")
+        if not selector:
+            continue
+
+        attribute = match_candidate.get("attribute") or schema.attribute
+        merged[field_name] = schema.model_copy(
+            update={
+                "selector": selector,
+                "attribute": attribute,
+            }
+        )
+
+        applied.append(
+            {
+                "field": field_name,
+                "selector": selector,
+                "attribute": attribute,
+                "sample": match_candidate.get("sample", ""),
+            }
+        )
+        used_indices.add(match_idx)
+
+    return merged, applied
+
+
 def build_schema_interactive(
     url: str | None = None, analysis: dict[str, Any] | None = None, html: str | None = None
 ) -> ExtractionSchema:
@@ -219,12 +286,46 @@ def build_schema_interactive(
 
             console.print(f"[green]✓[/green] Using: [cyan]{item_selector}[/cyan]")
 
+            candidate_fields = (
+                (analysis.get("suggestions") or {}).get("field_candidates") if analysis else None
+            )
+            fields = _clone_fields(template["fields"])
+            applied_matches: list[dict[str, Any]] = []
+
+            if candidate_fields:
+                merged_fields, applied_matches = _merge_template_fields(
+                    template["fields"], candidate_fields
+                )
+                if applied_matches:
+                    table = Table(
+                        title="Detected Field Matches",
+                        title_style="bold",
+                        box=box.SIMPLE,
+                        show_header=True,
+                        header_style="bold cyan",
+                    )
+                    table.add_column("Field", style="yellow", width=15)
+                    table.add_column("Selector", style="cyan", max_width=40, overflow="fold")
+                    table.add_column("Attribute", style="magenta", width=12)
+                    table.add_column("Sample", style="dim", max_width=30, overflow="ellipsis")
+
+                    for match in applied_matches:
+                        table.add_row(
+                            match["field"],
+                            match["selector"],
+                            match["attribute"] or "—",
+                            match.get("sample", ""),
+                        )
+
+                    console.print(table)
+                    console.print()
+
+                    if Confirm.ask("Apply detected selectors to template fields?", default=True):
+                        fields = merged_fields
+
             # Use template fields (optionally allow customization)
             console.print()
             if Confirm.ask("Customize template fields?", default=False):
-                # Show template fields and allow editing
-                fields = dict(template["fields"])
-
                 console.print("\n[bold]Template fields:[/bold]")
                 for fname, fschema in fields.items():
                     console.print(f"  • {fname}: {fschema.selector}")
@@ -244,8 +345,6 @@ def build_schema_interactive(
                             selector=selector, attribute=attribute if attribute.strip() else None
                         )
                         console.print(f"[green]✓[/green] Added: {field_name}")
-            else:
-                fields = template["fields"]
 
             # Pagination (optional)
             console.print()

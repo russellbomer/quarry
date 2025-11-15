@@ -22,7 +22,7 @@ def _load_session() -> dict[str, Any]:
     """Load session data from file."""
     if not _SESSION_FILE.exists():
         return {}
-    
+
     try:
         with _SESSION_FILE.open("r", encoding="utf-8") as f:
             return json.load(f)
@@ -37,27 +37,34 @@ def _save_session(data: dict[str, Any]) -> None:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
-def set_last_schema(schema_path: str, url: str | None = None) -> None:
+def set_last_schema(
+    schema_path: str,
+    url: str | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> None:
     """
     Store the most recently created/used schema.
-    
+
     Args:
         schema_path: Path to the schema file
         url: Optional URL associated with the schema
     """
     session = _load_session()
-    session["last_schema"] = {
+    record = {
         "path": str(Path(schema_path).absolute()),
         "url": url,
         "timestamp": datetime.now(UTC).isoformat(),
     }
+    if metadata:
+        record["metadata"] = metadata
+    session["last_schema"] = record
     _save_session(session)
 
 
 def get_last_schema() -> dict[str, Any] | None:
     """
     Get the most recently created/used schema.
-    
+
     Returns:
         Dict with keys: path, url, timestamp, or None if no schema stored
     """
@@ -65,10 +72,27 @@ def get_last_schema() -> dict[str, Any] | None:
     return session.get("last_schema")
 
 
+def set_last_analysis(data: dict[str, Any]) -> None:
+    """Store the most recent Scout analysis snapshot."""
+
+    session = _load_session()
+    payload = dict(data)
+    payload["timestamp"] = datetime.now(UTC).isoformat()
+    session["last_analysis"] = payload
+    _save_session(session)
+
+
+def get_last_analysis() -> dict[str, Any] | None:
+    """Retrieve the most recent Scout analysis snapshot."""
+
+    session = _load_session()
+    return session.get("last_analysis")
+
+
 def set_last_output(output_path: str, format: str, record_count: int) -> None:
     """
     Store the most recently generated output file.
-    
+
     Args:
         output_path: Path to the output file
         format: Format of the output (jsonl, csv, json, etc.)
@@ -87,7 +111,7 @@ def set_last_output(output_path: str, format: str, record_count: int) -> None:
 def get_last_output() -> dict[str, Any] | None:
     """
     Get the most recently generated output file.
-    
+
     Returns:
         Dict with keys: path, format, record_count, timestamp, or None
     """
