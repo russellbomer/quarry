@@ -4,14 +4,12 @@ import json
 from pathlib import Path
 from typing import Any
 
-import click
 from bs4 import BeautifulSoup
 
 from quarry.lib.http import get_html
 from quarry.lib.schemas import ExtractionSchema, FieldSchema, PaginationSchema
 from quarry.tools.scout.analyzer import analyze_page
-
-from .templates import get_template, list_templates
+from .templates import list_templates, get_template, create_from_template, suggest_template
 
 
 def build_schema_interactive(
@@ -170,14 +168,29 @@ def build_schema_interactive(
             # Use template fields (optionally allow customization)
             console.print()
             if Confirm.ask("Customize template fields?", default=False):
-                # Interactive field editor
-                from quarry.tools.survey.field_editor import edit_fields_interactive
+                # Show template fields and allow editing
+                fields = dict(template["fields"])
                 
-                fields = edit_fields_interactive(
-                    fields=dict(template["fields"]),
-                    html=html,
-                    item_selector=item_selector
-                )
+                console.print("\n[bold]Template fields:[/bold]")
+                for fname, fschema in fields.items():
+                    console.print(f"  • {fname}: {fschema.selector}")
+                
+                console.print()
+                if Confirm.ask("Add more fields?", default=False):
+                    # Add custom fields
+                    while True:
+                        field_name = Prompt.ask("Field name (or press Enter to finish)", default="")
+                        if not field_name.strip():
+                            break
+                        
+                        selector = Prompt.ask(f"Selector for '{field_name}'")
+                        attribute = Prompt.ask("Attribute (optional)", default="")
+                        
+                        fields[field_name] = FieldSchema(
+                            selector=selector,
+                            attribute=attribute if attribute.strip() else None
+                        )
+                        console.print(f"[green]✓[/green] Added: {field_name}")
             else:
                 fields = template["fields"]
             
@@ -400,33 +413,38 @@ def build_schema_interactive(
             
             console.print(f"[green]✓[/green] Added {len(fields)} fields")
     
-    # Interactive field editor
+    # Manual field entry
     console.print()
-    if fields:
-        # We have suggested fields - ask if they want to customize
-        if Confirm.ask("Customize fields (add/remove/edit/reorder)?", default=True):
-            from quarry.tools.survey.field_editor import edit_fields_interactive
-            
-            fields = edit_fields_interactive(
-                fields=fields,
-                html=html,
-                item_selector=item_selector
-            )
-    else:
-        # No fields yet - go straight to editor
-        console.print("[yellow]No fields defined yet. Let's add some![/yellow]")
-        from quarry.tools.survey.field_editor import edit_fields_interactive
+    while True:
+        if fields:
+            if not Confirm.ask("Add custom field?", default=False):
+                break
+        else:
+            console.print("[yellow]No fields defined yet. Add at least one field.[/yellow]")
         
-        fields = edit_fields_interactive(
-            fields={},
-            html=html,
-            item_selector=item_selector
+        field_name = Prompt.ask("Field name")
+        selector = Prompt.ask(f"Selector for '{field_name}'")
+        
+        # Ask for attribute if it looks like a link/image
+        attribute = None
+        if "href" in selector.lower() or field_name.lower() in ["url", "link"]:
+            if Confirm.ask("Extract 'href' attribute?", default=True):
+                attribute = "href"
+        elif "src" in selector.lower() or field_name.lower() in ["image", "img"]:
+            if Confirm.ask("Extract 'src' attribute?", default=True):
+                attribute = "src"
+        else:
+            custom_attr = Prompt.ask("Extract attribute (leave empty for text)", default="")
+            if custom_attr.strip():
+                attribute = custom_attr.strip()
+        
+        required = Confirm.ask(f"Is '{field_name}' required?", default=False)
+        
+        fields[field_name] = FieldSchema(
+            selector=selector,
+            attribute=attribute if attribute else None,
+            required=required
         )
-        
-        if not fields:
-            console.print("[red]No fields defined. Cannot proceed.[/red]")
-            raise click.Abort()
-
         
         console.print(f"[green]✓[/green] Added field: {field_name}")
     
@@ -493,47 +511,18 @@ def build_schema_interactive(
         pagination=pagination
     )
     
-    # Final review with option to edit
-    while True:
-        console.print()
-        console.print(Panel(
-            f"[bold]Name:[/bold] {schema.name}\n"
-            f"[bold]Item selector:[/bold] [cyan]{schema.item_selector}[/cyan]\n"
-            f"[bold]Fields:[/bold] {len(schema.fields)} ({', '.join(schema.fields.keys())})\n" +
-            (f"[bold]Pagination:[/bold] enabled (max: {schema.pagination.max_pages or 'unlimited'})" if schema.pagination else "[bold]Pagination:[/bold] disabled"),
-            title="Schema Summary",
-            title_align="left",
-            border_style="green",
-            expand=False
-        ))
-        
-        console.print()
-        review_choice = Prompt.ask(
-            "Looks good?",
-            choices=["yes", "edit", "cancel", "y", "e", "c"],
-            default="yes"
-        )
-        
-        # Normalize shortcuts
-        choice_map = {"y": "yes", "e": "edit", "c": "cancel"}
-        review_choice = choice_map.get(review_choice, review_choice)
-        
-        if review_choice == "yes":
-            console.print("[green]✓ Schema ready to save![/green]")
-            break
-        elif review_choice == "edit":
-            # Let them edit fields
-            from quarry.tools.survey.field_editor import edit_fields_interactive
-            
-            console.print("\n[cyan]Re-opening field editor...[/cyan]")
-            schema.fields = edit_fields_interactive(
-                fields=schema.fields,
-                html=html,
-                item_selector=item_selector
-            )
-        elif review_choice == "cancel":
-            console.print("[yellow]Schema creation cancelled[/yellow]")
-            raise click.Abort()
+    # Summary
+    console.print()
+    console.print(Panel(
+        f"[bold]Name:[/bold] {schema.name}\n"
+        f"[bold]Item selector:[/bold] [cyan]{schema.item_selector}[/cyan]\n"
+        f"[bold]Fields:[/bold] {len(schema.fields)} ({', '.join(schema.fields.keys())})\n" +
+        (f"[bold]Pagination:[/bold] enabled (max: {schema.pagination.max_pages or 'unlimited'})" if schema.pagination else "[bold]Pagination:[/bold] disabled"),
+        title="Schema Summary",
+        title_align="left",
+        border_style="green",
+        expand=False
+    ))
     
     return schema
 

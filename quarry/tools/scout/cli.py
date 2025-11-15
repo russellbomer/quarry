@@ -225,4 +225,4 @@ def scout(url_or_file, file, output, format, pretty, find_api, batch_mode):
 
 
 if __name__ == "__main__":
-    probe()
+    scout()

@@ -3,41 +3,47 @@
 **A modern Python toolkit for web data extraction with robust support for React, Vue, and other JavaScript frameworks.**
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-210%20passing-success.svg)](./tests/)
+[![Tests](https://img.shields.io/badge/tests-199%20passing-success.svg)](./tests/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 ---
 
 ## 🌟 What is Quarry?
 
-**Honest web scraping for government, academic, and static HTML sites.**
+Quarry provides **two powerful approaches** for web scraping:
 
-Quarry is a CLI toolkit that extracts structured data from traditional websites. Unlike tools that promise universal compatibility, Quarry detects technical limitations upfront—identifying when modern frameworks (React, Next.js, Vue) make traditional scraping infeasible and recommending API-based alternatives instead.
+1. **⚒️ Quarry Tools** - Interactive CLI pipeline for building extraction workflows
+2. **🧙 Wizard Mode** - YAML-driven declarative scraping with automatic framework detection
 
-**Best for**: Government data portals, academic sites, documentation sites, traditional HTML pages  
-**Limitations**: Dynamic JavaScript sites require API access (Quarry will detect this and guide you)
+**Key Feature**: Resilient selectors that survive CSS framework updates (React CSS-in-JS, Vue scoped styles, etc.)
 
 ---
 
-## 🚀 5-Minute Quick Start
+## 🚀 Quick Start
+
+### Installation
 
 ```bash
-# Install
-pip install -e .
-
-# Extract live weather alerts (no config needed!)
-quarry excavate examples/schemas/weather_simple.yml
-
-# Convert to CSV
-quarry ship output.jsonl alerts.csv
-
-# Done! Open alerts.csv
+pip install -e .  # From source
+# or: pip install quarry  # From PyPI (coming soon)
 ```
 
-**See real data in under 1 minute.** 📊
+**Requirements**: Python 3.11+
 
-📖 **Full tutorial**: [QUICKSTART.md](QUICKSTART.md) - Extract from any site in 5 minutes  
-📖 **Advanced guide**: [USAGE_GUIDE.md](USAGE_GUIDE.md)
+### Your First Extraction
+
+```bash
+# Analyze a webpage
+quarry scout https://example.com
+
+# Extract data
+quarry excavate schema.yml --url https://example.com
+
+# Export results
+quarry ship output.jsonl results.csv
+```
+
+📖 **Full guide**: [USAGE_GUIDE.md](USAGE_GUIDE.md) | [INSTALLATION.md](INSTALLATION.md)
 
 ---
 
@@ -48,30 +54,40 @@ quarry ship output.jsonl alerts.csv
 | Tool | Purpose | Example |
 |------|---------|---------|
 | **📡 Scout** | Analyze HTML & detect patterns | `quarry scout <url>` |
-| **📐 Survey** | Design extraction schemas & jobs | `quarry survey create` |
+| **📐 Survey** | Design extraction schemas | `quarry survey create schema.yml` |
 | **🔨 Excavate** | Execute data extraction | `quarry excavate schema.yml --url <url>` |
 | **✨ Polish** | Transform & clean data | `quarry polish data.jsonl --dedupe` |
 | **📦 Ship** | Export to CSV/JSON/SQLite | `quarry ship data.jsonl output.csv` |
-
-**Survey Commands**:
-- `quarry survey create` - Build schema interactively (with --job flag for job YAML)
-- `quarry survey to-job schema.yml -n my_job` - Convert schema to job file
-- `quarry survey preview schema.yml --url <url>` - Test extraction before running
-- `quarry survey validate schema.yml` - Check schema validity
 
 **Complete pipeline**:
 ```bash
 quarry scout <url> | quarry excavate | quarry polish --dedupe | quarry ship results.csv
 ```
 
-**Job Creation**:
+📚 **Detailed docs**: [docs/QUARRY_COMPLETE.md](docs/QUARRY_COMPLETE.md)
+
+---
+
+## 🧙 Wizard Mode
+
+**Zero-code scraping** with automatic framework detection:
+
 ```bash
-# Create job YAML for scheduled/batch extraction
-quarry survey create --job --job-name my_scraper
-quarry run jobs/my_scraper.yml --live
+# Launch interactive wizard
+quarry init
+
+# Wizard will:
+# 1. Detect framework (React, WordPress, etc.)
+# 2. Suggest selectors
+# 3. Generate YAML job file
+
+# Run generated job
+quarry run jobs/my_job.yml --live
 ```
 
-📚 **Detailed docs**: [docs/QUARRY_COMPLETE.md](docs/QUARRY_COMPLETE.md)
+**Supports 9 frameworks**: WordPress, Drupal, React, Vue, Next.js, Bootstrap, Tailwind, Shopify, Django
+
+📚 **Wizard guide**: [docs/WIZARD.md](docs/WIZARD.md)
 
 ---
 

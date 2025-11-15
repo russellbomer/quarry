@@ -1,6 +1,6 @@
 """Quarry: A reusable Python toolkit for web/data collection."""
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 
 from quarry.core import run_job
 from quarry.lib.http import create_session, get_html
