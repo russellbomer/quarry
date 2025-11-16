@@ -26,7 +26,11 @@ jobs:
         run: ruff format --check .
       - name: Lint
         run: ruff check .
+      - name: Type check (mypy)
+        run: mypy -p quarry
       - name: Test
         run: pytest -q
+      - name: Build wheel
+        run: python -m pip wheel . -w dist
 
 
