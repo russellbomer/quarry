@@ -46,11 +46,10 @@
   - [ ] Ship: Export to CSV/JSON/SQLite/Parquet
   
 - [ ] **Legacy Wizard Suite** - Verify backward compatibility
-  - [ ] `quarry init` - Initialize workspace
+  - [ ] `quarry init` - Interactive job creation (replaces wizard)
   - [ ] `quarry run job.yml --offline` - Run with fixtures
   - [ ] `quarry run job.yml --live` - Live scraping
-  - [ ] `quarry state` - View job state
-  - [ ] `quarry wizard` - Interactive job creation
+  - [ ] `sqlite3 data/cache/state.sqlite "SELECT job, last_run FROM jobs_state ORDER BY last_run DESC LIMIT 5;"` - View job state
 
 - [ ] **Library API** - Verify programmatic usage
   ```python

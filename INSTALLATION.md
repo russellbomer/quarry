@@ -308,7 +308,7 @@ quarry.ship --help
 
 # 3. Run a quick test
 echo '<html><h1>Test</h1></html>' > test.html
-quarry.scout test.html
+quarry scout test.html
 rm test.html
 ```
 
@@ -337,7 +337,7 @@ python -m scrapesuite.forge schema.yml
 
 **New commands** (Quarry v2.0):
 ```bash
-quarry.scout https://example.com
+quarry scout https://example.com
 quarry.survey create
 quarry.excavate schema.yml
 ```

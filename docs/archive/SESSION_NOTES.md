@@ -29,7 +29,7 @@
 python -m ruff format .
 python -m ruff check .
 pytest -q
-python -m quarry.cli init
-python -m quarry.cli run .\jobs\custom_*.yml --offline true --max-items 10
+quarry init
+Get-ChildItem .\jobs\custom_*.yml | ForEach-Object { quarry run $_.FullName --offline --max-items 10 }
 python -c "import glob,pandas as pd; p=sorted(glob.glob(r'data\cache\**\*.parquet', recursive=True))[-1]; print(p); df=pd.read_parquet(p); print(df[['id','title','url']].head(5).to_string(index=False))"
 ```

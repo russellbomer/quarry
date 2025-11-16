@@ -14,7 +14,7 @@ pip install -e .
 Run a pre-built example offline (no network, uses cached HTML):
 
 ```bash
-python -m quarry.cli run examples/jobs/fda.yml --offline
+quarry run examples/jobs/fda.yml --offline
 ```
 
 **Output:**
@@ -45,7 +45,7 @@ print(f'\nTotal records: {len(df)}')
 "
 
 # Check job state
-python -m quarry.cli state
+sqlite3 data/cache/state.sqlite "SELECT job, last_run FROM jobs_state ORDER BY last_run DESC LIMIT 5;"
 ```
 
 ## Available Parsers (Connectors)
@@ -63,7 +63,7 @@ Quarry has 3 built-in parsers:
 Interactive wizard guides you:
 
 ```bash
-python -m quarry.cli init
+quarry init
 ```
 
 **Prompts you for:**
@@ -112,7 +112,7 @@ policy:
 - Can't scrape new URLs
 
 ```bash
-python -m quarry.cli run jobs/my_job.yml --offline
+quarry run jobs/my_job.yml --offline
 ```
 
 **Live (careful, hits real URLs):**
@@ -122,7 +122,7 @@ python -m quarry.cli run jobs/my_job.yml --offline
 - Requires allowlist in job YAML
 
 ```bash
-python -m quarry.cli run jobs/my_job.yml --live
+quarry run jobs/my_job.yml --live
 ```
 
 ## Advanced Features
@@ -175,38 +175,42 @@ for f in failures:
 
 ```bash
 # Run one job offline
-python -m quarry.cli run jobs/fda.yml --offline
+quarry run jobs/fda.yml --offline
 
 # Run one job live (careful!)
-python -m quarry.cli run jobs/fda.yml --live --max-items 10
+quarry run jobs/fda.yml --live --max-items 10
 
 # Run all jobs in jobs/ directory
-python -m quarry.cli run-all --offline
+for job in jobs/*.yml; do quarry run "$job" --offline; done
 
 # Create new job interactively
-python -m quarry.cli init
+quarry init
 
 # View job state
-python -m quarry.cli state
+sqlite3 data/cache/state.sqlite "SELECT job, last_run FROM jobs_state ORDER BY last_run DESC LIMIT 5;"
 
-# Batch scrape URL list
-python -m quarry.cli batch urls.txt output.jsonl --offline
+# Export JSONL results (from quarry excavate)
+quarry ship data/output.jsonl exports/fda.csv
 ```
 
 ## Troubleshooting Commands
 
 ```bash
 # Check if a URL is allowed by robots.txt
-python -m quarry.cli check-robots https://github.com/explore
+curl https://github.com/robots.txt | grep -i "crawl-delay"
 
 # Inspect a job without running it
-python -m quarry.cli inspect jobs/my_job.yml
+cat jobs/my_job.yml
 
 # View failed URLs for a job
-python -m quarry.cli failed fda_recalls
+python - <<'PY'
+from quarry import get_failed_urls
+for row in get_failed_urls('fda_recalls'):
+  print(f"{row['url']}: {row['error_message']} (×{row['retry_count']})")
+PY
 
 # Show cache information
-python -m quarry.cli cache-info
+du -sh data/cache/*/
 ```
 
 ## Output Formats
@@ -256,7 +260,7 @@ sink:
 
 **Something not working?**
 
-1. Check job state: `python -m quarry.cli state`
+1. Check job state: `sqlite3 data/cache/state.sqlite "SELECT job, last_run FROM jobs_state ORDER BY last_run DESC LIMIT 5;"`
 2. Look at test examples: `tests/test_run_job.py`
 3. Verify YAML syntax: `cat jobs/yourjob.yml`
 4. Run in offline mode first to test logic

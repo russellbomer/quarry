@@ -370,7 +370,11 @@ def build_schema_interactive(
                 best_selector = (analysis.get("suggestions") or {}).get("item_selector")
                 _add_selector(best_selector)
                 for container in analysis.get("containers") or []:
-                    _add_selector(container.get("child_selector") or container.get("selector"))
+                    _add_selector(
+                        container.get("child_selector")
+                        or container.get("direct_child_selector")
+                        or container.get("selector")
+                    )
 
             for selector in base_selectors:
                 _add_selector(selector)
@@ -625,7 +629,12 @@ def build_schema_interactive(
         table.add_column("Sample", style="dim", max_width=30, overflow="ellipsis")
 
         for idx, container in enumerate(containers, 1):
-            selector = container.get("child_selector") or container.get("selector") or "—"
+            selector = (
+                container.get("child_selector")
+                or container.get("direct_child_selector")
+                or container.get("selector")
+                or "—"
+            )
             count = str(container.get("item_count", 0))
             sample = container.get("sample_text", "")
             sample = " ".join(sample.split())[:30]
@@ -648,9 +657,12 @@ def build_schema_interactive(
         if choice.lower() == "keep" and item_selector:
             console.print(f"[green]✓[/green] Keeping: [cyan]{item_selector}[/cyan]")
         elif choice.isdigit() and 1 <= int(choice) <= len(containers):
-            item_selector = containers[int(choice) - 1].get("child_selector") or containers[
-                int(choice) - 1
-            ].get("selector")
+            container = containers[int(choice) - 1]
+            item_selector = (
+                container.get("child_selector")
+                or container.get("direct_child_selector")
+                or container.get("selector")
+            )
             console.print(f"[green]✓[/green] Using: [cyan]{item_selector}[/cyan]")
         else:
             item_selector = choice
@@ -878,13 +890,20 @@ def _build_schema_simple(
         print("Suggested containers:")
         containers = analysis["containers"][:3]
         for idx, cont in enumerate(containers, 1):
-            selector = cont.get("child_selector", cont.get("selector"))
+            selector = cont.get(
+                "child_selector",
+                cont.get("direct_child_selector", cont.get("selector")),
+            )
             count = cont.get("item_count", 0)
             print(f"  {idx}. {selector} ({count} items)")
 
         choice = input("\nSelect option or enter custom [1]: ").strip() or "1"
         if choice.isdigit() and 1 <= int(choice) <= len(containers):
-            item_selector = containers[int(choice) - 1].get("child_selector")
+            selected = containers[int(choice) - 1]
+            item_selector = selected.get(
+                "child_selector",
+                selected.get("direct_child_selector", selected.get("selector")),
+            )
         else:
             item_selector = choice
     else:

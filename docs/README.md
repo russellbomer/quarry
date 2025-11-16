@@ -27,8 +27,7 @@ Welcome to the Quarry documentation. This directory contains comprehensive guide
 
 ### Reference
 
-- **[API Documentation](API.md)** *(coming soon)* - Python API reference
-- **[CLI Reference](CLI.md)** *(coming soon)* - Command-line interface
+- **[API & CLI Reference](API_REFERENCE.md)** - Supported public Python and CLI interfaces
 
 ## Archive
 

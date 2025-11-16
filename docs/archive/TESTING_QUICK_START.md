@@ -187,13 +187,13 @@ html = get_html(url, respect_robots=False)  # Testing only!
 
 ```bash
 # Run wizard
-python -m quarry wizard
+quarry init
 
 # Run job
-python -m quarry run job.yml
+quarry run job.yml
 
 # Run with offline mode (uses fixtures)
-python -m quarry run job.yml --offline
+quarry run job.yml --offline
 
 # Run tests
 python -m pytest -q

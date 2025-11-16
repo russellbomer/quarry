@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from typing import Any
+from typing import Any, Dict, List
 
 from bs4 import BeautifulSoup, Tag
 
@@ -12,7 +12,7 @@ from quarry.framework_profiles import (
     get_framework_field_selector,
     is_framework_pattern,
 )
-from quarry.tools.scout.analyzer import analyze_page, _suggest_fields
+from quarry.tools.scout.analyzer import analyze_page, _suggest_fields, _generalize_item_selector
 
 
 def inspect_html(html: str) -> dict[str, Any]:
@@ -33,13 +33,13 @@ def inspect_html(html: str) -> dict[str, Any]:
     metadata = analysis.get("metadata", {})
 
     class_counter: Counter[str] = Counter()
-    samples: dict[str, Tag] = {}
+    samples: Dict[str, Tag] = {}
     for tag in soup.find_all(True):
         for cls in tag.get("class", []):
             class_counter[cls] += 1
             samples.setdefault(cls, tag)
 
-    repeated_classes: list[dict[str, Any]] = []
+    repeated_classes: List[Dict[str, Any]] = []
     for cls, count in class_counter.most_common(20):
         if count < 3:
             continue
@@ -53,7 +53,7 @@ def inspect_html(html: str) -> dict[str, Any]:
             }
         )
 
-    sample_links = []
+    sample_links: List[Dict[str, Any]] = []
     for link in soup.find_all("a", href=True)[:10]:
         sample_links.append(
             {
@@ -86,14 +86,18 @@ def find_item_selector(html: str, min_items: int = 3) -> list[dict[str, Any]]:
     frameworks = analysis.get("frameworks") or []
     detected_framework = detect_framework(html)
 
-    results: list[dict[str, Any]] = []
+    results: List[Dict[str, Any]] = []
 
     for entry in containers:
         count = entry.get("item_count", 0)
         if count < min_items:
             continue
 
-        selector = entry.get("child_selector") or entry.get("selector")
+        selector = (
+            entry.get("child_selector")
+            or entry.get("direct_child_selector")
+            or entry.get("selector")
+        )
         if not selector:
             continue
 
@@ -111,9 +115,32 @@ def find_item_selector(html: str, min_items: int = 3) -> list[dict[str, Any]]:
         sample_url = ""
 
         try:
+            matches = soup.select(selector)
+        except Exception:
+            matches = []
+
+        if not matches:
+            fallback_selector = entry.get("direct_child_selector")
+            if fallback_selector and fallback_selector != selector:
+                try:
+                    matches = soup.select(fallback_selector)
+                    if matches:
+                        selector = fallback_selector
+                except Exception:
+                    matches = []
+
+        selector = _generalize_item_selector(
+            soup,
+            matches,
+            selector,
+            entry.get("child_tag"),
+            containers,
+        )
+
+        try:
             element = soup.select_one(selector)
         except Exception:
-            element = None
+            element = matches[0] if matches else None
 
         if element:
             link = element.find("a", href=True)

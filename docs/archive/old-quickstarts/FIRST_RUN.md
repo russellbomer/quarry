@@ -5,7 +5,7 @@
 ## Step 1: Run the Example
 
 ```bash
-python -m quarry.cli run examples/jobs/fda.yml --offline --max-items 10
+quarry run examples/jobs/fda.yml --offline --max-items 10
 ```
 
 You should see:
@@ -17,7 +17,7 @@ fda_recalls: 6 new, 3 in batch, next_cursor=acme-foods...
 
 ```bash
 # View job state
-python -m quarry.cli state
+sqlite3 data/cache/state.sqlite "SELECT job, last_run FROM jobs_state ORDER BY last_run DESC LIMIT 5;"
 
 # Find the output file
 ls -lh data/cache/fda/
@@ -36,7 +36,7 @@ print(f'\nTotal: {len(df)} records')
 ## Step 3: Create Your Own Job
 
 ```bash
-python -m quarry.cli init
+quarry init
 ```
 
 Follow the prompts to create a job in `jobs/YOUR_JOB.yml`.
@@ -45,10 +45,10 @@ Follow the prompts to create a job in `jobs/YOUR_JOB.yml`.
 
 ```bash
 # Test offline first (uses fixtures if available)
-python -m quarry.cli run jobs/YOUR_JOB.yml --offline
+quarry run jobs/YOUR_JOB.yml --offline
 
 # Then try live mode (careful! hits real URLs)
-python -m quarry.cli run jobs/YOUR_JOB.yml --live --max-items 5
+quarry run jobs/YOUR_JOB.yml --live --max-items 5
 ```
 
 ## What Just Happened?

@@ -324,12 +324,12 @@ quarry/
 **cli.py → cli.py**
 - **Why replace:** Wrong command structure (flat commands, not subcommands)
 - **Current:**
-  ```bash
-  quarry init
-  quarry run job.yml
-  quarry state
-  quarry batch urls.txt
-  ```
+    ```bash
+    quarry init
+    quarry scout https://example.com
+    quarry run job.yml
+    quarry ship data.jsonl output.csv
+    ```
 - **New:**
   ```bash
   scrape inspect URL

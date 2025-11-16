@@ -1,5 +1,4 @@
-"""
-Robust CSS selector utilities for handling modern frameworks.
+"""Robust CSS selector utilities for handling modern frameworks.
 
 Provides:
 - SelectorChain: Multi-tier selector fallbacks for resilience
@@ -9,10 +8,7 @@ Provides:
 """
 
 import re
-from typing import Any
-
-from bs4 import BeautifulSoup, Tag
-
+from typing import Any, List, Optional
 
 from bs4 import BeautifulSoup, Tag
 
@@ -62,7 +58,7 @@ class SelectorChain:
         return []
 
 
-def build_robust_selector(element: Tag, root: Tag | None = None) -> str:
+def build_robust_selector(element: Tag, root: Optional[Tag] = None) -> str:
     """
     Build a robust CSS selector that works despite structural changes.
     
@@ -81,12 +77,12 @@ def build_robust_selector(element: Tag, root: Tag | None = None) -> str:
     
     # If element has an ID, that's the most stable selector
     elem_id = element.get("id")
-    if elem_id and not _looks_dynamic(elem_id):
+    if isinstance(elem_id, str) and not _looks_dynamic(elem_id):
         return f"#{elem_id}"
     
     # Build path from root to element using stable markers
-    path_parts = []
-    current = element
+    path_parts: List[str] = []
+    current: Optional[Tag] = element
     max_depth = 15  # Prevent infinite loops
     depth = 0
     
@@ -102,11 +98,11 @@ def build_robust_selector(element: Tag, root: Tag | None = None) -> str:
         
         # Get stable marker for current element
         marker = _get_stable_marker(current)
-        if marker:
+        if marker and marker != "[document]":
             # Skip generic divs/spans without classes (reduces noise in deep nesting)
             if marker not in ["div", "span"]:
                 path_parts.insert(0, marker)
-            
+
             # If we found a very stable marker (ID, semantic tag with unique class),
             # we can stop here UNLESS we have a root to reach
             if _is_very_stable(marker) and not root:
@@ -123,7 +119,7 @@ def build_robust_selector(element: Tag, root: Tag | None = None) -> str:
     return element.name
 
 
-def _get_stable_marker(element: Tag) -> str | None:
+def _get_stable_marker(element: Tag) -> Optional[str]:
     """
     Get the most stable identifier for an element.
     
@@ -135,7 +131,7 @@ def _get_stable_marker(element: Tag) -> str | None:
     """
     # Check for stable ID
     elem_id = element.get("id")
-    if elem_id and not _looks_dynamic(elem_id):
+    if isinstance(elem_id, str) and not _looks_dynamic(elem_id):
         return f"#{elem_id}"
     
     # Semantic tags are very stable
@@ -146,15 +142,19 @@ def _get_stable_marker(element: Tag) -> str | None:
     
     if element.name in semantic_tags:
         # Combine with stable class if available
-        classes = element.get("class", [])
-        stable_classes = [c for c in classes if not _looks_dynamic(c)]
+        classes = element.get("class") or []
+        stable_classes = [
+            c for c in classes if isinstance(c, str) and not _looks_dynamic(c)
+        ]
         if stable_classes:
             return f"{element.name}.{stable_classes[0]}"
         return element.name
     
     # Look for stable class names
-    classes = element.get("class", [])
-    stable_classes = [c for c in classes if not _looks_dynamic(c)]
+    classes = element.get("class") or []
+    stable_classes = [
+        c for c in classes if isinstance(c, str) and not _looks_dynamic(c)
+    ]
     
     if stable_classes:
         # Prefer semantic class names
@@ -172,9 +172,13 @@ def _get_stable_marker(element: Tag) -> str | None:
     
     # Fallback: tag name with nth-of-type if needed
     # (but only for common container tags)
-    if element.name in ["div", "span", "li", "tr", "td"]:
+    if element.name in ["div", "span", "li", "tr", "td"] and element.parent is not None:
         # Check if there are siblings with same tag
-        siblings = [s for s in element.parent.children if hasattr(s, 'name') and s.name == element.name]
+        siblings = [
+            s
+            for s in element.parent.children
+            if hasattr(s, "name") and s.name == element.name
+        ]
         if len(siblings) > 1:
             index = siblings.index(element) + 1  # nth-of-type is 1-indexed
             return f"{element.name}:nth-of-type({index})"
@@ -205,7 +209,7 @@ def _looks_dynamic(name: str) -> bool:
     
     # Count hex-like segments (common in hashes)
     import re
-    hex_segments = re.findall(r'[0-9a-f]{6,}', name.lower())
+    hex_segments = re.findall(r"[0-9a-f]{6,}", name.lower())
     if hex_segments:
         return True
     
@@ -293,9 +297,9 @@ def extract_structural_pattern(selector: str) -> str:
 
 
 def validate_selector(
-    soup: BeautifulSoup | Tag, 
-    selector: str, 
-    expected_count: int | None = None
+    soup: BeautifulSoup | Tag,
+    selector: str,
+    expected_count: Optional[int] = None,
 ) -> dict[str, Any]:
     """
     Validate that a selector works correctly on HTML.
@@ -314,14 +318,14 @@ def validate_selector(
             "warnings": list[str]
         }
     """
-    warnings = []
+    warnings: List[str] = []
     
     try:
         elements = soup.select(selector)
         count = len(elements)
         
         # Get sample texts
-        sample_texts = []
+        sample_texts: List[str] = []
         for elem in elements[:3]:
             text = elem.get_text(strip=True)[:100]
             if text:

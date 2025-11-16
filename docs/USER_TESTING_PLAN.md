@@ -499,7 +499,7 @@ for field, found in checks.items():
 
 ```bash
 # Run wizard interactively
-python -m quarry wizard
+quarry init
 
 # When prompted:
 # 1. Enter URL: https://www.allrecipes.com/recipes/
@@ -528,7 +528,7 @@ python -m quarry wizard
 
 ```bash
 # Run wizard with WooCommerce site
-python -m quarry wizard
+quarry init
 
 # When prompted:
 # 1. Enter URL: [WooCommerce store URL]
@@ -555,7 +555,7 @@ python -m quarry wizard
 
 ```bash
 # Run wizard with modern news site
-python -m quarry wizard
+quarry init
 
 # When prompted:
 # 1. Enter URL: https://techcrunch.com/
@@ -614,7 +614,7 @@ EOF
 
 # Run job (modify URL to use real site)
 # Note: Remove --offline flag to scrape live sites
-python -m quarry run test-schema-recipes.yml
+quarry run test-schema-recipes.yml
 
 # Check results
 head -20 results/schema-recipes.csv
@@ -658,7 +658,7 @@ sink:
 EOF
 
 # Run job (adjust URL to real WooCommerce store)
-python -m quarry run test-woocommerce-products.yml
+quarry run test-woocommerce-products.yml
 
 # Check results
 cat results/woocommerce-products.csv | head -10
@@ -1037,7 +1037,7 @@ python scripts/profile_framework_detection.py
 
 ### Run Wizard
 ```bash
-python -m quarry wizard
+quarry init
 ```
 
 ### Check Logs
@@ -1065,7 +1065,7 @@ export PYTHONPATH=/c/path/to/quarry
 sleep 2
 
 # Or use offline mode for testing
-python -m quarry run job.yml --offline
+quarry run job.yml --offline
 ```
 
 ### Issue: "BeautifulSoup parse warnings"
@@ -1101,10 +1101,10 @@ export PYTHONHTTPSVERIFY=0
 
 ```bash
 # Option 1: Use interactive mode (prompts when blocked)
-python -m quarry run job.yml --live --interactive
+quarry run job.yml --live --interactive
 
 # Option 2: Bypass robots.txt for testing ONLY (not ethical for production)
-python -m quarry run job.yml --live --ignore-robots
+quarry run job.yml --live --ignore-robots
 
 # Option 3: Use bot-friendly alternative sites (recommended)
 # See "Bot-Friendly Test Sites" section below

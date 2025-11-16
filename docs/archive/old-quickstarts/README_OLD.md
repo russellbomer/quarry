@@ -45,7 +45,7 @@ pip install -r requirements.txt
 
 ```bash
 make init
-# Or: python -m quarry.cli init
+# Or: quarry init
 ```
 
 Follow the prompts to generate a job YAML file in `jobs/`.
@@ -54,19 +54,19 @@ Follow the prompts to generate a job YAML file in `jobs/`.
 
 ```bash
 make run-fda
-# Or: python -m quarry.cli run jobs/fda.yml --offline true --max-items 100
+# Or: quarry run jobs/fda.yml --offline --max-items 100
 ```
 
 ### 3. Run all jobs
 
 ```bash
-python -m quarry.cli run-all --offline true
+for job in jobs/*.yml; do quarry run "$job" --offline; done
 ```
 
 ### 4. Check job state
 
 ```bash
-python -m quarry.cli state
+sqlite3 data/cache/state.sqlite "SELECT job, last_run FROM jobs_state ORDER BY last_run DESC LIMIT 5;"
 ```
 
 ## Example Job YAML

@@ -22,23 +22,23 @@ Complete guide to using **Quarry** - a modern web data extraction toolkit with i
 
 ## 🚀 Quick Start
 
-### Your First Extraction
+### Your First Extraction (Recommended CLI)
 
 ```bash
 # 1. Analyze a webpage
-quarry.scout https://example.com
+quarry scout https://example.com
 
 # 2. Create an extraction schema
-quarry.survey create
+quarry survey create
 
 # 3. Extract data
-quarry.excavate schema.yml --url https://example.com
+quarry excavate schema.yml --url https://example.com
 
 # 4. Clean the data
-quarry.polish output.jsonl --dedupe
+quarry polish output.jsonl --dedupe
 
 # 5. Export to CSV
-quarry.ship output.jsonl output.csv
+quarry ship output.jsonl output.csv
 ```
 
 ---
@@ -88,7 +88,7 @@ This creates a smooth end-to-end workflow without manually specifying file paths
 #### Interactive Mode
 
 ```bash
-quarry.scout
+quarry scout
 # → Prompts for URL or file
 # → Choose output format
 # → Save results (optional)
@@ -98,16 +98,16 @@ quarry.scout
 
 ```bash
 # Analyze a URL
-quarry.scout https://example.com
+quarry scout https://example.com
 
 # Analyze local HTML file
-quarry.scout page.html
+quarry scout page.html
 
 # Save analysis as JSON
-quarry.scout https://example.com --format json --output analysis.json
+quarry scout https://example.com --format json --output analysis.json
 
 # Show API endpoint guide (for infinite scroll sites)
-quarry.scout https://example.com --find-api
+quarry scout https://example.com --find-api
 ```
 
 #### Output Fields
@@ -142,17 +142,17 @@ quarry.scout https://example.com --find-api
 
 **Finding content containers:**
 ```bash
-quarry.scout https://news-site.com --format json | jq '.containers[] | select(.is_content==true)'
+quarry scout https://news-site.com --format json | jq '.containers[] | select(.is_content==true)'
 ```
 
 **Detecting frameworks:**
 ```bash
-quarry.scout https://app.com | grep frameworks
+quarry scout https://app.com | grep frameworks
 ```
 
 **Troubleshooting infinite scroll:**
 ```bash
-quarry.scout https://spa-site.com --find-api
+quarry scout https://spa-site.com --find-api
 ```
 
 ---

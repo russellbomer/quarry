@@ -114,7 +114,12 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
             table.add_column("Sample Text", style="dim", max_width=35, overflow="ellipsis")
             
             for cont in containers[:5]:  # Top 5
-                selector = cont.get("child_selector") or cont.get("selector") or "—"
+                selector = (
+                    cont.get("child_selector")
+                    or cont.get("direct_child_selector")
+                    or cont.get("selector")
+                    or "—"
+                )
                 count = str(cont.get("item_count", 0))
                 sample = cont.get("sample_text", "")
                 # Clean and truncate sample
@@ -129,7 +134,12 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
         suggestions = analysis.get("suggestions", {})
         best_container = suggestions.get("best_container")
         if best_container:
-            selector = best_container.get("child_selector") or best_container.get("selector") or "—"
+            selector = (
+                best_container.get("child_selector")
+                or best_container.get("direct_child_selector")
+                or best_container.get("selector")
+                or "—"
+            )
             count = best_container.get("item_count", 0)
             
             console.print(Panel(

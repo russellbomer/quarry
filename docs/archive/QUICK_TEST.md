@@ -4,7 +4,7 @@
 
 ```bash
 cd /workspaces/quarry
-python -m quarry wizard
+quarry init
 ```
 
 ## 📋 What to Provide
@@ -85,7 +85,7 @@ Examples: Amazon, eBay, product listings
 
 ```bash
 # Run the generated job
-python -m quarry run jobs/YOUR_JOB_NAME.yml
+quarry run jobs/YOUR_JOB_NAME.yml
 
 # Check output
 ls -lh data/cache/custom/

@@ -189,10 +189,10 @@ Error: Unknown parser 'xyz'. Available: fda_list, nws_list, custom_list
 find data/cache -name "*.parquet" -mtime -1
 
 # Check job state
-python -m quarry state
+sqlite3 data/cache/state.sqlite "SELECT job, last_run FROM jobs_state ORDER BY last_run DESC LIMIT 5;"
 
 # Inspect configuration
-python -m quarry inspect jobs/your_job.yml
+cat jobs/your_job.yml
 ```
 
 **Common causes:**
@@ -216,7 +216,7 @@ policy:
 **Fix 2:** Check robots.txt crawl-delay:
 
 ```bash
-python -m quarry check-robots https://example.com
+curl https://example.com/robots.txt | grep -i "crawl-delay"
 ```
 
 If crawl-delay is 2.0s, use `default_rps: 0.5` (1/2 = 0.5)

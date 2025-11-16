@@ -590,7 +590,7 @@ Use these sites for testing - they allow bot access and have good framework dive
 **Testing command:**
 ```bash
 # Interactive mode - prompts when robots.txt blocks
-python -m quarry run job.yml --live --interactive
+quarry run job.yml --live --interactive
 
 # Direct URL test
 python -c "
@@ -626,7 +626,7 @@ print(detect_all_frameworks(html)[:5])
 "
 
 # Option 3: Interactive mode (prompts before bypassing)
-python -m quarry run job.yml --live --interactive
+quarry run job.yml --live --interactive
 
 # Option 4: Testing only (NOT for production)
 python -c "

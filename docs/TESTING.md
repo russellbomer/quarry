@@ -11,7 +11,7 @@ This guide helps you test Quarry's wizard and bot evasion features on real websi
 ### 1. Run the Wizard
 ```bash
 cd /workspaces/quarry
-python -m quarry wizard
+quarry init
 ```
 
 ### 2. Provide Your URL
@@ -42,13 +42,13 @@ cat jobs/your_job_name.yml
 
 ### 1. Run Wizard (as above)
 ```bash
-python -m quarry wizard
+quarry init
 ```
 
 ### 2. Run the Generated Job
 ```bash
 # Use the job name you created
-python -m quarry run jobs/your_job_name.yml
+quarry run jobs/your_job_name.yml
 ```
 
 ### 3. Check Output
@@ -269,7 +269,7 @@ When testing reveals problems, note:
 
 ```bash
 # 1. Start wizard
-python -m quarry wizard
+quarry init
 
 # Provide URL when prompted:
 # https://news.ycombinator.com
@@ -283,7 +283,7 @@ python -m quarry wizard
 # - Generates jobs/hackernews.yml
 
 # 2. Run the job
-python -m quarry run jobs/hackernews.yml
+quarry run jobs/hackernews.yml
 
 # 3. Check output
 python -c "

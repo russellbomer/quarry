@@ -2,7 +2,7 @@
 
 import re
 from collections import Counter
-from typing import Any
+from typing import Any, Dict, List, Tuple
 
 from bs4 import BeautifulSoup, Tag
 
@@ -189,7 +189,51 @@ def _find_containers(soup: BeautifulSoup) -> list[dict[str, Any]]:
 
         return len(text) > 50
 
-    for container_tag in ["div", "section", "article", "ul", "ol", "main", "aside"]:
+    PREFERRED_ITEM_TAGS = {
+        'article',
+        'section',
+        'main',
+        'entry',
+        'tr',
+    }
+
+    def has_item_identity(element: Tag) -> bool:
+        """Determine if element is distinctive enough to represent an item root."""
+        if not element or not getattr(element, "name", None):
+            return False
+
+        elem_id = element.get("id")
+        if elem_id:
+            return True
+
+        classes = element.get("class") or []
+        if any(len(cls) >= 3 for cls in classes):
+            return True
+
+        if element.name in PREFERRED_ITEM_TAGS:
+            return True
+
+        return False
+
+    def choose_item_node(element: Tag, depth: int = 0) -> Tag:
+        """Select the most representative node for an item, favoring identifiable descendants."""
+        if depth > 3 or not getattr(element, "name", None):
+            return element
+
+        if has_item_identity(element):
+            return element
+
+        children = [child for child in element.find_all(recursive=False) if getattr(child, "name", None)]
+        for child in children:
+            if has_item_identity(child):
+                return child
+
+        if len(children) == 1:
+            return choose_item_node(children[0], depth + 1)
+
+        return element
+
+    for container_tag in ["div", "section", "article", "ul", "ol", "main", "aside", "feed", "table", "tbody", "body"]:
         for container in soup.find_all(container_tag):
             # Skip obvious boilerplate
             if is_boilerplate(container):
@@ -213,17 +257,55 @@ def _find_containers(soup: BeautifulSoup) -> list[dict[str, Any]]:
                         c for c in children if hasattr(c, 'name') and c.name == most_common_tag
                     ]
 
-                    # Filter out if children don't have meaningful content
-                    meaningful_children = [c for c in similar_children if has_meaningful_content(c)]
-                    if len(meaningful_children) < 3:
-                        continue
+                    # Filter out if children don't have substantial signals
+                    qualified_children = []
+                    for child in similar_children:
+                        text_content = child.get_text(strip=True)
+                        has_link = bool(child.find('a'))
+                        has_media = bool(child.find(['img', 'video', 'picture']))
+                        has_structured_content = bool(child.find(['td', 'th', 'article', 'section', 'div', 'span']))
+
+                        if (
+                            has_link
+                            or has_media
+                            or has_structured_content
+                            or len(text_content) >= 5
+                            or text_content.isdigit()
+                        ):
+                            qualified_children.append(child)
+
+                    if len(qualified_children) < 3:
+                        # Allow longer lists where at least half the children qualify
+                        if len(similar_children) >= 5 and len(qualified_children) >= len(similar_children) // 2:
+                            pass
+                        else:
+                            continue
 
                     selector = build_robust_selector(container)
-                    child_selector = f"{selector} > {most_common_tag}"
+                    direct_child_selector = f"{selector} > {most_common_tag}"
 
                     # Get sample text from first meaningful child
-                    sample_child = meaningful_children[0] if meaningful_children else None
+                    sample_child = qualified_children[0] if qualified_children else None
                     sample_text = sample_child.get_text(strip=True)[:100] if sample_child else ""
+
+                    # Attempt to refine item selector to a more distinctive node
+                    item_nodes = [choose_item_node(child) for child in qualified_children]
+                    primary_item = item_nodes[0] if item_nodes else None
+
+                    refined_selector = direct_child_selector
+                    refined_tag = most_common_tag
+
+                    if primary_item:
+                        item_selector = build_robust_selector(primary_item)
+                        if item_selector:
+                            try:
+                                item_matches = soup.select(item_selector)
+                            except Exception:
+                                item_matches = []
+
+                            if item_matches and len(item_matches) >= max(1, len(item_nodes) // 2):
+                                refined_selector = item_selector
+                                refined_tag = primary_item.name
 
                     # Calculate content score for ranking
                     content_score = 0
@@ -231,21 +313,21 @@ def _find_containers(soup: BeautifulSoup) -> list[dict[str, Any]]:
                         content_score += 50
 
                     # Bonus for semantic tags
-                    if container.name in ['article', 'section', 'main']:
+                    if container.name in ['article', 'section', 'main', 'tbody', 'table']:
                         content_score += 30
-                    if most_common_tag in ['article', 'li', 'div']:
+                    if most_common_tag in ['article', 'li', 'div', 'tr']:
                         content_score += 20
 
                     # Bonus for having links (articles usually link to detail pages)
-                    avg_links = sum(1 for c in meaningful_children if c.find('a')) / len(
-                        meaningful_children
+                    avg_links = sum(1 for c in qualified_children if c.find('a')) / len(
+                        qualified_children
                     )
                     if avg_links > 0.5:
                         content_score += 20
 
                     # Bonus for having images (articles often have featured images)
-                    avg_images = sum(1 for c in meaningful_children if c.find('img')) / len(
-                        meaningful_children
+                    avg_images = sum(1 for c in qualified_children if c.find('img')) / len(
+                        qualified_children
                     )
                     if avg_images > 0.3:
                         content_score += 15
@@ -253,9 +335,11 @@ def _find_containers(soup: BeautifulSoup) -> list[dict[str, Any]]:
                     containers.append(
                         {
                             "selector": selector,
-                            "child_selector": child_selector,
+                            "child_selector": refined_selector,
+                            "direct_child_selector": direct_child_selector,
                             "container_tag": container.name,
-                            "child_tag": most_common_tag,
+                            "child_tag": refined_tag,
+                            "direct_child_tag": most_common_tag,
                             "item_count": count,
                             "sample_text": sample_text,
                             "container_class": _get_element_classes(container),
@@ -373,7 +457,7 @@ def _generate_suggestions(
     # Field suggestions based on first container
     if containers and containers[0]:
         best = containers[0]
-        original_selector = best["child_selector"]
+        original_selector = best.get("child_selector") or best.get("direct_child_selector")
         try:
             items = soup.select(original_selector)
         except Exception:
@@ -475,6 +559,11 @@ def _generate_suggestions(
     else:
         suggestions["framework_hint"] = None
 
+    if containers:
+        top_direct = containers[0].get("direct_child_selector")
+        if top_direct:
+            suggestions["item_selector"] = top_direct
+
     return suggestions
 
 
@@ -494,21 +583,22 @@ def _generalize_item_selector(
         containers, original_selector, child_tag
     )
 
+    class_based = _class_selector_candidates(items, child_tag)
+
     candidates: list[str] = []
-    if original_selector:
-        candidates.append(original_selector)
+    candidates.extend(class_based)
     candidates.extend(id_prefix_candidates)
 
     simplified = simplify_selector(original_selector)
     if simplified and simplified != original_selector:
         candidates.append(simplified)
 
-    # Prefer stable class-based selectors shared across items (after structural variants)
-    candidates.extend(_class_selector_candidates(items, child_tag))
-
     stripped = _strip_numeric_segments(original_selector)
     if stripped and stripped not in candidates:
         candidates.append(stripped)
+
+    if original_selector and original_selector not in candidates:
+        candidates.append(original_selector)
 
     if child_tag and child_tag not in candidates:
         candidates.append(child_tag)
@@ -568,7 +658,7 @@ def _gather_similar_items(
     seen_selectors: set[str] = set()
 
     for container in containers:
-        selector = container.get("child_selector")
+        selector = container.get("child_selector") or container.get("direct_child_selector")
         if not selector or selector in seen_selectors:
             continue
 
@@ -619,9 +709,9 @@ def _class_selector_candidates(items: list[Tag], child_tag: str | None) -> list[
 
     candidates: list[str] = []
     for cls in ordered:
+        candidates.append(f".{cls}")
         if child_tag:
             candidates.append(f"{child_tag}.{cls}")
-        candidates.append(f".{cls}")
 
     # Deduplicate while preserving order
     seen: set[str] = set()
@@ -647,7 +737,11 @@ def _id_prefix_selector_candidates(
 
     related_ids = []
     for container in containers:
-        selector = container.get("child_selector") or ""
+        selector = (
+            container.get("child_selector")
+            or container.get("direct_child_selector")
+            or ""
+        )
         container_id = _extract_id_token(selector)
         if not container_id:
             continue
@@ -944,8 +1038,11 @@ def _suggest_fields(item: Tag) -> list[dict[str, str]]:
                 ".heading",
                 ".name",
                 ".card-title",
+                ".title-container",
                 "a.title",
                 "a.headline",
+                "a:first-of-type",
+                "a",
                 "strong span",
                 "a strong span",
                 ".archive strong span",
@@ -991,11 +1088,32 @@ def _suggest_fields(item: Tag) -> list[dict[str, str]]:
                 ".pubdate",
                 ".post-date",
                 ".article-date",
+                "[data-date]",
+                "[data-published]",
+                "[data-time]",
             ],
         ),
         (
             "author",
-            [".author", ".byline", ".by", ".username", ".writer", "address", ".author-name"],
+            [
+                ".author",
+                ".byline",
+                ".by",
+                ".username",
+                ".writer",
+                "address",
+                ".author-name",
+                "[data-author]",
+            ],
+        ),
+        (
+            "score",
+            [
+                ".score",
+                ".points",
+                ".rating",
+                "[data-score]",
+            ],
         ),
         ("price", [".price", ".cost", ".amount", ".value", ".sale-price", ".current-price"]),
         ("category", [".category", ".tag", ".label", ".section", ".topic", ".post-category"]),

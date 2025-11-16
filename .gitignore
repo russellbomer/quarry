@@ -45,6 +45,7 @@ state.db
 logs/*.log
 data/cache/*
 !data/cache/.gitkeep
+data/out/
 test.csv
 
 # Ruff
