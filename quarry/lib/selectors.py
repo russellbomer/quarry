@@ -12,10 +12,10 @@ import re
 from typing import Any
 
 from bs4 import BeautifulSoup, Tag
-from quarry.lib.bs4_utils import attr_str, class_tokens
 
+from quarry.lib.bs4_utils import class_tokens
 
-from bs4 import BeautifulSoup, Tag
+MIN_DYNAMIC_NAME_LEN = 3
 
 
 class SelectorChain:
@@ -196,7 +196,11 @@ def _get_stable_marker(element: Tag) -> str | None:
     if element.name in ["div", "span", "li", "tr", "td"]:
         # Check if there are siblings with same tag
         parent = element.parent if isinstance(element.parent, Tag) else None
-        siblings = [s for s in (parent.children if parent else []) if hasattr(s, 'name') and s.name == element.name]
+        siblings = [
+            s
+            for s in (parent.children if parent else [])
+            if hasattr(s, 'name') and s.name == element.name
+        ]
         if len(siblings) > 1:
             index = siblings.index(element) + 1  # nth-of-type is 1-indexed
             return f"{element.name}:nth-of-type({index})"
@@ -217,7 +221,7 @@ def _looks_dynamic(name: str) -> bool:
         return True
 
     # Very short names are often dynamic
-    if len(name) < 3:
+    if len(name) < MIN_DYNAMIC_NAME_LEN:
         return True
 
     # Check for common dynamic prefixes
@@ -226,8 +230,6 @@ def _looks_dynamic(name: str) -> bool:
         return True
 
     # Count hex-like segments (common in hashes)
-    import re
-
     hex_segments = re.findall(r'[0-9a-f]{6,}', name.lower())
     if hex_segments:
         return True

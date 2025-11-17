@@ -12,8 +12,8 @@ from quarry.framework_profiles import (
     get_framework_field_selector,
     is_framework_pattern,
 )
-from quarry.tools.scout.analyzer import analyze_page, _suggest_fields
 from quarry.lib.bs4_utils import attr_str
+from quarry.tools.scout.analyzer import _suggest_fields, analyze_page
 
 
 def _class_tokens(tag: Tag) -> list[str]:
@@ -93,7 +93,6 @@ def find_item_selector(html: str, min_items: int = 3) -> list[dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
 
     containers = analysis.get("containers") or []
-    frameworks = analysis.get("frameworks") or []
     detected_framework = detect_framework(html)
 
     results: list[dict[str, Any]] = []
@@ -249,8 +248,8 @@ def preview_extraction(
 
     for item in items[:limit]:
         record: dict[str, Any] = {}
-        for field_name, selector in field_selectors.items():
-            selector = (selector or "").strip()
+        for field_name, sel in field_selectors.items():
+            selector = (sel or "").strip()
             if not selector:
                 record[field_name] = ""
                 continue
@@ -272,8 +271,8 @@ def preview_extraction(
 
 
 __all__ = [
-    "inspect_html",
     "find_item_selector",
     "generate_field_selector",
+    "inspect_html",
     "preview_extraction",
 ]

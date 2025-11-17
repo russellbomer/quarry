@@ -9,6 +9,6 @@ Interactive tool for creating extraction schemas with:
 """
 
 from .builder import build_schema_interactive
-from .preview import preview_extraction, format_preview
+from .preview import format_preview, preview_extraction
 
-__all__ = ["build_schema_interactive", "preview_extraction", "format_preview"]
+__all__ = ["build_schema_interactive", "format_preview", "preview_extraction"]

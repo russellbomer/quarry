@@ -8,6 +8,7 @@ import questionary
 
 from quarry.lib.schemas import load_schema
 from quarry.lib.session import get_last_schema, set_last_output
+
 from .executor import ExcavateExecutor, write_jsonl
 
 
@@ -134,9 +135,7 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
         choices = ["URL", "Local file"]
         if schema.url:
             choices.append("Use schema URL")
-        source_type = questionary.select(
-            "Data source:", choices=choices
-        ).ask()
+        source_type = questionary.select("Data source:", choices=choices).ask()
 
         if not source_type:
             click.echo("Cancelled", err=True)
@@ -195,7 +194,7 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
     try:
         if html:
             # Extract from provided HTML
-            click.echo(f"🔨 Extracting from file...", err=True)
+            click.echo("🔨 Extracting from file...", err=True)
             items = executor.parser.parse(html)
 
             # Add metadata if requested
@@ -242,7 +241,7 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
 
         # Show stats
         stats = executor.get_stats()
-        click.echo(f"\n📊 Statistics:", err=True)
+        click.echo("\n📊 Statistics:", err=True)
         click.echo(f"   URLs fetched: {stats['urls_fetched']}", err=True)
         click.echo(f"   Items extracted: {stats['items_extracted']}", err=True)
         if stats['errors'] > 0:

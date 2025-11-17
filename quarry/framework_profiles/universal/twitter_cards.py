@@ -1,9 +1,9 @@
 """Twitter Cards meta tag profile for social media metadata extraction."""
 
 from bs4 import BeautifulSoup, Tag
-from quarry.lib.bs4_utils import attr_str
 
 from quarry.framework_profiles.base import FrameworkProfile
+from quarry.lib.bs4_utils import attr_str
 
 
 class TwitterCardsProfile(FrameworkProfile):
@@ -133,7 +133,9 @@ class TwitterCardsProfile(FrameworkProfile):
         metadata: dict[str, str] = {}
 
         # Find all Twitter Card meta tags (name attribute)
-        for tag in soup.find_all("meta", attrs={"name": lambda x: isinstance(x, str) and x.startswith("twitter:")}):
+        for tag in soup.find_all(
+            "meta", attrs={"name": lambda x: isinstance(x, str) and x.startswith("twitter:")}
+        ):
             name = attr_str(tag, "name")
             content = attr_str(tag, "content")
             if name and content:
@@ -142,7 +144,9 @@ class TwitterCardsProfile(FrameworkProfile):
                 metadata[key] = content
 
         # Also check property attribute (less common but valid)
-        for tag in soup.find_all("meta", property=lambda x: isinstance(x, str) and x.startswith("twitter:")):
+        for tag in soup.find_all(
+            "meta", property=lambda x: isinstance(x, str) and x.startswith("twitter:")
+        ):
             prop = attr_str(tag, "property")
             content = attr_str(tag, "content")
             if prop and content:

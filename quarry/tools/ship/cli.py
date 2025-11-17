@@ -6,8 +6,9 @@ from pathlib import Path
 import click
 import questionary
 
+from quarry.lib.prompts import prompt_choice, prompt_file
 from quarry.lib.session import get_last_output
-from quarry.lib.prompts import prompt_file, prompt_choice, prompt_text, prompt_confirm
+
 from .base import ExporterFactory
 
 

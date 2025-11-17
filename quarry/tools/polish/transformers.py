@@ -1,8 +1,9 @@
 """Field transformation functions for Polish tool."""
 
 import re
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any
 from urllib.parse import urlparse
 
 

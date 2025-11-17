@@ -3,9 +3,9 @@
 from typing import Any
 
 from bs4 import BeautifulSoup, Tag
-from quarry.lib.bs4_utils import attr_str
 
 from quarry.connectors.base import Raw
+from quarry.lib.bs4_utils import attr_str
 from quarry.lib.http import get_html
 
 
@@ -70,7 +70,8 @@ class GenericConnector:
         if not field_selectors:
             raise ValueError(
                 "GenericConnector requires 'selectors.fields' in config. "
-                "Please add field selectors to your YAML: selectors: { fields: { title: '.title', url: 'a::attr(href)' } }"
+                "Please add field selectors to your YAML: selectors: { fields: { title: '.title', "
+                "url: 'a::attr(href)' } }"
             )
 
         # Fetch HTML (always live for generic connector - no fixtures)

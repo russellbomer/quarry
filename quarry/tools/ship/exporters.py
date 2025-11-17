@@ -166,7 +166,7 @@ class SQLiteExporter(Exporter):
                 cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
             elif if_exists == "fail":
                 cursor.execute(
-                    f"SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
                 )
                 if cursor.fetchone():
                     raise ValueError(f"Table '{table_name}' already exists")

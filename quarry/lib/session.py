@@ -29,7 +29,7 @@ def _load_session() -> dict[str, Any]:
             if isinstance(data, dict):
                 return data
             return {}
-    except (json.JSONDecodeError, IOError):
+    except (OSError, json.JSONDecodeError):
         return {}
 
 

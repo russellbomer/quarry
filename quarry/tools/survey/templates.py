@@ -2,7 +2,6 @@
 
 from quarry.lib.schemas import FieldSchema
 
-
 # Template definitions
 TEMPLATES = {
     "article": {

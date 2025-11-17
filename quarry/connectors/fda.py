@@ -9,8 +9,8 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup, Tag
 
 from quarry.connectors.base import Raw
-from quarry.lib.http import get_html
 from quarry.lib.bs4_utils import attr_str
+from quarry.lib.http import get_html
 
 
 class FDAConnector:

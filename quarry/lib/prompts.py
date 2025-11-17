@@ -1,12 +1,12 @@
 """Interactive prompt utilities with retry logic."""
 
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Optional, cast
+from typing import cast
 
 import click
 import questionary
-from questionary import ValidationError
 
 
 class RetryablePrompt:
@@ -17,10 +17,10 @@ class RetryablePrompt:
 
     def ask_with_retry(
         self,
-        prompt_fn: Callable[[], Optional[str]],
-        validator: Optional[Callable[[str], tuple[bool, Optional[str]]]] = None,
+        prompt_fn: Callable[[], str | None],
+        validator: Callable[[str], tuple[bool, str | None]] | None = None,
         allow_cancel: bool = True,
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Ask a question with retry logic on validation failure.
 
@@ -84,7 +84,7 @@ class RetryablePrompt:
             sys.exit(1)
 
 
-def prompt_url(message: str = "Enter URL:", allow_cancel: bool = True) -> Optional[str]:
+def prompt_url(message: str = "Enter URL:", allow_cancel: bool = True) -> str | None:
     """
     Prompt for a URL with validation and retry logic.
 
@@ -96,7 +96,7 @@ def prompt_url(message: str = "Enter URL:", allow_cancel: bool = True) -> Option
         Valid URL or None if cancelled
     """
 
-    def validate_url(url: str) -> tuple[bool, Optional[str]]:
+    def validate_url(url: str) -> tuple[bool, str | None]:
         if not url:
             return False, "URL cannot be empty"
         if not (url.startswith("http://") or url.startswith("https://")):
@@ -110,7 +110,7 @@ def prompt_url(message: str = "Enter URL:", allow_cancel: bool = True) -> Option
     )
 
 
-def prompt_file(message: str = "Enter file path:", allow_cancel: bool = True) -> Optional[str]:
+def prompt_file(message: str = "Enter file path:", allow_cancel: bool = True) -> str | None:
     """
     Prompt for a file path with validation and retry logic.
 
@@ -122,7 +122,7 @@ def prompt_file(message: str = "Enter file path:", allow_cancel: bool = True) ->
         Valid file path or None if cancelled
     """
 
-    def validate_file(filepath: str) -> tuple[bool, Optional[str]]:
+    def validate_file(filepath: str) -> tuple[bool, str | None]:
         if not filepath:
             return False, "File path cannot be empty"
 
@@ -141,7 +141,7 @@ def prompt_file(message: str = "Enter file path:", allow_cancel: bool = True) ->
     )
 
 
-def prompt_choice(message: str, choices: list[str], allow_cancel: bool = True) -> Optional[str]:
+def prompt_choice(message: str, choices: list[str], allow_cancel: bool = True) -> str | None:
     """
     Prompt for a choice from a list with retry logic.
 
@@ -162,10 +162,10 @@ def prompt_choice(message: str, choices: list[str], allow_cancel: bool = True) -
 
 def prompt_text(
     message: str,
-    default: Optional[str] = None,
-    validator: Optional[Callable[[str], tuple[bool, Optional[str]]]] = None,
+    default: str | None = None,
+    validator: Callable[[str], tuple[bool, str | None]] | None = None,
     allow_cancel: bool = True,
-) -> Optional[str]:
+) -> str | None:
     """
     Prompt for text input with validation and retry logic.
 
@@ -188,7 +188,7 @@ def prompt_text(
     return prompter.ask_with_retry(ask, validator=validator, allow_cancel=allow_cancel)
 
 
-def prompt_confirm(message: str, default: bool = True, allow_cancel: bool = False) -> Optional[bool]:
+def prompt_confirm(message: str, default: bool = True, allow_cancel: bool = False) -> bool | None:
     """
     Prompt for yes/no confirmation.
 
@@ -201,7 +201,7 @@ def prompt_confirm(message: str, default: bool = True, allow_cancel: bool = Fals
         True/False for yes/no, or None if cancelled (when allow_cancel=True)
     """
     try:
-        result = cast(Optional[bool], questionary.confirm(message, default=default).ask())
+        result = cast(bool | None, questionary.confirm(message, default=default).ask())
         if result is None and not allow_cancel:
             return default
         return result

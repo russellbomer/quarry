@@ -7,10 +7,11 @@ from typing import Any
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
-from quarry.lib.bs4_utils import attr_str
 
+from quarry.lib.bs4_utils import attr_str
 from quarry.lib.http import get_html
 from quarry.lib.schemas import ExtractionSchema, load_schema
+
 from .parser import SchemaParser
 
 

@@ -6,10 +6,9 @@ from typing import Any
 import pandas as pd
 import yaml
 
-from quarry.lib import http
 from quarry.connectors import custom as custom_conn
 from quarry.connectors import fda, generic, nws
-from quarry.connectors.base import Connector
+from quarry.lib import http
 from quarry.lib.policy import is_allowed_domain
 from quarry.lib.ratelimit import DomainRateLimiter
 from quarry.sinks.base import Sink

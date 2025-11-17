@@ -2,13 +2,13 @@
 
 import warnings
 from pathlib import Path
-from typing import TypedDict
+from typing import Any, cast
 
 from bs4 import BeautifulSoup, Tag
 
 from quarry.connectors.base import Raw
-from quarry.lib.http import get_html
 from quarry.lib.bs4_utils import attr_str
+from quarry.lib.http import get_html
 
 
 class NWSConnector:
@@ -85,7 +85,6 @@ class NWSConnector:
     def list_parser(self, html: str) -> list[Raw]:
         """Parse NWS alerts HTML."""
         soup = BeautifulSoup(html, "html.parser")
-        from typing import Any, cast
 
         records: list[dict[str, Any]] = []
 

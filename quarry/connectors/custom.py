@@ -107,7 +107,9 @@ class CustomConnector:
                 {
                     "id": (href.split("/")[-1] if href else "") or f"custom-{len(records) + 1}",
                     "title": title,
-                    "url": href if href.startswith("http") else (f"{self.entry_url}{href}" if href else self.entry_url),
+                    "url": href
+                    if href.startswith("http")
+                    else (f"{self.entry_url}{href}" if href else self.entry_url),
                     "posted_at": "2024-01-15T00:00:00Z",
                 }
             )

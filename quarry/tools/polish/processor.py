@@ -1,8 +1,9 @@
 """Polish processor - orchestrates data transformation and enrichment."""
 
 import json
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Literal
+from typing import Any, Literal
 
 from .deduplicator import Deduplicator
 from .transformers import apply_transformation

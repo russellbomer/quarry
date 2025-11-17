@@ -3,8 +3,8 @@
 import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
-from urllib.parse import urlparse
 from typing import cast
+from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
 
 import requests

@@ -3,8 +3,8 @@
 from typing import Any
 
 from bs4 import BeautifulSoup, Tag
-from quarry.lib.bs4_utils import select_list, attr_str
 
+from quarry.lib.bs4_utils import attr_str, select_list
 from quarry.lib.schemas import ExtractionSchema, FieldSchema
 
 

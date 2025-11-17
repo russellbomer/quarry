@@ -44,6 +44,39 @@ quote-style = "preserve"
 select = ["E", "F", "I", "UP", "B", "PL", "RUF"]
 ignore = []
 
+# Relax linting for interactive CLI modules where pragmatic patterns are used
+[tool.ruff.lint.per-file-ignores]
+"quarry/tools/**" = [
+    # Long rich-format strings and prompts
+    "E501",
+    # Import-outside-toplevel for lazy/circular-avoidance imports
+    "PLC0415",
+    # Function complexity for interactive flows
+    "PLR0912", "PLR0913", "PLR0915",
+    # Magic values are common in CLI thresholds/prompts
+    "PLR2004",
+    # Overwriting loop variables in simple transformations
+    "PLW2901",
+    # Unused noqa markers from earlier iterations
+    "RUF100",
+]
+
+"quarry/framework_profiles/**" = [
+    # Heuristic thresholds and pattern counts are intentional
+    "PLR2004",
+    # Large, branching detection logic
+    "PLR0911", "PLR0912", "PLR0915",
+    # Long lines for lambda-heavy selectors and comments
+    "E501",
+]
+
+"quarry/wizard.py" = ["PLR0912", "PLR0915"]
+"quarry/quarry.py" = ["PLR0913"]
+"quarry/inspector.py" = ["PLR0911", "PLR0912", "PLR2004"]
+"quarry/lib/selectors.py" = ["PLR0911"]
+"quarry/lib/prompts.py" = ["PLR0912"]
+"quarry/lib/http.py" = ["PLR0912", "PLR0915", "PLR0913", "PLR2004"]
+
 [tool.mypy]
 python_version = "3.12"
 warn_return_any = true

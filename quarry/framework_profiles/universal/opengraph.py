@@ -1,9 +1,9 @@
 """Open Graph meta tag profile for social media metadata extraction."""
 
 from bs4 import BeautifulSoup, Tag
-from quarry.lib.bs4_utils import attr_str
 
 from quarry.framework_profiles.base import FrameworkProfile
+from quarry.lib.bs4_utils import attr_str
 
 
 class OpenGraphProfile(FrameworkProfile):
@@ -143,7 +143,9 @@ class OpenGraphProfile(FrameworkProfile):
         metadata: dict[str, str] = {}
 
         # Find all OG meta tags
-        for tag in soup.find_all("meta", property=lambda x: isinstance(x, str) and x.startswith("og:")):
+        for tag in soup.find_all(
+            "meta", property=lambda x: isinstance(x, str) and x.startswith("og:")
+        ):
             prop = attr_str(tag, "property")
             content = attr_str(tag, "content")
             if prop and content:
@@ -152,7 +154,9 @@ class OpenGraphProfile(FrameworkProfile):
                 metadata[key] = content
 
         # Also check for article: namespace
-        for tag in soup.find_all("meta", property=lambda x: isinstance(x, str) and x.startswith("article:")):
+        for tag in soup.find_all(
+            "meta", property=lambda x: isinstance(x, str) and x.startswith("article:")
+        ):
             prop = attr_str(tag, "property")
             content = attr_str(tag, "content")
             if prop and content:

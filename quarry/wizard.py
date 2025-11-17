@@ -12,17 +12,17 @@ from rich.panel import Panel
 from quarry.lib.http import get_html
 from quarry.lib.schemas import load_schema, save_schema
 from quarry.lib.session import (
+    get_last_analysis,
     get_last_output,
     get_last_schema,
-    get_last_analysis,
+    set_last_analysis,
     set_last_output,
     set_last_schema,
-    set_last_analysis,
 )
 from quarry.tools.excavate.executor import ExcavateExecutor, write_jsonl
 from quarry.tools.polish.processor import PolishProcessor
-from quarry.tools.ship.base import ExporterFactory
 from quarry.tools.scout.analyzer import analyze_page
+from quarry.tools.ship.base import ExporterFactory
 from quarry.tools.survey.builder import build_schema_interactive
 
 console = Console()
@@ -99,14 +99,14 @@ def _create_schema_flow() -> str | None:
         try:
             console.print("[dim]Running Scout analysis...[/dim]")
             html_content = get_html(url)
-        except Exception as err:  # noqa: BLE001
+        except Exception as err:
             console.print(f"[red]Failed to fetch URL: {err}[/red]")
             html_content = None
 
     if html_content:
         try:
             analysis = analyze_page(html_content, url=url or None)
-        except Exception as err:  # noqa: BLE001
+        except Exception as err:
             console.print(f"[yellow]Scout analysis failed: {err}[/yellow]")
             analysis = None
 
@@ -186,7 +186,7 @@ def _prompt_schema_path() -> str | None:
 def _run_extraction_flow(schema_path: str) -> str | None:
     try:
         schema = load_schema(schema_path)
-    except Exception as err:  # noqa: BLE001
+    except Exception as err:
         console.print(f"[red]Failed to load schema: {err}[/red]")
         return None
 
@@ -249,7 +249,7 @@ def _run_extraction_flow(schema_path: str) -> str | None:
             )
         else:
             items = executor.fetch_url(target_url, include_metadata=include_metadata)
-    except Exception as err:  # noqa: BLE001
+    except Exception as err:
         console.print(f"[red]Extraction failed: {err}[/red]")
         return None
 
@@ -268,13 +268,14 @@ def _run_extraction_flow(schema_path: str) -> str | None:
 
     try:
         write_jsonl(items, output_path)
-    except Exception as err:  # noqa: BLE001
+    except Exception as err:
         console.print(f"[red]Failed to write output: {err}[/red]")
         return None
 
     stats = executor.get_stats()
     console.print(
-        f"[green]Saved {stats['items_extracted']} items from {stats['urls_fetched']} page(s) to {output_path}[/green]",
+        f"[green]Saved {stats['items_extracted']} items from {stats['urls_fetched']} page(s) "
+        f"to {output_path}[/green]",
     )
 
     set_last_output(output_path, "jsonl", len(items))
@@ -351,12 +352,13 @@ def _run_polish_flow(input_path: str) -> str | None:
             skip_invalid=skip_invalid,
             filter_func=None,
         )
-    except Exception as err:  # noqa: BLE001
+    except Exception as err:
         console.print(f"[red]Polish failed: {err}[/red]")
         return input_path
 
     console.print(
-        f"[green]Polish complete: {stats['records_written']} records written to {output_path}[/green]",
+        f"[green]Polish complete: {stats['records_written']} records written to "
+        f"{output_path}[/green]",
     )
     set_last_output(output_path, "jsonl", stats["records_written"])
     return str(Path(output_path).absolute())
@@ -409,7 +411,7 @@ def _run_export_flow(input_path: str) -> None:
     except NotImplementedError as err:
         console.print(f"[yellow]{err}[/yellow]")
         return
-    except Exception as err:  # noqa: BLE001
+    except Exception as err:
         console.print(f"[red]Export failed: {err}[/red]")
         return
 

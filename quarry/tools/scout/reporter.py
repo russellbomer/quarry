@@ -31,13 +31,13 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
         Formatted string for terminal display
     """
     try:
+        # Create output buffer
+        from io import StringIO
+
+        from rich import box
         from rich.console import Console
         from rich.panel import Panel
         from rich.table import Table
-        from rich import box
-
-        # Create output buffer
-        from io import StringIO
 
         output = StringIO()
         console = Console(file=output, width=100, force_terminal=True)
@@ -289,13 +289,13 @@ def _format_as_simple_text(analysis: dict[str, Any]) -> str:
     # Suggestions
     suggestions = analysis.get("suggestions", {})
     if suggestions.get("item_selector"):
-        lines.append(f"\n--- Suggestion ---")
+        lines.append("\n--- Suggestion ---")
         lines.append(f"Best selector: {suggestions['item_selector']}")
 
     # Stats
     stats = analysis.get("statistics", {})
     if stats:
-        lines.append(f"\n--- Statistics ---")
+        lines.append("\n--- Statistics ---")
         lines.append(f"  Elements: {stats.get('total_elements', 0):,}")
         lines.append(f"  Links: {stats.get('total_links', 0):,}")
         lines.append(f"  Images: {stats.get('total_images', 0):,}")

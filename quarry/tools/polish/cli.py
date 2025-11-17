@@ -1,13 +1,14 @@
 """CLI for Polish tool."""
 
 import sys
+from pathlib import Path
+from typing import Any, Literal, cast
+
 import click
 import questionary
-from pathlib import Path
 
-from typing import Any
 from quarry.lib.session import get_last_output, set_last_output
-from typing import Literal, cast
+
 from .processor import PolishProcessor
 
 

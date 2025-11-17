@@ -31,30 +31,25 @@ from .selectors import (
 )
 
 __all__ = [
-    # HTTP utilities
+    "DomainRateLimiter",
+    "RetryablePrompt",
+    "RobotsCache",
+    "SelectorChain",
+    "TokenBucket",
+    "build_fallback_chain",
+    "build_robust_selector",
+    "check_robots",
     "create_session",
+    "extract_structural_pattern",
     "get_html",
     "get_rate_limiter",
-    "set_rate_limiter",
-    # Rate limiting
-    "DomainRateLimiter",
-    "TokenBucket",
-    # Interactive prompts
-    "RetryablePrompt",
-    "prompt_url",
-    "prompt_file",
+    "is_allowed_domain",
     "prompt_choice",
-    "prompt_text",
     "prompt_confirm",
-    # Selector utilities
-    "SelectorChain",
-    "build_robust_selector",
+    "prompt_file",
+    "prompt_text",
+    "prompt_url",
+    "set_rate_limiter",
     "simplify_selector",
     "validate_selector",
-    "extract_structural_pattern",
-    "build_fallback_chain",
-    # Robots & Policy
-    "RobotsCache",
-    "check_robots",
-    "is_allowed_domain",
 ]

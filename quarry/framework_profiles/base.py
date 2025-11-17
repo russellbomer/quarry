@@ -111,10 +111,9 @@ class FrameworkProfile:
                         elif child_selector.startswith("time"):
                             if parent.find("time"):
                                 return pattern
-                        else:
-                            # Try generic tag search
-                            if parent.find(child_selector.split()[0]):
-                                return pattern
+                        # Try generic tag search
+                        elif parent.find(child_selector.split()[0]):
+                            return pattern
                 else:
                     # Simple class selector
                     elem = item_element.find(class_=class_name)

@@ -8,8 +8,9 @@ import click
 from quarry.lib.http import get_html
 from quarry.lib.schemas import load_schema, save_schema
 from quarry.lib.session import set_last_schema
+
 from .builder import build_schema_interactive, load_analysis_from_file
-from .preview import preview_extraction, format_preview
+from .preview import format_preview, preview_extraction
 
 
 @click.group()
@@ -164,16 +165,16 @@ def validate(schema_file):
 
     try:
         schema = load_schema(schema_file)
-        click.echo(f"\n✅ Schema is valid!", err=True)
+        click.echo("\n✅ Schema is valid!", err=True)
         click.echo(f"   Name: {schema.name}", err=True)
         click.echo(f"   Item selector: {schema.item_selector}", err=True)
         click.echo(f"   Fields: {len(schema.fields)}", err=True)
 
         if schema.pagination:
-            click.echo(f"   Pagination: enabled", err=True)
+            click.echo("   Pagination: enabled", err=True)
 
     except Exception as e:
-        click.echo(f"\n❌ Validation failed:", err=True)
+        click.echo("\n❌ Validation failed:", err=True)
         click.echo(f"   {e}", err=True)
         sys.exit(1)
 

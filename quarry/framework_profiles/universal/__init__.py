@@ -4,4 +4,4 @@ from .opengraph import OpenGraphProfile
 from .schema_org import SchemaOrgProfile
 from .twitter_cards import TwitterCardsProfile
 
-__all__ = ["SchemaOrgProfile", "OpenGraphProfile", "TwitterCardsProfile"]
+__all__ = ["OpenGraphProfile", "SchemaOrgProfile", "TwitterCardsProfile"]

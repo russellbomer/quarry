@@ -3,8 +3,8 @@
 from typing import Any
 
 from bs4 import BeautifulSoup, Tag
-from quarry.lib.bs4_utils import select_list, attr_str
 
+from quarry.lib.bs4_utils import attr_str, select_list
 from quarry.lib.schemas import ExtractionSchema
 
 
@@ -104,10 +104,11 @@ def format_preview(items: list[dict[str, Any]], limit: int = 5) -> str:
         Formatted string
     """
     try:
+        from io import StringIO
+
+        from rich import box
         from rich.console import Console
         from rich.table import Table
-        from rich import box
-        from io import StringIO
 
         output = StringIO()
         console = Console(file=output, width=120)

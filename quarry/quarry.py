@@ -14,15 +14,15 @@ import os
 import sys
 
 import click
-from quarry.lib.logging import setup_logging
 from rich.console import Console
 
 from quarry.core import load_yaml, run_job
-from quarry.tools.scout.cli import scout as scout_command
-from quarry.tools.survey.cli import survey as survey_command
+from quarry.lib.logging import setup_logging
 from quarry.tools.excavate.cli import excavate as excavate_command
 from quarry.tools.polish.cli import polish as polish_command
+from quarry.tools.scout.cli import scout as scout_command
 from quarry.tools.ship.cli import ship as ship_command
+from quarry.tools.survey.cli import survey as survey_command
 from quarry.wizard import run_wizard
 
 BANNER = """
@@ -68,11 +68,13 @@ def quarry(ctx):
         console.print(BANNER)
         console.print()
         console.print(
-            "[dim]A straightforward toolkit for analyzing, extracting, and exporting web data.[/dim]"
+            "[dim]A straightforward toolkit for analyzing, extracting, and exporting web data."
+            "[/dim]"
         )
         console.print()
         console.print(
-            "Available tools: [cyan]run[/cyan] | [cyan]scout[/cyan] | [cyan]survey[/cyan] | [cyan]excavate[/cyan] | [cyan]polish[/cyan] | [cyan]ship[/cyan]"
+            "Available tools: [cyan]run[/cyan] | [cyan]scout[/cyan] | [cyan]survey[/cyan] | "
+            "[cyan]excavate[/cyan] | [cyan]polish[/cyan] | [cyan]ship[/cyan]"
         )
         console.print()
         console.print("Run [yellow]quarry --help[/yellow] to see all commands and options.")

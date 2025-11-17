@@ -2,19 +2,19 @@
 
 from .deduplicator import Deduplicator
 from .transformers import (
+    clean_whitespace,
+    extract_domain,
     normalize_text,
     parse_date,
-    extract_domain,
-    clean_whitespace,
 )
-from .validators import validate_record, ValidationError
+from .validators import ValidationError, validate_record
 
 __all__ = [
     "Deduplicator",
+    "ValidationError",
+    "clean_whitespace",
+    "extract_domain",
     "normalize_text",
     "parse_date",
-    "extract_domain",
-    "clean_whitespace",
     "validate_record",
-    "ValidationError",
 ]

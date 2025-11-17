@@ -9,7 +9,8 @@ from bs4 import BeautifulSoup
 from quarry.lib.http import get_html
 from quarry.lib.schemas import ExtractionSchema, FieldSchema, PaginationSchema
 from quarry.tools.scout.analyzer import analyze_page
-from .templates import list_templates, get_template
+
+from .templates import get_template, list_templates
 
 
 def _clone_fields(fields: dict[str, FieldSchema]) -> dict[str, FieldSchema]:
@@ -99,11 +100,11 @@ def build_schema_interactive(
     fields: dict[str, FieldSchema] = {}
 
     try:
-        from rich.console import Console
-        from rich.prompt import Prompt, Confirm
-        from rich.panel import Panel
-        from rich.table import Table
         from rich import box
+        from rich.console import Console
+        from rich.panel import Panel
+        from rich.prompt import Confirm, Prompt
+        from rich.table import Table
 
         console = Console()
         console.print(
@@ -538,7 +539,7 @@ def build_schema_interactive(
                     f"[bold]Item selector:[/bold] [cyan]{schema.item_selector}[/cyan]\n"
                     f"[bold]Fields:[/bold] {len(schema.fields)} ({', '.join(schema.fields.keys())})\n"
                     + (
-                        f"[bold]Pagination:[/bold] enabled"
+                        "[bold]Pagination:[/bold] enabled"
                         if schema.pagination
                         else "[bold]Pagination:[/bold] disabled"
                     ),

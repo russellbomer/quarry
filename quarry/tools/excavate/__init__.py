@@ -9,7 +9,7 @@ Executes schema-driven extraction at scale with:
 - Progress tracking
 """
 
-from .executor import ExcavateExecutor, write_jsonl, append_jsonl
+from .executor import ExcavateExecutor, append_jsonl, write_jsonl
 from .parser import SchemaParser
 
-__all__ = ["ExcavateExecutor", "SchemaParser", "write_jsonl", "append_jsonl"]
+__all__ = ["ExcavateExecutor", "SchemaParser", "append_jsonl", "write_jsonl"]

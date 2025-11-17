@@ -1,16 +1,16 @@
 """Crate - Data export tool."""
 
+from .base import Exporter, ExporterFactory
 from .exporters import (
     CSVExporter,
     JSONExporter,
     SQLiteExporter,
 )
-from .base import Exporter, ExporterFactory
 
 __all__ = [
+    "CSVExporter",
     "Exporter",
     "ExporterFactory",
-    "CSVExporter",
     "JSONExporter",
     "SQLiteExporter",
 ]

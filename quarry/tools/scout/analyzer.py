@@ -2,7 +2,7 @@
 
 import re
 from collections import Counter
-from typing import Any, List, Dict, cast
+from typing import Any, cast
 
 from bs4 import BeautifulSoup, Tag
 
@@ -11,7 +11,7 @@ from quarry.lib.selectors import build_robust_selector, simplify_selector
 
 
 # Module-level helpers to normalize BeautifulSoup attributes
-def _class_tokens(tag: Tag) -> List[str]:
+def _class_tokens(tag: Tag) -> list[str]:
     raw = tag.get("class")
     if raw is None:
         return []
@@ -975,7 +975,7 @@ def _detect_pagination_links(soup: BeautifulSoup) -> list[dict[str, Any]]:
         if re.search(r"\b(next|older|more|weiter|nächste|suivant)\b", text, re.I):
             score += 40
             hints.append("link text")
-        if re.search(r"[»›→⟩⟫]", text):
+        if re.search(r"[»\u203A→⟩⟫]", text):
             score += 15
             hints.append("arrow symbol")
 

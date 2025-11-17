@@ -135,30 +135,23 @@ def is_framework_pattern(selector: str, framework: type[FrameworkProfile] | None
 
 
 __all__ = [
-    "FrameworkProfile",
-    "_get_element_classes",
-    # CMS
-    "DrupalViewsProfile",
-    "WordPressProfile",
-    # CSS Frameworks
-    "BootstrapProfile",
-    "TailwindProfile",
-    # E-commerce
-    "ShopifyProfile",
-    "WooCommerceProfile",
-    # JavaScript Frameworks
-    "DjangoAdminProfile",
-    "NextJSProfile",
-    "ReactComponentProfile",
-    "VueJSProfile",
-    # Universal/Meta
-    "SchemaOrgProfile",
-    "OpenGraphProfile",
-    "TwitterCardsProfile",
-    # Functions
     "FRAMEWORK_PROFILES",
-    "detect_framework",
+    "BootstrapProfile",
+    "DjangoAdminProfile",
+    "FrameworkProfile",
+    "NextJSProfile",
+    "OpenGraphProfile",
+    "ReactComponentProfile",
+    "SchemaOrgProfile",
+    "ShopifyProfile",
+    "TailwindProfile",
+    "TwitterCardsProfile",
+    "VueJSProfile",
+    "WooCommerceProfile",
+    "WordPressProfile",
+    "_get_element_classes",
     "detect_all_frameworks",
+    "detect_framework",
     "get_framework_field_selector",
     "is_framework_pattern",
 ]

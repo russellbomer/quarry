@@ -7,8 +7,8 @@ import click
 import questionary
 
 from quarry.lib.http import get_html
-from quarry.lib.session import set_last_schema
-from quarry.lib.prompts import prompt_url, prompt_file, prompt_choice, prompt_confirm
+from quarry.lib.prompts import prompt_choice, prompt_confirm, prompt_file, prompt_url
+
 from .analyzer import analyze_page
 from .reporter import format_as_json, format_as_terminal
 
@@ -182,8 +182,8 @@ def scout(url_or_file, file, output, format, pretty, find_api, batch_mode):
                 analysis_file = output
             elif format.lower() == "terminal":
                 # Save analysis to temp file for survey to use
-                import tempfile
                 import json
+                import tempfile
 
                 fd, analysis_file = tempfile.mkstemp(suffix=".json", prefix="probe_")
                 with open(fd, 'w') as f:
@@ -209,7 +209,7 @@ def scout(url_or_file, file, output, format, pretty, find_api, batch_mode):
 
                     try:
                         os.unlink(analysis_file)
-                    except:
+                    except Exception:
                         pass
 
 

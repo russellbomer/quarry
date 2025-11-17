@@ -4,15 +4,16 @@ Environment knobs (optional):
 - QUARRY_DEFAULT_RPS: float, default RPS for DomainRateLimiter (default 1.0)
 - QUARRY_HTTP_TIMEOUT: int seconds, overrides default timeout when unchanged (30)
 - QUARRY_HTTP_MAX_RETRIES: int, overrides default retries when unchanged (3)
-- QUARRY_MAX_CONTENT_MB: int, maximum response size in MB (skip if header missing; otherwise measured content)
+- QUARRY_MAX_CONTENT_MB: int, maximum response size in MB
+    (skip if header missing; otherwise measured content)
 - PROXY_URL: http(s) proxy URL; also respects standard HTTP(S)_PROXY envs
 """
 
+import logging
 import os
 import random
 import sys
 import time
-import logging
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
 
@@ -32,16 +33,31 @@ _ROBOTS_CACHE: dict[str, RobotFileParser | None] = {}
 # Realistic user agent pool (top browsers by market share)
 _USER_AGENTS = [
     # Chrome on Windows (most common)
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    ),
+    (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/119.0.0.0 Safari/537.36"
+    ),
     # Chrome on macOS
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    ),
     # Firefox on Windows
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
     # Safari on macOS
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
+    (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) "
+        "Version/17.1 Safari/605.1.15"
+    ),
     # Edge on Windows
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+    (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0"
+    ),
 ]
 
 
@@ -109,11 +125,11 @@ def _prompt_robots_override(url: str, domain: str) -> bool:
     Returns:
         True if user wants to proceed anyway, False to respect robots.txt
     """
-    print(f"\n⚠️  robots.txt Policy Block", file=sys.stderr)
+    print("\n⚠️  robots.txt Policy Block", file=sys.stderr)
     print(f"   Domain: {domain}", file=sys.stderr)
     print(f"   URL: {url}", file=sys.stderr)
-    print(f"\n   This site's robots.txt disallows automated access.", file=sys.stderr)
-    print(f"   Ethical scraping respects this policy.", file=sys.stderr)
+    print("\n   This site's robots.txt disallows automated access.", file=sys.stderr)
+    print("   Ethical scraping respects this policy.", file=sys.stderr)
 
     # Flush stderr to ensure prompt appears before input
     sys.stderr.flush()
@@ -147,7 +163,10 @@ def _build_browser_headers(
     # Base headers that all browsers send
     headers = {
         "User-Agent": ua,
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept": (
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,"
+            "image/apng,*/*;q=0.8"
+        ),
         "Accept-Language": "en-US,en;q=0.9",
         "Accept-Encoding": "gzip, deflate, br",
         "Connection": "keep-alive",
@@ -241,7 +260,8 @@ def get_html(
                     f"  2. Fetch HTML manually and save to a file for testing\n"
                     f"  3. Use a bot-friendly alternative site (see docs/USER_TESTING_PLAN.md)\n"
                     f"  4. Set QUARRY_INTERACTIVE=1 to be prompted on blocks\n\n"
-                    f"Note: Respecting robots.txt is the ethical default and required for production use."
+                    f"Note: Respecting robots.txt is the ethical default "
+                    f"and required for production use."
                 )
 
     # Allow env overrides when using defaults
@@ -296,9 +316,7 @@ def get_html(
                     else:
                         size = len(response.content)
                     if size > max_bytes:
-                        raise ValueError(
-                            f"Response too large: {size} bytes > {max_bytes} bytes"
-                        )
+                        raise ValueError(f"Response too large: {size} bytes > {max_bytes} bytes")
                 except ValueError:
                     # If env unparsable, ignore guard
                     pass
@@ -329,12 +347,17 @@ def get_html(
                     if bot_detection_hints:
                         services = "/".join(bot_detection_hints)
                         raise requests.HTTPError(
-                            f"{status} Client Error: Blocked by {services} bot protection for url: {url}. "
+                            f"{status} Client Error: Blocked by {services} bot protection "
+                            f"for url: {url}. "
                             f"Try: slower rate limit, session persistence, or check robots.txt"
                         ) from e
 
             if attempt == max_retries - 1:
-                _LOG.error("fetch.http_error url=%s status=%s", url, getattr(e.response, "status_code", None))
+                _LOG.error(
+                    "fetch.http_error url=%s status=%s",
+                    url,
+                    getattr(e.response, "status_code", None),
+                )
                 raise
 
             # Enhanced exponential backoff with jitter (more human-like)
@@ -378,12 +401,16 @@ def get_html(
                 base_backoff = 0.5 * (2**attempt) * 2  # Double wait for timeouts
                 jitter = random.uniform(0, 0.1 * base_backoff)
                 wait = base_backoff + jitter
-                _LOG.debug("fetch.backoff-timeout url=%s attempt=%s wait=%.2fs", url, attempt + 1, wait)
+                _LOG.debug(
+                    "fetch.backoff-timeout url=%s attempt=%s wait=%.2fs", url, attempt + 1, wait
+                )
                 time.sleep(wait)
 
             elif attempt == max_retries - 1:
                 # Last attempt for other errors - re-raise with context
-                _LOG.error("fetch.error url=%s attempt=%s err=%s", url, attempt + 1, type(e).__name__)
+                _LOG.error(
+                    "fetch.error url=%s attempt=%s err=%s", url, attempt + 1, type(e).__name__
+                )
                 raise
 
             else:
@@ -391,7 +418,9 @@ def get_html(
                 base_backoff = 0.5 * (2**attempt)
                 jitter = random.uniform(0, 0.1 * base_backoff)
                 wait = base_backoff + jitter
-                _LOG.debug("fetch.backoff-generic url=%s attempt=%s wait=%.2fs", url, attempt + 1, wait)
+                _LOG.debug(
+                    "fetch.backoff-generic url=%s attempt=%s wait=%.2fs", url, attempt + 1, wait
+                )
                 time.sleep(wait)
 
     _LOG.error("fetch.unexpected_end url=%s", url)
@@ -415,7 +444,10 @@ def create_session() -> requests.Session:
     # Set default headers that persist across requests
     session.headers.update(
         {
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept": (
+                "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,"
+                "*/*;q=0.8"
+            ),
             "Accept-Language": "en-US,en;q=0.9",
             "Accept-Encoding": "gzip, deflate, br",
             "Connection": "keep-alive",
