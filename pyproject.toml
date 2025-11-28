@@ -52,7 +52,7 @@ ignore = []
     # Import-outside-toplevel for lazy/circular-avoidance imports
     "PLC0415",
     # Function complexity for interactive flows
-    "PLR0912", "PLR0913", "PLR0915",
+    "PLR0911", "PLR0912", "PLR0913", "PLR0915",
     # Magic values are common in CLI thresholds/prompts
     "PLR2004",
     # Overwriting loop variables in simple transformations

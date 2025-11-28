@@ -128,11 +128,31 @@ def build_schema_interactive(
         """Interactive helper for configuring pagination."""
 
         soup = BeautifulSoup(html, "html.parser") if html else None
+
+        # Step 1: Choose pagination type
+        console.print("\n[bold]Pagination Type:[/bold]")
+        console.print("  1. Next page link (most common)")
+        console.print("  2. Load more button")
+        console.print("  3. Skip pagination setup")
+        console.print()
+
+        pagination_type = Prompt.ask(
+            "Select pagination type",
+            choices=["1", "2", "3"],
+            default="1",
+        )
+
+        if pagination_type == "3":
+            console.print("[dim]Pagination skipped[/dim]")
+            return None
+
+        # Step 2: Select or enter selector
         next_selector: str | None = None
 
         if pagination_candidates:
+            console.print()
             table = Table(
-                title="Pagination Suggestions",
+                title="Detected Pagination Links",
                 title_style="bold",
                 box=box.SIMPLE,
                 show_header=True,
@@ -140,37 +160,55 @@ def build_schema_interactive(
             )
             table.add_column("#", style="cyan dim", width=4, justify="right")
             table.add_column("Selector", style="yellow", max_width=50, overflow="fold")
-            table.add_column("Link Text", style="white", max_width=24, overflow="ellipsis")
-            table.add_column("Href", style="cyan", max_width=30, overflow="ellipsis")
-            table.add_column("Hints", style="dim", max_width=30, overflow="ellipsis")
+            table.add_column("Link Text", style="white", max_width=20, overflow="ellipsis")
+            table.add_column("Href", style="cyan", max_width=25, overflow="ellipsis")
+            table.add_column("Confidence", style="green", width=12)
 
             for idx, candidate in enumerate(pagination_candidates, 1):
+                score = candidate.get("score", 0)
+                confidence = "High" if score >= 60 else "Medium" if score >= 40 else "Low"
                 table.add_row(
                     str(idx),
                     candidate.get("selector", "—"),
-                    candidate.get("text", ""),
-                    candidate.get("href", ""),
-                    ", ".join(candidate.get("hints", [])) or "",
+                    candidate.get("text", "")[:20],
+                    candidate.get("href", "")[:25],
+                    f"[{'green' if score >= 60 else 'yellow'}]{confidence}[/]",
                 )
 
             console.print(table)
             console.print()
+            console.print("[dim]Enter a number to select, or type a custom CSS selector[/dim]")
+            console.print("[dim]Type 'skip' to cancel pagination setup[/dim]")
+            console.print()
 
             choice = Prompt.ask(
-                "Select number or enter custom selector",
+                "Selector",
                 default="1",
             )
+
+            if choice.lower() == "skip":
+                console.print("[dim]Pagination skipped[/dim]")
+                return None
 
             if choice.isdigit() and 1 <= int(choice) <= len(pagination_candidates):
                 next_selector = pagination_candidates[int(choice) - 1]["selector"]
             else:
                 next_selector = choice.strip()
         else:
-            default_selector = "a[rel='next']"
+            console.print()
+            console.print("[yellow]No pagination links detected automatically.[/yellow]")
+            console.print("[dim]Common patterns: a[rel='next'], .next-page a, .pagination .next[/dim]")
+            console.print()
+
+            default_selector = "a[rel='next']" if pagination_type == "1" else "button.load-more"
             next_selector = Prompt.ask(
-                "Next page link selector",
+                "Enter pagination selector (or 'skip' to cancel)",
                 default=default_selector,
             ).strip()
+
+            if next_selector.lower() == "skip":
+                console.print("[dim]Pagination skipped[/dim]")
+                return None
 
         if not next_selector:
             console.print(
@@ -178,36 +216,67 @@ def build_schema_interactive(
             )
             return None
 
-        sample_href = None
+        # Step 3: Validate selector against current HTML
         if soup:
             try:
                 sample_link = soup.select_one(next_selector)
-            except Exception:
+            except Exception as e:
+                console.print(f"[red]Invalid selector syntax: {e}[/red]")
+                if not Confirm.ask("Continue anyway?", default=False):
+                    return None
                 sample_link = None
 
             if sample_link:
                 sample_href = sample_link.get("href") or ""
+                sample_text = sample_link.get_text(" ", strip=True)[:30]
+
+                console.print("\n[green]✓[/green] Selector matched!")
                 if sample_href:
+                    console.print(f"  Link: [cyan]{sample_href}[/cyan]")
+                if sample_text:
+                    console.print(f"  Text: [dim]{sample_text}[/dim]")
+
+                if not sample_href and pagination_type == "1":
                     console.print(
-                        f"[green]✓[/green] Found next link example: [cyan]{sample_href}[/cyan]"
+                        "\n[yellow]⚠ Element has no href attribute.[/yellow]"
                     )
-                else:
-                    console.print(
-                        "[yellow]Selector matched an element without href. Check the target page structure.[/yellow]"
-                    )
+                    console.print("[dim]This may be a JavaScript-driven button instead of a link.[/dim]")
+                    if not Confirm.ask("Continue with this selector?", default=True):
+                        return None
             else:
                 console.print(
-                    "[yellow]Selector did not match the provided HTML. You may need to adjust it.[/yellow]"
+                    "\n[yellow]⚠ Selector did not match any elements in the current HTML.[/yellow]"
                 )
+                console.print("[dim]This could mean:[/dim]")
+                console.print("[dim]  • The selector syntax is incorrect[/dim]")
+                console.print("[dim]  • This is the last page (no 'next' link)[/dim]")
+                console.print("[dim]  • The pagination is loaded dynamically via JavaScript[/dim]")
 
-        wait_input = Prompt.ask("Seconds to wait between pages", default="1.0").strip()
+                if not Confirm.ask("Continue anyway?", default=False):
+                    return None
+
+        # Step 4: Configure timing and limits
+        console.print()
+        console.print("[bold]Pagination Settings:[/bold]")
+
+        wait_input = Prompt.ask(
+            "Seconds to wait between pages",
+            default="1.0",
+        ).strip()
         try:
             wait_seconds = float(wait_input) if wait_input else 1.0
+            if wait_seconds < 0:
+                wait_seconds = 1.0
         except ValueError:
             console.print("[yellow]Invalid wait value. Using 1.0 seconds.[/yellow]")
             wait_seconds = 1.0
 
-        max_pages_input = Prompt.ask("Max pages (0 for unlimited)", default="0").strip()
+        console.print()
+        console.print("[dim]Tip: Set a max to avoid scraping too many pages accidentally[/dim]")
+        max_pages_input = Prompt.ask(
+            "Max pages to scrape (0 = unlimited)",
+            default="10",
+        ).strip()
         max_pages_value: int | None
         try:
             if max_pages_input and int(max_pages_input) > 0:
@@ -215,8 +284,22 @@ def build_schema_interactive(
             else:
                 max_pages_value = None
         except ValueError:
-            console.print("[yellow]Invalid max pages value. Using unlimited.[/yellow]")
-            max_pages_value = None
+            console.print("[yellow]Invalid max pages value. Using 10.[/yellow]")
+            max_pages_value = 10
+
+        # Summary
+        console.print()
+        console.print(
+            Panel(
+                f"[bold]Selector:[/bold] [cyan]{next_selector}[/cyan]\n"
+                f"[bold]Wait:[/bold] {wait_seconds}s between pages\n"
+                f"[bold]Max pages:[/bold] {max_pages_value or 'unlimited'}",
+                title="Pagination Summary",
+                title_align="left",
+                border_style="green",
+                expand=False,
+            )
+        )
 
         return PaginationSchema(
             next_selector=next_selector,
