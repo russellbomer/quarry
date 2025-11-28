@@ -71,10 +71,10 @@ policy:
 #
 # 3. MAINTENANCE:
 #    - If selectors break, NYT likely changed HTML structure, not just CSS
-#    - Run wizard to re-analyze: scrapesuite wizard
+#    - Run wizard to re-analyze: quarry init
 #    - Update structural selectors based on new hierarchy
 #
 # 4. TESTING:
-#    - Validate with small sample: scrapesuite run jobs/nyt_us_news_resilient.yml --max-items=5
+#    - Validate with small sample: quarry run jobs/nyt_us_news_resilient.yml --max-items=5
 #    - Check for None values: df.isnull().sum()
 #    - If >20% fields are None, selectors need update

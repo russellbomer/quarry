@@ -130,35 +130,20 @@
   - Validate destination before export
 
 #### 2. Environment Variable Audit (Medium Priority)
-**Issue**: Some env vars still reference SCRAPESUITE_*
+**Status**: ✅ Complete - All env vars now use QUARRY_* prefix
 
-**Tasks**:
-- [ ] **Search and replace** remaining env vars
-  ```bash
-  grep -r "SCRAPESUITE" quarry/ tests/
-  ```
-- [ ] **Update all references**:
-  - `SCRAPESUITE_IGNORE_ROBOTS` → `QUARRY_IGNORE_ROBOTS`
-  - `SCRAPESUITE_INTERACTIVE` → `QUARRY_INTERACTIVE`
-- [ ] **Add backward compatibility** warning (deprecate old names)
-  ```python
-  if os.getenv("SCRAPESUITE_IGNORE_ROBOTS"):
-      warnings.warn("SCRAPESUITE_* env vars deprecated, use QUARRY_*")
-  ```
+**Completed**:
+- [x] All env vars updated to QUARRY_* prefix
+- [x] No remaining SCRAPESUITE_* references in quarry/ or tests/
 
 #### 3. Repository Rename (Critical for Deployment)
-**Current**: GitHub repo is still `scrapesuite`  
-**Goal**: Rename to `quarry` for consistency
+**Status**: ✅ Complete - Repo renamed to `quarry`
 
-**Tasks**:
-- [ ] **GitHub rename** `scrapesuite` → `quarry`
-  - Settings → General → Repository name
-  - GitHub will set up redirect
-- [ ] **Update all URLs** in code/docs
-  - README.md badges
-  - Documentation links
-  - Import examples
-  - Contributing guides
+**Completed**:
+- [x] GitHub repo renamed `scrapesuite` → `quarry`
+- [x] GitHub redirect is active
+- [x] README.md badge URLs updated
+- [x] Documentation links updated
 
 #### 4. PyPI Package Name (Critical)
 **Decision needed**: Package name on PyPI

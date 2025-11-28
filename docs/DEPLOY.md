@@ -1,6 +1,6 @@
 # Deploy & Operate
 
-This guide shows how to build and run scrapesuite in production.
+This guide shows how to build and run Quarry in production.
 
 ## Prerequisites
 - Docker 24+
@@ -8,18 +8,18 @@ This guide shows how to build and run scrapesuite in production.
 
 ## Build locally
 ```bash
-docker build -t ghcr.io/<owner>/scrapesuite:local .
+docker build -t ghcr.io/<owner>/quarry:local .
 ```
 
 ## Run CLI tools
 ```bash
 # Show top-level CLI
-docker run --rm ghcr.io/<owner>/scrapesuite:local quarry --help
+docker run --rm ghcr.io/<owner>/quarry:local quarry --help
 
 # Excavate with a schema from a bind mount
 docker run --rm -v "$PWD:/work" -w /work \
   -e QUARRY_LOG_LEVEL=INFO \
-  ghcr.io/<owner>/scrapesuite:local quarry.excavate schemas/example.yml -o out.jsonl
+  ghcr.io/<owner>/quarry:local quarry.excavate schemas/example.yml -o out.jsonl
 ```
 
 ## Configuration (env vars)

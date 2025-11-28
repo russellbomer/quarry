@@ -1,4 +1,4 @@
-"""Logging configuration for scrapesuite.
+"""Logging configuration for Quarry.
 
 Call `setup_logging()` early (e.g., CLI entry) to configure logging level and format
 from environment variables:

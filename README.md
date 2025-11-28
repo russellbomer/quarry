@@ -2,9 +2,9 @@
 
 **A modern Python toolkit for web data extraction with robust support for React, Vue, and other JavaScript frameworks.**
 
-[![CI](https://github.com/russellbomer/scrapesuite/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/russellbomer/scrapesuite/actions/workflows/ci.yml)
+[![CI](https://github.com/russellbomer/quarry/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/russellbomer/quarry/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-199%20passing-success.svg)](./tests/)
+[![Tests](https://img.shields.io/badge/tests-208%20passing-success.svg)](./tests/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 ---

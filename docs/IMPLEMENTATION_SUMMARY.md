@@ -243,13 +243,13 @@ policy:
 python examples/use_selector_utilities.py
 
 # Step 2: Use wizard (enhanced with framework detection)
-scrapesuite wizard
+quarry init
 
 # Step 3: Validate selectors
 python scripts/audit_schema_selectors.py my_schema.yml
 
 # Step 4: Test extraction
-scrapesuite run my_schema.yml --max-items=5
+quarry run my_schema.yml --max-items=5
 ```
 
 ### Workflow 2: Migrate Existing Schema
@@ -268,7 +268,7 @@ cat schema_migration_report.md
 python scripts/audit_schema_selectors.py new_schema.yml
 
 # Step 5: Test
-scrapesuite run new_schema.yml --max-items=5
+quarry run new_schema.yml --max-items=5
 ```
 
 ### Workflow 3: Debug Failing Schema
@@ -337,7 +337,7 @@ def test_nyt_extraction_resilient():
 
 ### Manual Testing Checklist
 
-- [ ] Run NYT schema: `scrapesuite run examples/schemas/nyt_resilient.yml --max-items=5`
+- [ ] Run NYT schema: `quarry run examples/schemas/nyt_resilient.yml --max-items=5`
 - [ ] Verify no None values in output
 - [ ] Test audit tool on NYT schema
 - [ ] Test selector utilities with real HTML
@@ -421,7 +421,7 @@ scripts/
 
 ## Conclusion
 
-This implementation provides scrapesuite with production-ready capabilities for handling modern JavaScript frameworks and CSS-in-JS patterns. The solution is:
+This implementation provides Quarry with production-ready capabilities for handling modern JavaScript frameworks and CSS-in-JS patterns. The solution is:
 
 1. **Comprehensive:** Covers detection, extraction, validation, migration
 2. **Documented:** 2,400 lines of guides, examples, references
