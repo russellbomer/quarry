@@ -18,6 +18,7 @@ from rich.console import Console
 
 from quarry.core import load_yaml, run_job
 from quarry.lib.logging import setup_logging
+from quarry.lib.theme import COLORS, QUARRY_THEME
 from quarry.tools.excavate.cli import excavate as excavate_command
 from quarry.tools.polish.cli import polish as polish_command
 from quarry.tools.scout.cli import scout as scout_command
@@ -25,14 +26,15 @@ from quarry.tools.ship.cli import ship as ship_command
 from quarry.tools.survey.cli import survey as survey_command
 from quarry.wizard import run_wizard
 
-BANNER = """
-[cyan] ██████╗ ██╗   ██╗ █████╗ ██████╗ ██████╗ ██╗   ██╗[/cyan]
-[cyan]██╔═══██╗██║   ██║██╔══██╗██╔══██╗██╔══██╗╚██╗ ██╔╝[/cyan]
-[bright_cyan]██║   ██║██║   ██║███████║██████╔╝██████╔╝ ╚████╔╝ [/bright_cyan]
-[bright_cyan]██║▄▄ ██║██║   ██║██╔══██║██╔══██╗██╔══██╗  ╚██╔╝  [/bright_cyan]
-[blue]╚██████╔╝╚██████╔╝██║  ██║██║  ██║██║  ██║   ██║   [/blue]
-[blue] ╚══▀▀═╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   [/blue]
-[dim]           Web Data Extraction Suite v2.0[/dim]
+# Mars/Jupiter themed banner
+BANNER = f"""
+[{COLORS['primary']}] ██████╗ ██╗   ██╗ █████╗ ██████╗ ██████╗ ██╗   ██╗[/{COLORS['primary']}]
+[{COLORS['primary']}]██╔═══██╗██║   ██║██╔══██╗██╔══██╗██╔══██╗╚██╗ ██╔╝[/{COLORS['primary']}]
+[{COLORS['secondary']}]██║   ██║██║   ██║███████║██████╔╝██████╔╝ ╚████╔╝ [{COLORS['secondary']}]
+[{COLORS['secondary']}]██║▄▄ ██║██║   ██║██╔══██║██╔══██╗██╔══██╗  ╚██╔╝  [/{COLORS['secondary']}]
+[{COLORS['tertiary']}]╚██████╔╝╚██████╔╝██║  ██║██║  ██║██║  ██║   ██║   [/{COLORS['tertiary']}]
+[{COLORS['tertiary']}] ╚══▀▀═╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   [/{COLORS['tertiary']}]
+[{COLORS['dim']}]           Web Data Extraction Suite v2.0[/{COLORS['dim']}]
 """
 
 
@@ -64,21 +66,32 @@ def quarry(ctx):
     # Initialize logging per env (non-disruptive to rich/click output)
     setup_logging()
     if ctx.invoked_subcommand is None:
-        console = Console()
+        console = Console(theme=QUARRY_THEME)
         console.print(BANNER)
         console.print()
         console.print(
-            "[dim]A straightforward toolkit for analyzing, extracting, and exporting web data."
-            "[/dim]"
+            f"[{COLORS['dim']}]A straightforward toolkit for analyzing, "
+            f"extracting, and exporting web data.[/{COLORS['dim']}]"
         )
         console.print()
         console.print(
-            "Available tools: [cyan]run[/cyan] | [cyan]scout[/cyan] | [cyan]survey[/cyan] | "
-            "[cyan]excavate[/cyan] | [cyan]polish[/cyan] | [cyan]ship[/cyan]"
+            f"Available tools: [{COLORS['primary']}]run[/{COLORS['primary']}] | "
+            f"[{COLORS['primary']}]scout[/{COLORS['primary']}] | "
+            f"[{COLORS['primary']}]survey[/{COLORS['primary']}] | "
+            f"[{COLORS['primary']}]excavate[/{COLORS['primary']}] | "
+            f"[{COLORS['primary']}]polish[/{COLORS['primary']}] | "
+            f"[{COLORS['primary']}]ship[/{COLORS['primary']}]"
         )
         console.print()
-        console.print("Run [yellow]quarry --help[/yellow] to see all commands and options.")
-        console.print("Run [yellow]quarry <tool> --help[/yellow] for tool-specific help.")
+        console.print(
+            f"[{COLORS['secondary']}]New here?[/{COLORS['secondary']}] "
+            f"Try [{COLORS['warning']}]quarry foreman[/{COLORS['warning']}] "
+            f"for a guided tutorial!"
+        )
+        console.print()
+        warn = COLORS['warning']
+        console.print(f"Run [{warn}]quarry --help[/{warn}] to see all commands and options.")
+        console.print(f"Run [{warn}]quarry <tool> --help[/{warn}] for tool-specific help.")
         console.print()
         ctx.exit()
 
@@ -89,6 +102,10 @@ quarry.add_command(survey_command, name="survey")
 quarry.add_command(excavate_command, name="excavate")
 quarry.add_command(polish_command, name="polish")
 quarry.add_command(ship_command, name="ship")
+
+# Add foreman guided tutorial
+from quarry.foreman import foreman as foreman_command
+quarry.add_command(foreman_command, name="foreman")
 
 
 @quarry.command()

@@ -4,6 +4,7 @@ import csv
 import json
 import sqlite3
 from pathlib import Path
+from typing import Any
 
 from .base import Exporter
 
@@ -183,6 +184,169 @@ class SQLiteExporter(Exporter):
             for record in records:
                 try:
                     values: list[str | None] = []
+                    for col in columns_list:
+                        value = record.get(col)
+                        if value is None:
+                            values.append(None)
+                        elif isinstance(value, (list, dict)):
+                            values.append(json.dumps(value))
+                        else:
+                            values.append(str(value))
+
+                    cursor.execute(insert_sql, values)
+                    self.stats["records_written"] += 1
+                except Exception:
+                    self.stats["records_failed"] += 1
+
+            conn.commit()
+
+        finally:
+            conn.close()
+
+        return self.stats
+
+
+class PostgresExporter(Exporter):
+    """
+    Export data to PostgreSQL database.
+
+    Options:
+        table_name: Table name (default: 'records')
+        if_exists: 'replace', 'append', or 'fail' (default: 'append')
+        upsert_key: Column for upsert conflict resolution (default: None)
+        exclude_meta: Exclude _meta field (default: True)
+    """
+
+    def export(self, input_file: str | Path) -> dict[str, int]:
+        """Export JSONL to PostgreSQL database."""
+        try:
+            import psycopg  # noqa: PLC0415
+            import psycopg.sql as sql  # noqa: PLC0415, PLR0402
+        except ImportError as err:
+            from quarry.sinks.postgres import PostgresConnectionError
+            raise PostgresConnectionError(
+                "PostgreSQL support requires the 'psycopg' package.\n\n"
+                "Install it with:\n"
+                "  pip install 'psycopg[binary]'\n\n"
+                "Or add to your requirements.txt:\n"
+                "  psycopg[binary]"
+            ) from err
+
+        # Options
+        table_name = self.options.get("table_name", "records")
+        if_exists = self.options.get("if_exists", "append")
+        upsert_key = self.options.get("upsert_key")
+        exclude_meta = self.options.get("exclude_meta", True)
+
+        # Sanitize table name
+        table_name = "".join(c for c in table_name if c.isalnum() or c == "_")
+
+        try:
+            conn = psycopg.connect(self.destination)
+        except Exception as e:
+            from quarry.sinks.postgres import PostgresConnectionError
+            error_msg = str(e).lower()
+
+            if "authentication failed" in error_msg or "password" in error_msg:
+                raise PostgresConnectionError(
+                    f"PostgreSQL authentication failed.\n\n"
+                    f"Check your username and password in the connection string.\n"
+                    f"Original error: {e}"
+                ) from e
+            elif "could not connect" in error_msg or "connection refused" in error_msg:
+                raise PostgresConnectionError(
+                    f"Cannot connect to PostgreSQL server.\n\n"
+                    f"Verify that:\n"
+                    f"  1. PostgreSQL is running on the specified host and port\n"
+                    f"  2. The hostname is correct and reachable\n"
+                    f"  3. Firewall rules allow the connection\n\n"
+                    f"Original error: {e}"
+                ) from e
+            else:
+                raise PostgresConnectionError(
+                    f"PostgreSQL connection failed: {e}"
+                ) from e
+
+        try:
+            cursor = conn.cursor()
+
+            # Read records and determine schema
+            records: list[dict[str, Any]] = []
+            columns: set[str] = set()
+
+            for record in self._read_jsonl(input_file):
+                if exclude_meta and "_meta" in record:
+                    record = {k: v for k, v in record.items() if k != "_meta"}
+                columns.update(record.keys())
+                records.append(record)
+
+            if not records:
+                conn.close()
+                return self.stats
+
+            columns_list: list[str] = sorted(columns)
+
+            # Check if table exists
+            cursor.execute(
+                "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = %s)",
+                (table_name,),
+            )
+            table_exists = cursor.fetchone()[0]
+
+            # Handle if_exists
+            if table_exists:
+                if if_exists == "fail":
+                    raise ValueError(f"Table '{table_name}' already exists")
+                elif if_exists == "replace":
+                    cursor.execute(sql.SQL("DROP TABLE IF EXISTS {}").format(
+                        sql.Identifier(table_name)
+                    ))
+                    table_exists = False
+
+            # Create table if needed
+            if not table_exists:
+                col_defs = sql.SQL(", ").join(
+                    sql.SQL("{} TEXT").format(sql.Identifier(col))
+                    for col in columns_list
+                )
+                create_sql = sql.SQL("CREATE TABLE {} ({})").format(
+                    sql.Identifier(table_name),
+                    col_defs,
+                )
+                cursor.execute(create_sql)
+
+            # Build insert SQL
+            col_identifiers = [sql.Identifier(c) for c in columns_list]
+
+            if upsert_key and upsert_key in columns_list:
+                # Upsert with ON CONFLICT
+                update_cols = [c for c in columns_list if c != upsert_key]
+                update_set = sql.SQL(", ").join(
+                    sql.SQL("{} = EXCLUDED.{}").format(
+                        sql.Identifier(c), sql.Identifier(c)
+                    )
+                    for c in update_cols
+                )
+                insert_sql = sql.SQL(
+                    "INSERT INTO {} ({}) VALUES ({}) ON CONFLICT ({}) DO UPDATE SET {}"
+                ).format(
+                    sql.Identifier(table_name),
+                    sql.SQL(", ").join(col_identifiers),
+                    sql.SQL(", ").join(sql.Placeholder() for _ in columns_list),
+                    sql.Identifier(upsert_key),
+                    update_set,
+                )
+            else:
+                insert_sql = sql.SQL("INSERT INTO {} ({}) VALUES ({})").format(
+                    sql.Identifier(table_name),
+                    sql.SQL(", ").join(col_identifiers),
+                    sql.SQL(", ").join(sql.Placeholder() for _ in columns_list),
+                )
+
+            # Insert records
+            for record in records:
+                try:
+                    values = []
                     for col in columns_list:
                         value = record.get(col)
                         if value is None:

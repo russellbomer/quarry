@@ -95,7 +95,7 @@ class ExporterFactory:
         Raises:
             ValueError: If destination format cannot be determined
         """
-        from .exporters import CSVExporter, JSONExporter, SQLiteExporter
+        from .exporters import CSVExporter, JSONExporter, PostgresExporter, SQLiteExporter
 
         dest_lower = destination.lower()
 
@@ -116,7 +116,7 @@ class ExporterFactory:
             return SQLiteExporter(db_path, **options)
 
         elif dest_lower.startswith(("postgresql://", "postgres://")):
-            raise NotImplementedError("PostgreSQL export coming soon")
+            return PostgresExporter(destination, **options)
 
         elif dest_lower.startswith("mysql://"):
             raise NotImplementedError("MySQL export coming soon")

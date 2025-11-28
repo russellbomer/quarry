@@ -3,6 +3,8 @@
 import json
 from typing import Any
 
+from quarry.lib.theme import COLORS
+
 
 def format_as_json(analysis: dict[str, Any], pretty: bool = True) -> str:
     """
@@ -39,17 +41,19 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
         from rich.panel import Panel
         from rich.table import Table
 
-        output = StringIO()
-        console = Console(file=output, width=100, force_terminal=True)
+        from quarry.lib.theme import QUARRY_THEME
 
-        # Header with elegant spacing
+        output = StringIO()
+        console = Console(file=output, width=100, force_terminal=True, theme=QUARRY_THEME)
+
+        # Header with elegant spacing (Mars/Jupiter theme)
         url = analysis.get("url", "")
         console.print()
-        console.print("╭────────────────────────────────────────────────────╮", style="cyan")
+        console.print("╭────────────────────────────────────────────────────╮", style=COLORS["primary"])
         console.print(
-            "│ [bold cyan]SCOUT ANALYSIS[/bold cyan]                            │", style="cyan"
+            f"│ [bold {COLORS['primary']}]SCOUT ANALYSIS[/bold {COLORS['primary']}]                            │", style=COLORS["primary"]
         )
-        console.print("╰────────────────────────────────────────────────────╯", style="cyan")
+        console.print("╰────────────────────────────────────────────────────╯", style=COLORS["primary"])
 
         if url:
             console.print(f"[dim]{url}[/dim]")
@@ -70,7 +74,7 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
                     content,
                     title="Page Info",
                     title_align="left",
-                    border_style="blue",
+                    border_style=COLORS["tertiary"],
                     padding=(0, 1),
                     expand=False,
                 )
@@ -86,12 +90,12 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
                 title_justify="left",
                 box=box.ROUNDED,
                 show_header=True,
-                header_style="bold cyan",
-                border_style="cyan",
+                header_style=f"bold {COLORS['primary']}",
+                border_style=COLORS["primary"],
             )
-            table.add_column("Framework", style="cyan bold", no_wrap=True)
-            table.add_column("Confidence", style="green", justify="right", width=12)
-            table.add_column("Version", style="yellow dim", width=15)
+            table.add_column("Framework", style=f"{COLORS['primary']} bold", no_wrap=True)
+            table.add_column("Confidence", style=COLORS["success"], justify="right", width=12)
+            table.add_column("Version", style=f"{COLORS['warning']} dim", width=15)
 
             for fw in frameworks[:5]:  # Top 5
                 name = fw.get("name", "unknown").title()
@@ -111,11 +115,11 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
                 title_justify="left",
                 box=box.ROUNDED,
                 show_header=True,
-                header_style="bold magenta",
-                border_style="magenta",
+                header_style=f"bold {COLORS['secondary']}",
+                border_style=COLORS["secondary"],
             )
-            table.add_column("CSS Selector", style="magenta", max_width=60, overflow="fold")
-            table.add_column("Count", style="green bold", justify="right", width=8)
+            table.add_column("CSS Selector", style=COLORS["secondary"], max_width=60, overflow="fold")
+            table.add_column("Count", style=f"{COLORS['success']} bold", justify="right", width=8)
             table.add_column("Sample Text", style="dim", max_width=35, overflow="ellipsis")
 
             for cont in containers[:5]:  # Top 5
@@ -139,12 +143,12 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
 
             console.print(
                 Panel(
-                    f"[bold green]Recommended Selector[/bold green]\n\n"
-                    f"[cyan]{selector}[/cyan]\n"
+                    f"[bold {COLORS['success']}]Recommended Selector[/bold {COLORS['success']}]\n\n"
+                    f"[{COLORS['secondary']}]{selector}[/{COLORS['secondary']}]\n"
                     f"[dim]Found {count} items matching this pattern[/dim]",
                     title="Best Container",
                     title_align="left",
-                    border_style="green",
+                    border_style=COLORS["success"],
                     padding=(0, 1),
                     expand=False,
                 )
@@ -160,11 +164,11 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
                 title_justify="left",
                 box=box.SIMPLE,
                 show_header=True,
-                header_style="bold yellow",
-                border_style="yellow",
+                header_style=f"bold {COLORS['warning']}",
+                border_style=COLORS["warning"],
             )
-            table.add_column("Field Name", style="yellow bold", width=15)
-            table.add_column("CSS Selector", style="cyan", width=30, overflow="fold")
+            table.add_column("Field Name", style=f"{COLORS['warning']} bold", width=15)
+            table.add_column("CSS Selector", style=COLORS["secondary"], width=30, overflow="fold")
             table.add_column("Sample Value", style="white dim", max_width=35, overflow="ellipsis")
 
             for field in field_candidates[:8]:  # Top 8
@@ -188,10 +192,10 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
 
             console.print(
                 Panel(
-                    f"[bold cyan]{name}[/bold cyan] detected\n\n[white]{recommendation}[/white]",
+                    f"[bold {COLORS['primary']}]{name}[/bold {COLORS['primary']}] detected\n\n[white]{recommendation}[/white]",
                     title="Framework Recommendation",
                     title_align="left",
-                    border_style="yellow",
+                    border_style=COLORS["warning"],
                     padding=(0, 1),
                     expand=False,
                 )
@@ -204,23 +208,23 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
             confidence = infinite_scroll.get("confidence", 0) * 100
             signals = infinite_scroll.get("signals", [])
 
-            warning_text = f"[bold yellow]⚠ Infinite Scroll Detected[/bold yellow] ({confidence:.0f}% confidence)\n\n"
+            warning_text = f"[bold {COLORS['warning']}]⚠ Infinite Scroll Detected[/bold {COLORS['warning']}] ({confidence:.0f}% confidence)\n\n"
             warning_text += "[dim]This page appears to use infinite scroll. Traditional selectors may not work.[/dim]\n\n"
             warning_text += "[bold]Detected signals:[/bold]\n"
             for signal in signals[:5]:
                 warning_text += f"  • {signal}\n"
 
             warning_text += (
-                "\n[bold cyan]💡 Solution:[/bold cyan] Find the underlying API endpoint\n"
+                f"\n[bold {COLORS['primary']}]💡 Solution:[/bold {COLORS['primary']}] Find the underlying API endpoint\n"
             )
-            warning_text += "[dim]Run:[/dim] [cyan]quarry scout --find-api[/cyan]"
+            warning_text += f"[dim]Run:[/dim] [{COLORS['primary']}]quarry scout --find-api[/{COLORS['primary']}]"
 
             console.print(
                 Panel(
                     warning_text,
                     title="Infinite Scroll Warning",
                     title_align="left",
-                    border_style="yellow",
+                    border_style=COLORS["warning"],
                     padding=(0, 1),
                 )
             )
@@ -231,14 +235,14 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
         if stats:
             console.print(
                 Panel(
-                    f"[cyan]•[/cyan] Elements: [bold]{stats.get('total_elements', 0):,}[/bold]\n"
-                    f"[cyan]•[/cyan] Links: [bold]{stats.get('total_links', 0):,}[/bold]\n"
-                    f"[cyan]•[/cyan] Images: [bold]{stats.get('total_images', 0):,}[/bold]\n"
-                    f"[cyan]•[/cyan] Forms: [bold]{stats.get('total_forms', 0):,}[/bold]\n"
-                    f"[cyan]•[/cyan] Text: [bold]{stats.get('text_words', 0):,}[/bold] words",
+                    f"[{COLORS['primary']}]•[/{COLORS['primary']}] Elements: [bold]{stats.get('total_elements', 0):,}[/bold]\n"
+                    f"[{COLORS['primary']}]•[/{COLORS['primary']}] Links: [bold]{stats.get('total_links', 0):,}[/bold]\n"
+                    f"[{COLORS['primary']}]•[/{COLORS['primary']}] Images: [bold]{stats.get('total_images', 0):,}[/bold]\n"
+                    f"[{COLORS['primary']}]•[/{COLORS['primary']}] Forms: [bold]{stats.get('total_forms', 0):,}[/bold]\n"
+                    f"[{COLORS['primary']}]•[/{COLORS['primary']}] Text: [bold]{stats.get('text_words', 0):,}[/bold] words",
                     title="Page Statistics",
                     title_align="left",
-                    border_style="blue",
+                    border_style=COLORS["tertiary"],
                     padding=(0, 1),
                     expand=False,
                 )

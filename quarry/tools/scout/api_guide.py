@@ -4,7 +4,9 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 
-console = Console()
+from quarry.lib.theme import COLORS, QUARRY_THEME
+
+console = Console(theme=QUARRY_THEME)
 
 
 API_GUIDE_TEXT = """
@@ -137,9 +139,9 @@ def show_api_guide():
     console.print()
     console.print(
         Panel(
-            "[bold cyan]Finding API Endpoints for Infinite Scroll Sites[/bold cyan]",
+            f"[bold {COLORS['primary']}]Finding API Endpoints for Infinite Scroll Sites[/bold {COLORS['primary']}]",
             subtitle="A Quarry Guide",
-            border_style="cyan",
+            border_style=COLORS["primary"],
             expand=False,
         )
     )
@@ -153,7 +155,7 @@ def show_api_guide():
         Panel(
             "💡 [bold]Pro Tip:[/bold] Open DevTools Network tab, scroll the page, "
             "and look for JSON responses in the XHR/Fetch filter.",
-            border_style="green",
+            border_style=COLORS["success"],
             expand=False,
         )
     )

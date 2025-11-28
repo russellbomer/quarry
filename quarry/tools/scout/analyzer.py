@@ -280,20 +280,26 @@ def _find_containers(soup: BeautifulSoup) -> list[dict[str, Any]]:
                     )
                     sample_text = sample_child.get_text(strip=True)[:100] if sample_child else ""
 
-                    # Calculate content score for ranking
+                    # Calculate content score for ranking with hints
                     content_score = 0
+                    hints: list[str] = []
+
                     if is_content_container(container):
                         content_score += 50
+                        hints.append("content pattern")
 
                     # Bonus for semantic tags
                     if container.name in ['article', 'section', 'main']:
                         content_score += 30
+                        hints.append(f"semantic <{container.name}>")
                     if most_common_tag in ['article', 'li', 'div']:
                         content_score += 20
                     if most_common_tag == 'tr':
                         content_score += 30
+                        hints.append("table row")
                     if container.name in ['table', 'tbody']:
                         content_score += 20
+                        hints.append("table container")
 
                     # Bonus for having links (articles usually link to detail pages)
                     effective_children = (
@@ -306,6 +312,7 @@ def _find_containers(soup: BeautifulSoup) -> list[dict[str, Any]]:
                     )
                     if avg_links > 0.5:
                         content_score += 20
+                        hints.append("has links")
 
                     # Bonus for having images (articles often have featured images)
                     avg_images = (
@@ -316,6 +323,25 @@ def _find_containers(soup: BeautifulSoup) -> list[dict[str, Any]]:
                     )
                     if avg_images > 0.3:
                         content_score += 15
+                        hints.append("has images")
+
+                    # Bonus for having headings (structured content)
+                    avg_headings = (
+                        sum(1 for c in effective_children if c.find(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']))
+                        / len(effective_children)
+                        if effective_children
+                        else 0.0
+                    )
+                    if avg_headings > 0.3:
+                        content_score += 15
+                        hints.append("has headings")
+
+                    # Bonus for item count (more items = more likely to be the main list)
+                    if count >= 10:
+                        content_score += 15
+                        hints.append(f"{count} items")
+                    elif count >= 5:
+                        content_score += 10
 
                     containers.append(
                         {
@@ -328,6 +354,7 @@ def _find_containers(soup: BeautifulSoup) -> list[dict[str, Any]]:
                             "container_class": _get_element_classes(container),
                             "container_id": container.get("id"),
                             "content_score": content_score,
+                            "hints": hints,
                             "is_content": is_content_container(container),
                         }
                     )

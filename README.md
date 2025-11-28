@@ -2,10 +2,10 @@
 
 **A modern Python toolkit for web data extraction with robust support for React, Vue, and other JavaScript frameworks.**
 
-[![CI](https://github.com/russellbomer/quarry/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/russellbomer/quarry/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Tests](https://img.shields.io/badge/tests-208%20passing-success.svg)](./tests/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
 ---
 
@@ -30,6 +30,14 @@ pip install -e .  # From source
 ```
 
 **Requirements**: Python 3.11+
+
+### New to Quarry? Try the Guided Tutorial
+
+```bash
+quarry foreman
+```
+
+The **Foreman** walks you through the complete 5-tool pipeline in ~2-3 minutes using Hacker News as a demo.
 
 ### Your First Extraction
 
@@ -58,7 +66,7 @@ quarry ship output.jsonl results.csv
 | **📐 Survey** | Design extraction schemas | `quarry survey create schema.yml` |
 | **🔨 Excavate** | Execute data extraction | `quarry excavate schema.yml --url <url>` |
 | **✨ Polish** | Transform & clean data | `quarry polish data.jsonl --dedupe` |
-| **📦 Ship** | Export to CSV/JSON/SQLite | `quarry ship data.jsonl output.csv` |
+| **📦 Ship** | Export to CSV/JSON/SQLite/PostgreSQL | `quarry ship data.jsonl output.csv` |
 
 **Complete pipeline**:
 ```bash
@@ -141,9 +149,10 @@ framework = detect_framework(html, soup, url)
 - ✅ **Rate Limiting** - Token bucket with exponential backoff
 - ✅ **Robots.txt** - Automatic parsing and compliance
 - ✅ **State Management** - SQLite-based deduplication
-- ✅ **Multiple Exports** - CSV, JSON, SQLite, Parquet
+- ✅ **Multiple Exports** - CSV, JSON, SQLite, Parquet, PostgreSQL
 - ✅ **Validation** - Schema validation with Pydantic
-- ✅ **Testing** - 199 tests, 100% passing
+- ✅ **Guided Tutorial** - `quarry foreman` for interactive learning
+- ✅ **Testing** - 208 tests, 100% passing
 
 ---
 
@@ -186,6 +195,7 @@ quarry/
 
 The CLI and HTTP client can be tuned via environment variables:
 
+**Logging & HTTP:**
 - `QUARRY_LOG_LEVEL`: Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`). Default `INFO`.
 - `QUARRY_LOG_JSON`: Set to `1` to emit JSON logs to stderr.
 - `QUARRY_DEFAULT_RPS`: Default requests-per-second per domain (float). Default `1.0`.
@@ -196,6 +206,9 @@ The CLI and HTTP client can be tuned via environment variables:
 - `QUARRY_INTERACTIVE`: `1` to prompt when robots.txt blocks (ethical default is non-interactive).
 - `QUARRY_IGNORE_ROBOTS`: `1` to ignore robots.txt (testing only).
 
+**Database Exports:**
+- `QUARRY_POSTGRES_URL`: PostgreSQL connection URL for database exports.
+
 Examples:
 
 ```bash
@@ -205,8 +218,10 @@ export QUARRY_HTTP_TIMEOUT=60
 export QUARRY_HTTP_MAX_RETRIES=5
 export QUARRY_MAX_CONTENT_MB=10
 export PROXY_URL=http://proxy.internal:8080
+export QUARRY_POSTGRES_URL=postgresql://user:pass@localhost:5432/extractions
 
 quarry excavate schemas/example.yml --url https://example.com -o out.jsonl
+quarry ship out.jsonl postgresql://localhost/db  # Export to PostgreSQL
 ```
 
 ---

@@ -1,0 +1,11 @@
+name: ust_feat
+description: featured stories from the US Treaury News section
+version: 1
+url: https://home.treasury.gov/news/featured-stories
+item_selector: .featured-stories--vertical__image
+fields:
+  image:
+    selector: img[src]
+    attribute: src
+    required: false
+    multiple: false

@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Literal, cast
 
 import questionary
+from questionary import Style as QStyle
 from rich.console import Console
 from rich.panel import Panel
 
@@ -19,13 +20,17 @@ from quarry.lib.session import (
     set_last_output,
     set_last_schema,
 )
+from quarry.lib.theme import COLORS, QUARRY_THEME, QUESTIONARY_STYLE
 from quarry.tools.excavate.executor import ExcavateExecutor, write_jsonl
 from quarry.tools.polish.processor import PolishProcessor
 from quarry.tools.scout.analyzer import analyze_page
 from quarry.tools.ship.base import ExporterFactory
 from quarry.tools.survey.builder import build_schema_interactive
 
-console = Console()
+console = Console(theme=QUARRY_THEME)
+
+# Questionary style using Mars/Jupiter palette
+q_style = QStyle.from_dict(QUESTIONARY_STYLE)
 
 
 def run_wizard() -> None:
@@ -33,11 +38,11 @@ def run_wizard() -> None:
     try:
         _run_wizard()
     except KeyboardInterrupt:
-        console.print("\n[yellow]Wizard cancelled by user[/yellow]")
+        console.print(f"\n[{COLORS['warning']}]Wizard cancelled by user[/{COLORS['warning']}]")
 
 
 def _run_wizard() -> None:
-    console.print(Panel.fit("Quarry Wizard", border_style="cyan"))
+    console.print(Panel.fit("Quarry Wizard", border_style=COLORS["primary"]))
 
     current_schema: str | None = None
     last_schema = get_last_schema()
@@ -59,6 +64,7 @@ def _run_wizard() -> None:
                 "Export data",
                 "Exit",
             ],
+            style=q_style,
         ).ask()
 
         if action == "Create or edit schema":
@@ -79,7 +85,7 @@ def _run_wizard() -> None:
             if current_output:
                 _run_export_flow(current_output)
         else:
-            console.print("\n[green]Goodbye![/green]")
+            console.print(f"\n[{COLORS['success']}]Goodbye![/{COLORS['success']}]")
             return
 
 
@@ -93,21 +99,21 @@ def _create_schema_flow() -> str | None:
         try:
             html_content = Path(html_path).read_text(encoding="utf-8")
         except OSError as err:
-            console.print(f"[red]Failed to read HTML file: {err}[/red]")
+            console.print(f"[{COLORS['error']}]Failed to read HTML file: {err}[/{COLORS['error']}]")
             html_content = None
     elif url:
         try:
             console.print("[dim]Running Scout analysis...[/dim]")
             html_content = get_html(url)
         except Exception as err:
-            console.print(f"[red]Failed to fetch URL: {err}[/red]")
+            console.print(f"[{COLORS['error']}]Failed to fetch URL: {err}[/{COLORS['error']}]")
             html_content = None
 
     if html_content:
         try:
             analysis = analyze_page(html_content, url=url or None)
         except Exception as err:
-            console.print(f"[yellow]Scout analysis failed: {err}[/yellow]")
+            console.print(f"[{COLORS['warning']}]Scout analysis failed: {err}[/{COLORS['warning']}]")
             analysis = None
 
     if analysis:
@@ -126,7 +132,7 @@ def _create_schema_flow() -> str | None:
                 f"Suggested item selector (prefills next step): {suggested_selector}",
                 title="Scout Summary",
                 title_align="left",
-                border_style="blue",
+                border_style=COLORS["tertiary"],
                 expand=False,
             )
         )
@@ -143,7 +149,7 @@ def _create_schema_flow() -> str | None:
     ).ask()
 
     if not output_path:
-        console.print("[yellow]Schema not saved[/yellow]")
+        console.print(f"[{COLORS['warning']}]Schema not saved[/{COLORS['warning']}]")
         return None
 
     save_schema(schema, output_path)
@@ -168,7 +174,7 @@ def _create_schema_flow() -> str | None:
                 "schema_fields": list(schema.fields.keys()),
             }
         )
-    console.print(f"[green]Schema saved to {output_path}[/green]")
+    console.print(f"[{COLORS['success']}]Schema saved to {output_path}[/{COLORS['success']}]")
     return str(Path(output_path).absolute())
 
 
@@ -178,7 +184,7 @@ def _prompt_schema_path() -> str | None:
         validate=lambda value: Path(value).exists() or "File not found",
     ).ask()
     if not path:
-        console.print("[yellow]No schema selected[/yellow]")
+        console.print(f"[{COLORS['warning']}]No schema selected[/{COLORS['warning']}]")
         return None
     return str(Path(path).absolute())
 
@@ -187,7 +193,7 @@ def _run_extraction_flow(schema_path: str) -> str | None:
     try:
         schema = load_schema(schema_path)
     except Exception as err:
-        console.print(f"[red]Failed to load schema: {err}[/red]")
+        console.print(f"[{COLORS['error']}]Failed to load schema: {err}[/{COLORS['error']}]")
         return None
 
     last_analysis = get_last_analysis()
@@ -204,7 +210,7 @@ def _run_extraction_flow(schema_path: str) -> str | None:
                 f"Suggested selector: {suggested_selector}",
                 title="Extraction Context",
                 title_align="left",
-                border_style="blue",
+                border_style=COLORS["tertiary"],
                 expand=False,
             )
         )
@@ -212,7 +218,7 @@ def _run_extraction_flow(schema_path: str) -> str | None:
     default_url = schema.url or ""
     target_url = questionary.text("URL to extract", default=default_url).ask()
     if not target_url:
-        console.print("[yellow]Extraction skipped (no URL provided)[/yellow]")
+        console.print(f"[{COLORS['warning']}]Extraction skipped (no URL provided)[/{COLORS['warning']}]")
         return None
 
     include_metadata = questionary.confirm("Include metadata (_meta field)?", default=True).ask()
@@ -230,7 +236,7 @@ def _run_extraction_flow(schema_path: str) -> str | None:
                 try:
                     max_pages = int(max_pages_answer)
                 except ValueError:
-                    console.print("[yellow]Invalid number, using schema setting[/yellow]")
+                    console.print(f"[{COLORS['warning']}]Invalid number, using schema setting[/{COLORS['warning']}]")
             if not max_pages:
                 assert schema.pagination is not None
                 max_pages = schema.pagination.max_pages
@@ -250,11 +256,11 @@ def _run_extraction_flow(schema_path: str) -> str | None:
         else:
             items = executor.fetch_url(target_url, include_metadata=include_metadata)
     except Exception as err:
-        console.print(f"[red]Extraction failed: {err}[/red]")
+        console.print(f"[{COLORS['error']}]Extraction failed: {err}[/{COLORS['error']}]")
         return None
 
     if not items:
-        console.print("[yellow]No items extracted[/yellow]")
+        console.print(f"[{COLORS['warning']}]No items extracted[/{COLORS['warning']}]")
 
     default_output = Path("data") / "out" / f"{schema.name}.jsonl"
     output_path = questionary.path(
@@ -263,19 +269,19 @@ def _run_extraction_flow(schema_path: str) -> str | None:
     ).ask()
 
     if not output_path:
-        console.print("[yellow]Results not saved[/yellow]")
+        console.print(f"[{COLORS['warning']}]Results not saved[/{COLORS['warning']}]")
         return None
 
     try:
         write_jsonl(items, output_path)
     except Exception as err:
-        console.print(f"[red]Failed to write output: {err}[/red]")
+        console.print(f"[{COLORS['error']}]Failed to write output: {err}[/{COLORS['error']}]")
         return None
 
     stats = executor.get_stats()
     console.print(
-        f"[green]Saved {stats['items_extracted']} items from {stats['urls_fetched']} page(s) "
-        f"to {output_path}[/green]",
+        f"[{COLORS['success']}]Saved {stats['items_extracted']} items from {stats['urls_fetched']} page(s) "
+        f"to {output_path}[/{COLORS['success']}]",
     )
 
     set_last_output(output_path, "jsonl", len(items))
@@ -288,7 +294,7 @@ def _prompt_output_path() -> str | None:
         validate=lambda value: Path(value).exists() or "File not found",
     ).ask()
     if not path:
-        console.print("[yellow]No JSONL file selected[/yellow]")
+        console.print(f"[{COLORS['warning']}]No JSONL file selected[/{COLORS['warning']}]")
         return None
     return str(Path(path).absolute())
 
@@ -337,7 +343,7 @@ def _run_polish_flow(input_path: str) -> str | None:
     ).ask()
 
     if not output_path:
-        console.print("[yellow]Polish step cancelled[/yellow]")
+        console.print(f"[{COLORS['warning']}]Polish step cancelled[/{COLORS['warning']}]")
         return input_path
 
     try:
@@ -353,12 +359,12 @@ def _run_polish_flow(input_path: str) -> str | None:
             filter_func=None,
         )
     except Exception as err:
-        console.print(f"[red]Polish failed: {err}[/red]")
+        console.print(f"[{COLORS['error']}]Polish failed: {err}[/{COLORS['error']}]")
         return input_path
 
     console.print(
-        f"[green]Polish complete: {stats['records_written']} records written to "
-        f"{output_path}[/green]",
+        f"[{COLORS['success']}]Polish complete: {stats['records_written']} records written to "
+        f"{output_path}[/{COLORS['success']}]",
     )
     set_last_output(output_path, "jsonl", stats["records_written"])
     return str(Path(output_path).absolute())
@@ -367,7 +373,7 @@ def _run_polish_flow(input_path: str) -> str | None:
 def _run_export_flow(input_path: str) -> None:
     destination = questionary.text("Export destination (e.g., output.csv)", default="").ask()
     if not destination:
-        console.print("[yellow]Export skipped[/yellow]")
+        console.print(f"[{COLORS['warning']}]Export skipped[/{COLORS['warning']}]")
         return
 
     last_output = get_last_output()
@@ -378,7 +384,7 @@ def _run_export_flow(input_path: str) -> None:
                 f"Source file: {last_output.get('path', '')}",
                 title="Current Dataset",
                 title_align="left",
-                border_style="blue",
+                border_style=COLORS["tertiary"],
                 expand=False,
             )
         )
@@ -409,14 +415,14 @@ def _run_export_flow(input_path: str) -> None:
         exporter = ExporterFactory.create(destination, **options)
         stats = exporter.export(input_path)
     except NotImplementedError as err:
-        console.print(f"[yellow]{err}[/yellow]")
+        console.print(f"[{COLORS['warning']}]{err}[/{COLORS['warning']}]")
         return
     except Exception as err:
-        console.print(f"[red]Export failed: {err}[/red]")
+        console.print(f"[{COLORS['error']}]Export failed: {err}[/{COLORS['error']}]")
         return
 
     console.print(
-        f"[green]Exported {stats['records_written']} records to {destination}[/green]",
+        f"[{COLORS['success']}]Exported {stats['records_written']} records to {destination}[/{COLORS['success']}]",
     )
 
 

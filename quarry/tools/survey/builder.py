@@ -705,17 +705,32 @@ def build_schema_interactive(
             header_style="bold cyan",
         )
         table.add_column("#", style="cyan dim", width=4, justify="right")
-        table.add_column("CSS Selector", style="yellow", max_width=50, overflow="fold")
-        table.add_column("Items", style="green bold", justify="right", width=8)
-        table.add_column("Sample", style="dim", max_width=30, overflow="ellipsis")
+        table.add_column("CSS Selector", style="yellow", max_width=40, overflow="fold")
+        table.add_column("Items", style="green bold", justify="right", width=6)
+        table.add_column("Confidence", style="magenta", width=10)
+        table.add_column("Why", style="dim", max_width=28, overflow="ellipsis")
 
         for idx, container in enumerate(containers, 1):
             selector = container.get("child_selector") or container.get("selector") or "—"
             count = str(container.get("item_count", 0))
-            sample = container.get("sample_text", "")
-            sample = " ".join(sample.split())[:30]
 
-            table.add_row(str(idx), selector, count, sample)
+            # Calculate confidence from score
+            score = container.get("content_score", 0)
+            if score >= 80:
+                confidence = "[green]High[/]"
+            elif score >= 50:
+                confidence = "[yellow]Medium[/]"
+            else:
+                confidence = "[dim]Low[/]"
+
+            # Get hints or fall back to sample text
+            hints = container.get("hints", [])
+            why = ", ".join(hints) if hints else ""
+            if not why:
+                sample = container.get("sample_text", "")
+                why = " ".join(sample.split())[:25]
+
+            table.add_row(str(idx), selector, count, confidence, why)
 
         console.print(table)
         console.print()
@@ -733,10 +748,15 @@ def build_schema_interactive(
         if choice.lower() == "keep" and item_selector:
             console.print(f"[green]✓[/green] Keeping: [cyan]{item_selector}[/cyan]")
         elif choice.isdigit() and 1 <= int(choice) <= len(containers):
-            item_selector = containers[int(choice) - 1].get("child_selector") or containers[
-                int(choice) - 1
-            ].get("selector")
-            console.print(f"[green]✓[/green] Using: [cyan]{item_selector}[/cyan]")
+            selected = containers[int(choice) - 1]
+            item_selector = selected.get("child_selector") or selected.get("selector")
+            # Show why this container was selected
+            hints = selected.get("hints", [])
+            if hints:
+                console.print(f"[green]✓[/green] Using: [cyan]{item_selector}[/cyan]")
+                console.print(f"    [dim]({', '.join(hints)})[/dim]")
+            else:
+                console.print(f"[green]✓[/green] Using: [cyan]{item_selector}[/cyan]")
         else:
             item_selector = choice
             console.print(f"[green]✓[/green] Using custom: [cyan]{item_selector}[/cyan]")
