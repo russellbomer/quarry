@@ -69,6 +69,8 @@ def polish(
       quarry polish data.jsonl --transform url:extract_domain
       quarry polish data.jsonl --dedupe --skip-invalid --output clean.jsonl
     """
+    # Initialize validation_rules (may be populated in interactive mode)
+    validation_rules: dict[str, dict[str, Any]] = {}
 
     # Show helpful error if called without required argument
     if not input_file and not sys.stdin.isatty():
@@ -147,10 +149,11 @@ def polish(
         operations = questionary.checkbox(
             "Select operations:",
             choices=[
-                "Deduplicate records",
-                "Transform fields",
-                "Skip invalid records",
-                "Show detailed statistics",
+                questionary.Choice("Deduplicate records", checked=False),
+                questionary.Choice("Transform fields", checked=False),
+                questionary.Choice("Validate fields", checked=False),
+                questionary.Choice("Skip invalid records", checked=False),
+                questionary.Choice("Show detailed statistics", checked=True),
             ],
         ).ask()
 
@@ -163,25 +166,85 @@ def polish(
         skip_invalid = "Skip invalid records" in operations
         stats = "Show detailed statistics" in operations
 
+        # Try to read field names from the input file for better UX
+        available_fields: list[str] = []
+        try:
+            import json
+
+            with open(input_file, encoding="utf-8") as f:
+                first_line = f.readline().strip()
+                if first_line:
+                    sample = json.loads(first_line)
+                    # Exclude _meta field from suggestions
+                    available_fields = [k for k in sample.keys() if not k.startswith("_")]
+        except Exception:
+            pass  # Fall back to manual entry
+
         # If deduplication selected, ask for keys
         if dedupe:
-            dedupe_keys_input = questionary.text(
-                "Dedupe keys (space-separated, or leave empty for all fields):", default=""
-            ).ask()
+            if available_fields:
+                click.echo(f"\n📋 Available fields: {', '.join(available_fields)}", err=True)
+                dedupe_choice = questionary.select(
+                    "How to select dedupe keys?",
+                    choices=[
+                        questionary.Choice("Select from available fields", value="select"),
+                        questionary.Choice("Use all fields (full record comparison)", value="all"),
+                        questionary.Choice("Enter field names manually", value="manual"),
+                    ],
+                ).ask()
 
-            if dedupe_keys_input:
-                dedupe_keys = tuple(dedupe_keys_input.split())
+                if dedupe_choice == "select":
+                    selected_keys = questionary.checkbox(
+                        "Select fields for deduplication:",
+                        choices=available_fields,
+                    ).ask()
+                    dedupe_keys = tuple(selected_keys) if selected_keys else ()
+                elif dedupe_choice == "all":
+                    dedupe_keys = ()
+                else:  # manual
+                    dedupe_keys_input = questionary.text(
+                        "Dedupe keys (space-separated):", default=""
+                    ).ask()
+                    dedupe_keys = tuple(dedupe_keys_input.split()) if dedupe_keys_input else ()
             else:
-                dedupe_keys = ()
+                dedupe_keys_input = questionary.text(
+                    "Dedupe keys (space-separated, or leave empty for all fields):", default=""
+                ).ask()
+                dedupe_keys = tuple(dedupe_keys_input.split()) if dedupe_keys_input else ()
+
+            # Ask for strategy
+            dedupe_strategy = (
+                questionary.select(
+                    "Which duplicate to keep?",
+                    choices=[
+                        questionary.Choice("Keep first occurrence", value="first"),
+                        questionary.Choice("Keep last occurrence", value="last"),
+                    ],
+                ).ask()
+                or "first"
+            )
 
         # If transform selected, ask for transformations
         if "Transform fields" in operations:
             transform_list = []
             add_more = True
 
+            # Show available transforms with descriptions
+            click.echo("\n📋 Available transformations:", err=True)
+            click.echo("   normalize_text    - Clean whitespace, standardize text", err=True)
+            click.echo("   clean_whitespace  - Remove extra spaces only", err=True)
+            click.echo("   uppercase         - Convert to UPPERCASE", err=True)
+            click.echo("   lowercase         - Convert to lowercase", err=True)
+            click.echo("   extract_domain    - Get domain from URL", err=True)
+            click.echo("   parse_date        - Normalize date to YYYY-MM-DD", err=True)
+            click.echo("   strip_html        - Remove HTML tags", err=True)
+            click.echo("   truncate_text     - Limit text length (100 chars)", err=True)
+            click.echo("", err=True)
+
             while add_more:
                 field = questionary.text(
-                    "Field to transform:", validate=lambda x: len(x) > 0 or "Field name required"
+                    "Field to transform (or Enter to finish):",
+                    default="",
                 ).ask()
 
                 if not field:
@@ -190,17 +253,30 @@ def polish(
                 transform_name = questionary.select(
                     f"Transformation for '{field}':",
                     choices=[
-                        "normalize_text",
-                        "extract_domain",
-                        "uppercase",
-                        "lowercase",
-                        "strip_html",
-                        "parse_date",
+                        questionary.Choice(
+                            "normalize_text - Clean whitespace", value="normalize_text"
+                        ),
+                        questionary.Choice(
+                            "clean_whitespace - Remove extra spaces", value="clean_whitespace"
+                        ),
+                        questionary.Choice("uppercase - Convert to UPPERCASE", value="uppercase"),
+                        questionary.Choice("lowercase - Convert to lowercase", value="lowercase"),
+                        questionary.Choice(
+                            "extract_domain - Get domain from URL", value="extract_domain"
+                        ),
+                        questionary.Choice(
+                            "parse_date - Normalize to YYYY-MM-DD", value="parse_date"
+                        ),
+                        questionary.Choice("strip_html - Remove HTML tags", value="strip_html"),
+                        questionary.Choice(
+                            "truncate_text - Limit to 100 chars", value="truncate_text"
+                        ),
                     ],
                 ).ask()
 
                 if transform_name:
                     transform_list.append(f"{field}:{transform_name}")
+                    click.echo(f"   ✓ Added: {field} → {transform_name}", err=True)
 
                 add_more = questionary.confirm("Add another transformation?", default=False).ask()
 
@@ -208,6 +284,62 @@ def polish(
                     break
 
             transform = tuple(transform_list) if transform_list else ()
+
+        # If validate selected, ask for validation rules
+        if "Validate fields" in operations:
+            click.echo("\n🔍 Configure validation rules:", err=True)
+            add_more = True
+
+            while add_more:
+                if available_fields:
+                    field = questionary.select(
+                        "Field to validate (or select 'Done'):",
+                        choices=[*available_fields, "[Done - finish validation setup]"],
+                    ).ask()
+                    if field == "[Done - finish validation setup]":
+                        break
+                else:
+                    field = questionary.text(
+                        "Field to validate (or Enter to finish):",
+                        default="",
+                    ).ask()
+                    if not field:
+                        break
+
+                # Select validation type
+                validation_type = questionary.select(
+                    f"Validation for '{field}':",
+                    choices=[
+                        questionary.Choice("Required - must not be empty", value="required"),
+                        questionary.Choice("Email - valid email format", value="email"),
+                        questionary.Choice("URL - valid URL format", value="url"),
+                        questionary.Choice("Date - YYYY-MM-DD format", value="date"),
+                        questionary.Choice("Min length - minimum characters", value="min_length"),
+                        questionary.Choice("Max length - maximum characters", value="max_length"),
+                    ],
+                ).ask()
+
+                if validation_type:
+                    if field not in validation_rules:
+                        validation_rules[field] = {}
+
+                    if validation_type == "required":
+                        validation_rules[field]["required"] = True
+                    elif validation_type in ("email", "url", "date"):
+                        validation_rules[field]["type"] = validation_type
+                    elif validation_type == "min_length":
+                        min_val = questionary.text("Minimum length:", default="1").ask()
+                        validation_rules[field]["min_length"] = int(min_val) if min_val else 1
+                    elif validation_type == "max_length":
+                        max_val = questionary.text("Maximum length:", default="255").ask()
+                        validation_rules[field]["max_length"] = int(max_val) if max_val else 255
+
+                    click.echo(f"   ✓ Added: {field} → {validation_type}", err=True)
+
+                add_more = questionary.confirm("Add another validation rule?", default=False).ask()
+
+                if not add_more:
+                    break
 
         # Prompt for output
         if not output:
@@ -263,6 +395,7 @@ def polish(
             dedupe_keys=dedupe_key_list,
             dedupe_strategy=cast(Literal["first", "last"], dedupe_strategy),
             transformations=transformations if transformations else None,
+            validation_rules=validation_rules if validation_rules else None,
             skip_invalid=skip_invalid,
         )
 

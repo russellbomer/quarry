@@ -159,6 +159,36 @@ def remove_html_tags(text: str | None) -> str | None:
     return clean_whitespace(clean)
 
 
+def uppercase(text: str | None) -> str | None:
+    """
+    Convert text to uppercase.
+
+    Args:
+        text: Input text
+
+    Returns:
+        Uppercase text or None
+    """
+    if text is None or not isinstance(text, str):
+        return text
+    return text.upper()
+
+
+def lowercase(text: str | None) -> str | None:
+    """
+    Convert text to lowercase.
+
+    Args:
+        text: Input text
+
+    Returns:
+        Lowercase text or None
+    """
+    if text is None or not isinstance(text, str):
+        return text
+    return text.lower()
+
+
 def apply_transformation(
     value: Any,
     transformation: str,
@@ -182,6 +212,9 @@ def apply_transformation(
         "extract_domain": extract_domain,
         "truncate_text": truncate_text,
         "remove_html_tags": remove_html_tags,
+        "strip_html": remove_html_tags,  # Alias
+        "uppercase": uppercase,
+        "lowercase": lowercase,
     }
 
     func: Callable[..., Any] | None = transformations.get(transformation)
