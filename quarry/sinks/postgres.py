@@ -180,15 +180,11 @@ class PostgresSink:
         col_defs = []
         for col_name, col_type in columns.items():
             # Quote column names to handle special characters
-            col_defs.append(
-                sql.SQL("{} {}").format(sql.Identifier(col_name), sql.SQL(col_type))
-            )
+            col_defs.append(sql.SQL("{} {}").format(sql.Identifier(col_name), sql.SQL(col_type)))
 
         # Add primary key if upsert key specified
         if self.upsert_key and self.upsert_key in columns:
-            col_defs.append(
-                sql.SQL("PRIMARY KEY ({})").format(sql.Identifier(self.upsert_key))
-            )
+            col_defs.append(sql.SQL("PRIMARY KEY ({})").format(sql.Identifier(self.upsert_key)))
 
         create_sql = sql.SQL("CREATE TABLE IF NOT EXISTS {} ({})").format(
             sql.Identifier(table),
@@ -250,9 +246,7 @@ class PostgresSink:
 
             if table_exists:
                 if self.if_exists == "fail":
-                    raise ValueError(
-                        f"Table '{table}' already exists and if_exists='fail'"
-                    )
+                    raise ValueError(f"Table '{table}' already exists and if_exists='fail'")
                 elif self.if_exists == "replace":
                     self._drop_table(conn, table)
                     self._create_table(conn, table, columns)
@@ -315,6 +309,7 @@ def _is_nan(value: Any) -> bool:
     """Check if value is NaN (pandas compatibility)."""
     try:
         import pandas as pd  # noqa: PLC0415
-        return pd.isna(value)
+
+        return bool(pd.isna(value))
     except (ImportError, TypeError):
         return isinstance(value, float) and math.isnan(value)

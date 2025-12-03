@@ -152,7 +152,7 @@ framework = detect_framework(html, soup, url)
 - ✅ **Multiple Exports** - CSV, JSON, SQLite, Parquet, PostgreSQL
 - ✅ **Validation** - Schema validation with Pydantic
 - ✅ **Guided Tutorial** - `quarry foreman` for interactive learning
-- ✅ **Testing** - 208 tests, 100% passing
+- ✅ **Testing** - 217 tests, 100% passing
 
 ---
 

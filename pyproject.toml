@@ -118,6 +118,9 @@ module = [
     "bs4.*",
     "questionary.*",
     "pyarrow.*",
+    "pandas.*",
+    "psycopg.*",
+    "psycopg_pool.*",
 ]
 ignore_missing_imports = true
 

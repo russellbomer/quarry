@@ -113,7 +113,9 @@ def _create_schema_flow() -> str | None:
         try:
             analysis = analyze_page(html_content, url=url or None)
         except Exception as err:
-            console.print(f"[{COLORS['warning']}]Scout analysis failed: {err}[/{COLORS['warning']}]")
+            console.print(
+                f"[{COLORS['warning']}]Scout analysis failed: {err}[/{COLORS['warning']}]"
+            )
             analysis = None
 
     if analysis:
@@ -218,7 +220,9 @@ def _run_extraction_flow(schema_path: str) -> str | None:
     default_url = schema.url or ""
     target_url = questionary.text("URL to extract", default=default_url).ask()
     if not target_url:
-        console.print(f"[{COLORS['warning']}]Extraction skipped (no URL provided)[/{COLORS['warning']}]")
+        console.print(
+            f"[{COLORS['warning']}]Extraction skipped (no URL provided)[/{COLORS['warning']}]"
+        )
         return None
 
     include_metadata = questionary.confirm("Include metadata (_meta field)?", default=True).ask()
@@ -236,7 +240,8 @@ def _run_extraction_flow(schema_path: str) -> str | None:
                 try:
                     max_pages = int(max_pages_answer)
                 except ValueError:
-                    console.print(f"[{COLORS['warning']}]Invalid number, using schema setting[/{COLORS['warning']}]")
+                    warn = COLORS['warning']
+                    console.print(f"[{warn}]Invalid number, using schema setting[/{warn}]")
             if not max_pages:
                 assert schema.pagination is not None
                 max_pages = schema.pagination.max_pages
@@ -279,9 +284,10 @@ def _run_extraction_flow(schema_path: str) -> str | None:
         return None
 
     stats = executor.get_stats()
+    ok = COLORS['success']
     console.print(
-        f"[{COLORS['success']}]Saved {stats['items_extracted']} items from {stats['urls_fetched']} page(s) "
-        f"to {output_path}[/{COLORS['success']}]",
+        f"[{ok}]Saved {stats['items_extracted']} items from {stats['urls_fetched']} page(s) "
+        f"to {output_path}[/{ok}]",
     )
 
     set_last_output(output_path, "jsonl", len(items))
@@ -421,9 +427,8 @@ def _run_export_flow(input_path: str) -> None:
         console.print(f"[{COLORS['error']}]Export failed: {err}[/{COLORS['error']}]")
         return
 
-    console.print(
-        f"[{COLORS['success']}]Exported {stats['records_written']} records to {destination}[/{COLORS['success']}]",
-    )
+    ok = COLORS['success']
+    console.print(f"[{ok}]Exported {stats['records_written']} records to {destination}[/{ok}]")
 
 
 __all__ = ["run_wizard"]

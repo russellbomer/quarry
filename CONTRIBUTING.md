@@ -32,9 +32,35 @@ cd quarry
 # Install dependencies
 pip install -r requirements.txt
 
+# Install pre-commit hooks (recommended)
+pip install pre-commit
+pre-commit install
+
 # Run tests to verify setup
 python -m pytest -q
 ```
+
+### Pre-commit Hooks
+
+Quarry uses [pre-commit](https://pre-commit.com/) to ensure code quality before commits:
+
+```bash
+# Install pre-commit (one-time setup)
+pip install pre-commit
+pre-commit install
+
+# Run hooks manually on all files
+pre-commit run --all-files
+
+# Skip hooks for a single commit (not recommended)
+git commit --no-verify -m "message"
+```
+
+The hooks automatically run:
+- **ruff**: Linting and auto-fixing
+- **ruff-format**: Code formatting
+- **mypy**: Type checking on quarry/ package
+- **pre-commit-hooks**: Trailing whitespace, YAML validation, etc.
 
 ### Repository Structure
 

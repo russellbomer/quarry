@@ -197,7 +197,9 @@ def build_schema_interactive(
         else:
             console.print()
             console.print("[yellow]No pagination links detected automatically.[/yellow]")
-            console.print("[dim]Common patterns: a[rel='next'], .next-page a, .pagination .next[/dim]")
+            console.print(
+                "[dim]Common patterns: a[rel='next'], .next-page a, .pagination .next[/dim]"
+            )
             console.print()
 
             default_selector = "a[rel='next']" if pagination_type == "1" else "button.load-more"
@@ -237,10 +239,10 @@ def build_schema_interactive(
                     console.print(f"  Text: [dim]{sample_text}[/dim]")
 
                 if not sample_href and pagination_type == "1":
+                    console.print("\n[yellow]⚠ Element has no href attribute.[/yellow]")
                     console.print(
-                        "\n[yellow]⚠ Element has no href attribute.[/yellow]"
+                        "[dim]This may be a JavaScript-driven button instead of a link.[/dim]"
                     )
-                    console.print("[dim]This may be a JavaScript-driven button instead of a link.[/dim]")
                     if not Confirm.ask("Continue with this selector?", default=True):
                         return None
             else:

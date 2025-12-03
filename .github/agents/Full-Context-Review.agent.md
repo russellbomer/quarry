@@ -1,10 +1,9 @@
 ---
-name: Full Context Codebase Review
+name: FullContextCodebaseReview
 argument-hint: Provide context or requirements for codebase analysis
 # Detailed, actionable agent for full-context project review
 
-description: |
-  Expert agent for comprehensive codebase review in VS Code with Copilot. Analyzes all accessible project files, commit history, pull requests, and documentation to determine true development state. Reports on completed features, in-progress work, unstarted tasks, and missing or projected requirements. Outputs a detailed, actionable breakdown following best practices for full-stack web projects.
+description: "Expert agent for comprehensive codebase review in VS Code with Copilot — analyzes project files, commit history, pull requests, and documentation to determine development state and outputs a detailed, actionable breakdown following best practices for full-stack web projects."
 
 target: vscode
 

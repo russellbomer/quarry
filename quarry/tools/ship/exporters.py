@@ -224,6 +224,7 @@ class PostgresExporter(Exporter):
             import psycopg.sql as sql  # noqa: PLC0415, PLR0402
         except ImportError as err:
             from quarry.sinks.postgres import PostgresConnectionError
+
             raise PostgresConnectionError(
                 "PostgreSQL support requires the 'psycopg' package.\n\n"
                 "Install it with:\n"
@@ -245,6 +246,7 @@ class PostgresExporter(Exporter):
             conn = psycopg.connect(self.destination)
         except Exception as e:
             from quarry.sinks.postgres import PostgresConnectionError
+
             error_msg = str(e).lower()
 
             if "authentication failed" in error_msg or "password" in error_msg:
@@ -263,9 +265,7 @@ class PostgresExporter(Exporter):
                     f"Original error: {e}"
                 ) from e
             else:
-                raise PostgresConnectionError(
-                    f"PostgreSQL connection failed: {e}"
-                ) from e
+                raise PostgresConnectionError(f"PostgreSQL connection failed: {e}") from e
 
         try:
             cursor = conn.cursor()
@@ -298,16 +298,15 @@ class PostgresExporter(Exporter):
                 if if_exists == "fail":
                     raise ValueError(f"Table '{table_name}' already exists")
                 elif if_exists == "replace":
-                    cursor.execute(sql.SQL("DROP TABLE IF EXISTS {}").format(
-                        sql.Identifier(table_name)
-                    ))
+                    cursor.execute(
+                        sql.SQL("DROP TABLE IF EXISTS {}").format(sql.Identifier(table_name))
+                    )
                     table_exists = False
 
             # Create table if needed
             if not table_exists:
                 col_defs = sql.SQL(", ").join(
-                    sql.SQL("{} TEXT").format(sql.Identifier(col))
-                    for col in columns_list
+                    sql.SQL("{} TEXT").format(sql.Identifier(col)) for col in columns_list
                 )
                 create_sql = sql.SQL("CREATE TABLE {} ({})").format(
                     sql.Identifier(table_name),
@@ -322,9 +321,7 @@ class PostgresExporter(Exporter):
                 # Upsert with ON CONFLICT
                 update_cols = [c for c in columns_list if c != upsert_key]
                 update_set = sql.SQL(", ").join(
-                    sql.SQL("{} = EXCLUDED.{}").format(
-                        sql.Identifier(c), sql.Identifier(c)
-                    )
+                    sql.SQL("{} = EXCLUDED.{}").format(sql.Identifier(c), sql.Identifier(c))
                     for c in update_cols
                 )
                 insert_sql = sql.SQL(
@@ -346,7 +343,7 @@ class PostgresExporter(Exporter):
             # Insert records
             for record in records:
                 try:
-                    values = []
+                    values: list[str | None] = []
                     for col in columns_list:
                         value = record.get(col)
                         if value is None:

@@ -104,7 +104,8 @@ quarry.add_command(polish_command, name="polish")
 quarry.add_command(ship_command, name="ship")
 
 # Add foreman guided tutorial
-from quarry.foreman import foreman as foreman_command
+from quarry.foreman import foreman as foreman_command  # noqa: E402
+
 quarry.add_command(foreman_command, name="foreman")
 
 

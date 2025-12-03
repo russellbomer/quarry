@@ -49,11 +49,16 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
         # Header with elegant spacing (Mars/Jupiter theme)
         url = analysis.get("url", "")
         console.print()
-        console.print("╭────────────────────────────────────────────────────╮", style=COLORS["primary"])
         console.print(
-            f"│ [bold {COLORS['primary']}]SCOUT ANALYSIS[/bold {COLORS['primary']}]                            │", style=COLORS["primary"]
+            "╭────────────────────────────────────────────────────╮", style=COLORS["primary"]
         )
-        console.print("╰────────────────────────────────────────────────────╯", style=COLORS["primary"])
+        console.print(
+            f"│ [bold {COLORS['primary']}]SCOUT ANALYSIS[/bold {COLORS['primary']}]                            │",
+            style=COLORS["primary"],
+        )
+        console.print(
+            "╰────────────────────────────────────────────────────╯", style=COLORS["primary"]
+        )
 
         if url:
             console.print(f"[dim]{url}[/dim]")
@@ -118,7 +123,9 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
                 header_style=f"bold {COLORS['secondary']}",
                 border_style=COLORS["secondary"],
             )
-            table.add_column("CSS Selector", style=COLORS["secondary"], max_width=60, overflow="fold")
+            table.add_column(
+                "CSS Selector", style=COLORS["secondary"], max_width=60, overflow="fold"
+            )
             table.add_column("Count", style=f"{COLORS['success']} bold", justify="right", width=8)
             table.add_column("Sample Text", style="dim", max_width=35, overflow="ellipsis")
 
@@ -214,9 +221,7 @@ def format_as_terminal(analysis: dict[str, Any]) -> str:
             for signal in signals[:5]:
                 warning_text += f"  • {signal}\n"
 
-            warning_text += (
-                f"\n[bold {COLORS['primary']}]💡 Solution:[/bold {COLORS['primary']}] Find the underlying API endpoint\n"
-            )
+            warning_text += f"\n[bold {COLORS['primary']}]💡 Solution:[/bold {COLORS['primary']}] Find the underlying API endpoint\n"
             warning_text += f"[dim]Run:[/dim] [{COLORS['primary']}]quarry scout --find-api[/{COLORS['primary']}]"
 
             console.print(

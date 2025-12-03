@@ -75,3 +75,14 @@ benchmark_results/
 *.tmp
 *.bak
 *.orig
+
+# GitHub Agents configuration (user-specific)
+.github/agents/
+
+# Foreman tutorial output (regenerated on demand)
+foreman_tutorial/*.jsonl
+foreman_tutorial/*.csv
+foreman_tutorial/*.db
+foreman_tutorial/polished.jsonl
+foreman_tutorial/extracted.jsonl
+foreman_tutorial/schema.yml

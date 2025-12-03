@@ -156,6 +156,27 @@ Quarry automatically installs these dependencies:
 ### Validation
 - **pydantic** - Data validation
 
+### Optional Dependencies
+
+These packages enable additional features but are not required for core functionality:
+
+| Package | Feature | Install Command |
+|---------|---------|----------------|
+| **psycopg[binary,pool]** | PostgreSQL export via `quarry ship` | `pip install 'psycopg[binary,pool]'` |
+
+**PostgreSQL Export Example:**
+```bash
+# Install optional PostgreSQL support
+pip install 'psycopg[binary,pool]'
+
+# Export data to PostgreSQL
+quarry ship data.jsonl postgresql://user:pass@localhost:5432/mydb
+
+# Or set connection via environment variable
+export QUARRY_POSTGRES_URL='postgresql://user:pass@localhost:5432/mydb'
+quarry ship data.jsonl postgres
+```
+
 ---
 
 ## ⚙️ Development Installation

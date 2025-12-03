@@ -42,8 +42,7 @@ def _print_step(step: int, total: int, title: str) -> None:
     """Print a step header."""
     console.print()
     console.print(
-        f"[bold {COLORS['primary']}]━━━ Step {step}/{total}: {title} ━━━"
-        f"[/bold {COLORS['primary']}]"
+        f"[bold {COLORS['primary']}]━━━ Step {step}/{total}: {title} ━━━[/bold {COLORS['primary']}]"
     )
     console.print()
 
@@ -92,11 +91,12 @@ def _show_progress(message: str) -> Progress:
 def _wait_for_continue() -> bool:
     """Prompt user to continue or exit."""
     console.print()
-    return questionary.confirm(
+    result = questionary.confirm(
         "Continue to next step?",
         default=True,
         style=q_style,
     ).ask()
+    return bool(result)
 
 
 def _show_yaml(content: str, title: str = "Schema") -> None:
@@ -183,11 +183,12 @@ def _show_welcome() -> bool:
     )
     console.print()
 
-    return questionary.confirm(
+    result = questionary.confirm(
         "Ready to begin the tutorial?",
         default=True,
         style=q_style,
     ).ask()
+    return bool(result)
 
 
 def _step_scout(state: TutorialState) -> bool:
@@ -240,8 +241,7 @@ def _step_scout(state: TutorialState) -> bool:
     except Exception as e:
         _print_error(f"Failed to fetch URL: {e}")
         console.print(
-            f"\n[{COLORS['dim']}]Make sure you have internet connectivity."
-            f"[/{COLORS['dim']}]"
+            f"\n[{COLORS['dim']}]Make sure you have internet connectivity.[/{COLORS['dim']}]"
         )
         return False
 
@@ -579,9 +579,7 @@ def _display_extracted_data(state: TutorialState, items: list[dict[str, Any]]) -
 
         if len(items) > PREVIEW_ROWS:
             remaining = len(items) - PREVIEW_ROWS
-            console.print(
-                f"[{COLORS['dim']}]... and {remaining} more records[/{COLORS['dim']}]"
-            )
+            console.print(f"[{COLORS['dim']}]... and {remaining} more records[/{COLORS['dim']}]")
 
         _print_success(f"Extracted {len(items)} records to {state.raw_file}")
     else:
@@ -672,9 +670,7 @@ def _step_polish(state: TutorialState) -> bool:
     return _wait_for_continue()
 
 
-def _apply_polish_operations(
-    state: TutorialState, polish_ops: list[str]
-) -> dict[str, int] | None:
+def _apply_polish_operations(state: TutorialState, polish_ops: list[str]) -> dict[str, int] | None:
     """Apply polish operations and return stats."""
     try:
         with _show_progress("Applying polish operations...") as progress:
@@ -817,8 +813,7 @@ def _perform_export(state: TutorialState) -> bool:
             f"Format: {state.output_format.upper()}"
         )
         console.print(
-            f"  [{COLORS['secondary']}]•[/{COLORS['secondary']}] "
-            f"File: {state.export_file}"
+            f"  [{COLORS['secondary']}]•[/{COLORS['secondary']}] File: {state.export_file}"
         )
 
         # Show file size
@@ -828,9 +823,7 @@ def _perform_export(state: TutorialState) -> bool:
                 size_str = f"{size} bytes"
             else:
                 size_str = f"{size / KB_SIZE:.1f} KB"
-            console.print(
-                f"  [{COLORS['secondary']}]•[/{COLORS['secondary']}] Size: {size_str}"
-            )
+            console.print(f"  [{COLORS['secondary']}]•[/{COLORS['secondary']}] Size: {size_str}")
 
         _print_success(f"Data exported to {state.export_file}")
         return True

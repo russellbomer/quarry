@@ -20,16 +20,16 @@ from rich.theme import Theme
 # Error: indian_red - Errors, warnings
 
 COLORS = {
-    "primary": "dark_orange",      # Headers, main accents
-    "secondary": "orange3",        # Highlights, secondary accents
-    "tertiary": "tan",             # Borders, subtle elements
+    "primary": "dark_orange",  # Headers, main accents
+    "secondary": "orange3",  # Highlights, secondary accents
+    "tertiary": "tan",  # Borders, subtle elements
     "emphasis": "dark_goldenrod",  # Text emphasis
-    "error": "indian_red",         # Errors
+    "error": "indian_red",  # Errors
     "success": "dark_olive_green3",  # Success messages
-    "warning": "gold3",            # Warnings
-    "info": "tan",                 # Info (reuse tertiary)
-    "dim": "grey62",               # Muted text
-    "muted": "grey50",             # Darker muted
+    "warning": "gold3",  # Warnings
+    "info": "tan",  # Info (reuse tertiary)
+    "dim": "grey62",  # Muted text
+    "muted": "grey50",  # Darker muted
 }
 
 # =============================================================================
@@ -42,30 +42,25 @@ STYLES = {
     "header": Style(color=COLORS["primary"], bold=True),
     "subheader": Style(color=COLORS["secondary"], bold=True),
     "title": Style(color=COLORS["primary"], bold=True),
-
     # Status indicators
     "success": Style(color=COLORS["success"], bold=True),
     "error": Style(color=COLORS["error"], bold=True),
     "warning": Style(color=COLORS["warning"], bold=True),
     "info": Style(color=COLORS["tertiary"]),
-
     # Text styles
     "emphasis": Style(color=COLORS["emphasis"], bold=True),
     "dim": Style(color=COLORS["dim"]),
     "muted": Style(color=COLORS["muted"]),
-
     # Interactive elements
     "prompt": Style(color=COLORS["secondary"]),
     "selection": Style(color=COLORS["primary"], bold=True),
     "highlight": Style(color=COLORS["secondary"], bold=True),
-
     # Code and data
     "code": Style(color=COLORS["tertiary"]),
     "selector": Style(color=COLORS["secondary"]),
     "url": Style(color=COLORS["tertiary"], underline=True),
     "path": Style(color=COLORS["emphasis"]),
     "number": Style(color=COLORS["success"], bold=True),
-
     # Borders and decorations
     "border": Style(color=COLORS["tertiary"]),
     "border_primary": Style(color=COLORS["primary"]),
@@ -78,37 +73,37 @@ STYLES = {
 # =============================================================================
 # Theme for Rich Console that replaces default markup colors
 
-QUARRY_THEME = Theme({
-    # Override default Rich markup colors
-    "primary": COLORS["primary"],
-    "secondary": COLORS["secondary"],
-    "tertiary": COLORS["tertiary"],
-    "emphasis": COLORS["emphasis"],
-    "success": COLORS["success"],
-    "error": COLORS["error"],
-    "warning": COLORS["warning"],
-
-    # Common markup replacements
-    "cyan": COLORS["primary"],           # Replace cyan with rusty orange
-    "bright_cyan": COLORS["secondary"],  # Replace bright_cyan with terracotta
-    "blue": COLORS["tertiary"],          # Replace blue with dusty tan
-    "green": COLORS["success"],          # Keep green-ish but earthy
-    "red": COLORS["error"],              # Muted red
-    "yellow": COLORS["warning"],         # Goldenrod
-    "magenta": COLORS["secondary"],      # Use terracotta for magenta
-
-    # Semantic styles
-    "info": COLORS["tertiary"],
-    "repr.number": COLORS["success"],
-    "repr.str": COLORS["tertiary"],
-    "repr.url": COLORS["tertiary"],
-    "progress.elapsed": COLORS["dim"],
-    "progress.remaining": COLORS["dim"],
-    "progress.percentage": COLORS["primary"],
-    "bar.complete": COLORS["primary"],
-    "bar.finished": COLORS["success"],
-    "status.spinner": COLORS["secondary"],
-})
+QUARRY_THEME = Theme(
+    {
+        # Override default Rich markup colors
+        "primary": COLORS["primary"],
+        "secondary": COLORS["secondary"],
+        "tertiary": COLORS["tertiary"],
+        "emphasis": COLORS["emphasis"],
+        "success": COLORS["success"],
+        "error": COLORS["error"],
+        "warning": COLORS["warning"],
+        # Common markup replacements
+        "cyan": COLORS["primary"],  # Replace cyan with rusty orange
+        "bright_cyan": COLORS["secondary"],  # Replace bright_cyan with terracotta
+        "blue": COLORS["tertiary"],  # Replace blue with dusty tan
+        "green": COLORS["success"],  # Keep green-ish but earthy
+        "red": COLORS["error"],  # Muted red
+        "yellow": COLORS["warning"],  # Goldenrod
+        "magenta": COLORS["secondary"],  # Use terracotta for magenta
+        # Semantic styles
+        "info": COLORS["tertiary"],
+        "repr.number": COLORS["success"],
+        "repr.str": COLORS["tertiary"],
+        "repr.url": COLORS["tertiary"],
+        "progress.elapsed": COLORS["dim"],
+        "progress.remaining": COLORS["dim"],
+        "progress.percentage": COLORS["primary"],
+        "bar.complete": COLORS["primary"],
+        "bar.finished": COLORS["success"],
+        "status.spinner": COLORS["secondary"],
+    }
+)
 
 # =============================================================================
 # ASCII Banner Colors (for quarry.py BANNER)
@@ -116,11 +111,11 @@ QUARRY_THEME = Theme({
 # The banner uses gradient coloring for visual appeal
 
 BANNER_COLORS = {
-    "line1": COLORS["primary"],      # Top lines: Rusty Orange
+    "line1": COLORS["primary"],  # Top lines: Rusty Orange
     "line2": COLORS["primary"],
-    "line3": COLORS["secondary"],    # Middle: Terracotta
+    "line3": COLORS["secondary"],  # Middle: Terracotta
     "line4": COLORS["secondary"],
-    "line5": COLORS["tertiary"],     # Bottom: Dusty Tan
+    "line5": COLORS["tertiary"],  # Bottom: Dusty Tan
     "line6": COLORS["tertiary"],
     "tagline": COLORS["dim"],
 }

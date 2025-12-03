@@ -327,7 +327,11 @@ def _find_containers(soup: BeautifulSoup) -> list[dict[str, Any]]:
 
                     # Bonus for having headings (structured content)
                     avg_headings = (
-                        sum(1 for c in effective_children if c.find(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']))
+                        sum(
+                            1
+                            for c in effective_children
+                            if c.find(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
+                        )
                         / len(effective_children)
                         if effective_children
                         else 0.0
