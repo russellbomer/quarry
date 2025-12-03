@@ -6,7 +6,7 @@ pass it directly to excavate.
 """
 
 import json
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -56,7 +56,7 @@ def set_last_schema(
     record: dict[str, Any] = {
         "path": str(Path(schema_path).absolute()),
         "url": url,
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
     if metadata:
         record["metadata"] = metadata
@@ -79,7 +79,7 @@ def set_last_analysis(data: dict[str, Any]) -> None:
     """Store metadata from the most recent Scout analysis."""
     session = _load_session()
     payload = dict(data)
-    payload["timestamp"] = datetime.now(UTC).isoformat()
+    payload["timestamp"] = datetime.now(timezone.utc).isoformat()
     session["last_analysis"] = payload
     _save_session(session)
 
@@ -105,7 +105,7 @@ def set_last_output(output_path: str, format: str, record_count: int) -> None:
         "path": str(Path(output_path).absolute()),
         "format": format,
         "record_count": record_count,
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
     _save_session(session)
 

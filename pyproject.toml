@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "py-quarry"
-version = "2.0.2"
+version = "2.0.3"
 description = "An intuitive web scraping toolkit with intelligent templates and interactive workflows"
 readme = "README.md"
 license = {text = "MIT"}

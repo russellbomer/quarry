@@ -1,7 +1,7 @@
 """Robots.txt parser with caching and User-Agent matching."""
 
 import sqlite3
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import cast
 from urllib.parse import urlparse
@@ -96,7 +96,7 @@ class RobotsCache:
 
         if row:
             fetched_at = datetime.fromisoformat(row["fetched_at"])
-            age = (datetime.now(UTC) - fetched_at).total_seconds()
+            age = (datetime.now(timezone.utc) - fetched_at).total_seconds()
 
             if age < _CACHE_TTL_SECONDS:
                 conn.close()
@@ -106,7 +106,7 @@ class RobotsCache:
         robots_txt, crawl_delay = self._fetch_robots_txt(domain)
 
         # Update cache
-        now = datetime.now(UTC).isoformat()
+        now = datetime.now(timezone.utc).isoformat()
         conn.execute(
             """
             INSERT INTO robots_cache (domain, robots_txt, crawl_delay, fetched_at)
