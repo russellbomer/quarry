@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "py-quarry"
-version = "2.0.0"
+version = "2.0.1"
 description = "An intuitive web scraping toolkit with intelligent templates and interactive workflows"
 readme = "README.md"
 license = {text = "MIT"}
@@ -59,8 +59,9 @@ quarry = "quarry.quarry:main"
 "quarry.polish" = "quarry.tools.polish.cli:polish"
 "quarry.ship" = "quarry.tools.ship.cli:ship"
 
-[tool.setuptools]
-packages = ["quarry"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["quarry*"]
 
 [tool.setuptools.package-data]
 quarry = ["**/*.json", "**/*.yml", "**/*.yaml"]
