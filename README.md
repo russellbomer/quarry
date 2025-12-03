@@ -3,7 +3,8 @@
 **A modern Python toolkit for web data extraction with robust support for React, Vue, and other JavaScript frameworks.**
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-208%20passing-success.svg)](./tests/)
+[![PyPI version](https://img.shields.io/pypi/v/py-quarry.svg)](https://pypi.org/project/py-quarry/)
+[![Tests](https://img.shields.io/badge/tests-passing-success.svg)](./tests/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
@@ -25,8 +26,7 @@ Quarry provides **two powerful approaches** for web scraping:
 ### Installation
 
 ```bash
-pip install -e .  # From source
-# or: pip install quarry  # From PyPI (coming soon)
+pip install py-quarry
 ```
 
 **Requirements**: Python 3.11+

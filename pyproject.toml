@@ -3,10 +3,41 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "quarry"
+name = "py-quarry"
 version = "2.0.0"
 description = "An intuitive web scraping toolkit with intelligent templates and interactive workflows"
+readme = "README.md"
+license = {text = "MIT"}
 requires-python = ">=3.11"
+authors = [
+    {name = "Russell Bomer"}
+]
+keywords = [
+    "web-scraping",
+    "data-extraction",
+    "html-parsing",
+    "css-selectors",
+    "react",
+    "vue",
+    "beautifulsoup",
+    "cli",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Typing :: Typed",
+]
 dependencies = [
     "requests",
     "beautifulsoup4",
@@ -33,6 +64,12 @@ packages = ["quarry"]
 
 [tool.setuptools.package-data]
 quarry = ["**/*.json", "**/*.yml", "**/*.yaml"]
+
+[project.urls]
+Homepage = "https://github.com/russellbomer/quarry"
+Repository = "https://github.com/russellbomer/quarry"
+Documentation = "https://github.com/russellbomer/quarry#readme"
+Issues = "https://github.com/russellbomer/quarry/issues"
 
 [tool.ruff]
 line-length = 100
