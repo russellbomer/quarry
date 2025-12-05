@@ -10,6 +10,7 @@ from questionary import Style as QStyle
 from rich.console import Console
 from rich.panel import Panel
 
+from quarry.lib import paths
 from quarry.lib.http import get_html
 from quarry.lib.schemas import load_schema, save_schema
 from quarry.lib.session import (
@@ -31,6 +32,20 @@ console = Console(theme=QUARRY_THEME)
 
 # Questionary style using Mars/Jupiter palette
 q_style = QStyle.from_dict(QUESTIONARY_STYLE)
+
+
+def _auto_paths_enabled() -> bool:
+    """Return True when QUARRY_OUTPUT_DIR should drive path defaults."""
+    return paths.auto_path_mode_enabled()
+
+
+def _notify_auto_destination(action: str, target: Path) -> None:
+    """Show a short message explaining where automated outputs go."""
+    target_display = str(target)
+    console.print(
+        f"[{COLORS['info']}]{action}: {target_display}"
+        f" (set by {paths.OUTPUT_ENV_VAR})[/{COLORS['info']}]"
+    )
 
 
 def run_wizard() -> None:
@@ -144,19 +159,28 @@ def _create_schema_flow() -> str | None:
         analysis=analysis,
         html=html_content,
     )
-    output_default = Path("schemas") / f"{schema.name}.yml"
-    output_path = questionary.path(
-        "Save schema as",
-        default=str(output_default),
-    ).ask()
+
+    auto_paths = _auto_paths_enabled()
+    output_default = paths.default_schema_path(schema.name, create_dirs=auto_paths)
+    if auto_paths:
+        output_path = str(output_default)
+        _notify_auto_destination("Saving schema to", output_default)
+    else:
+        output_path = questionary.path(
+            "Save schema as",
+            default=str(output_default),
+        ).ask()
 
     if not output_path:
         console.print(f"[{COLORS['warning']}]Schema not saved[/{COLORS['warning']}]")
         return None
 
-    save_schema(schema, output_path)
+    output_path_obj = Path(output_path)
+    paths.ensure_parent_dir(output_path_obj)
+    save_schema(schema, output_path_obj)
+    output_path_str = str(output_path_obj)
     set_last_schema(
-        output_path,
+        output_path_str,
         schema.url,
         metadata={
             "name": schema.name,
@@ -176,8 +200,8 @@ def _create_schema_flow() -> str | None:
                 "schema_fields": list(schema.fields.keys()),
             }
         )
-    console.print(f"[{COLORS['success']}]Schema saved to {output_path}[/{COLORS['success']}]")
-    return str(Path(output_path).absolute())
+    console.print(f"[{COLORS['success']}]Schema saved to {output_path_str}[/{COLORS['success']}]")
+    return str(Path(output_path_str).absolute())
 
 
 def _prompt_schema_path() -> str | None:
@@ -267,17 +291,26 @@ def _run_extraction_flow(schema_path: str) -> str | None:
     if not items:
         console.print(f"[{COLORS['warning']}]No items extracted[/{COLORS['warning']}]")
 
-    default_output = Path("data") / "out" / f"{schema.name}.jsonl"
-    output_path = questionary.path(
-        "Write results to",
-        default=str(default_output),
-    ).ask()
+    auto_paths = _auto_paths_enabled()
+    schema_label = schema.name or Path(schema_path).stem
+    output_default = paths.default_extraction_output(schema_label, create_dirs=auto_paths)
+    if auto_paths:
+        output_path = str(output_default)
+        _notify_auto_destination("Writing extraction output to", output_default)
+    else:
+        output_path = questionary.path(
+            "Write results to",
+            default=str(output_default),
+        ).ask()
 
     if not output_path:
         console.print(f"[{COLORS['warning']}]Results not saved[/{COLORS['warning']}]")
         return None
 
     try:
+        output_path_obj = Path(output_path)
+        paths.ensure_parent_dir(output_path_obj)
+        output_path = str(output_path_obj)
         write_jsonl(items, output_path)
     except Exception as err:
         console.print(f"[{COLORS['error']}]Failed to write output: {err}[/{COLORS['error']}]")
@@ -290,8 +323,9 @@ def _run_extraction_flow(schema_path: str) -> str | None:
         f"to {output_path}[/{ok}]",
     )
 
-    set_last_output(output_path, "jsonl", len(items))
-    return str(Path(output_path).absolute())
+    absolute_output = str(Path(output_path).absolute())
+    set_last_output(absolute_output, "jsonl", len(items))
+    return absolute_output
 
 
 def _prompt_output_path() -> str | None:
@@ -342,20 +376,33 @@ def _run_polish_flow(input_path: str) -> str | None:
 
     skip_invalid = questionary.confirm("Skip records that fail validation?", default=False).ask()
 
-    default_output = Path(input_path).with_name(Path(input_path).stem + "_polished.jsonl")
-    output_path = questionary.path(
-        "Save polished data as",
-        default=str(default_output),
-    ).ask()
+    auto_paths = _auto_paths_enabled()
+    input_path_obj = Path(input_path)
+    polished_stem = input_path_obj.stem
+    output_default = paths.default_polished_output(
+        polished_stem,
+        suffix=input_path_obj.suffix,
+        create_dirs=auto_paths,
+    )
+    if auto_paths:
+        output_path = str(output_default)
+        _notify_auto_destination("Saving polished data to", output_default)
+    else:
+        output_path = questionary.path(
+            "Save polished data as",
+            default=str(output_default),
+        ).ask()
 
     if not output_path:
         console.print(f"[{COLORS['warning']}]Polish step cancelled[/{COLORS['warning']}]")
         return input_path
 
     try:
+        output_path_obj = Path(output_path)
+        paths.ensure_parent_dir(output_path_obj)
         stats = processor.process(
             input_file=input_path,
-            output_file=output_path,
+            output_file=str(output_path_obj),
             deduplicate=dedupe,
             dedupe_keys=dedupe_fields,
             dedupe_strategy=cast(Literal["first", "last"], dedupe_strategy),
@@ -370,24 +417,34 @@ def _run_polish_flow(input_path: str) -> str | None:
 
     console.print(
         f"[{COLORS['success']}]Polish complete: {stats['records_written']} records written to "
-        f"{output_path}[/{COLORS['success']}]",
+        f"{output_path_obj}[/{COLORS['success']}]",
     )
-    set_last_output(output_path, "jsonl", stats["records_written"])
-    return str(Path(output_path).absolute())
+    output_abs = str(Path(output_path_obj).absolute())
+    set_last_output(output_abs, "jsonl", stats["records_written"])
+    return output_abs
 
 
 def _run_export_flow(input_path: str) -> None:
     default_filename = Path(input_path).stem or "quarry_export"
-    default_destination = Path.cwd() / f"{default_filename}.csv"
-    destination = questionary.text(
-        "Export destination (e.g., output.csv)",
-        default=str(default_destination),
-    ).ask()
-    if not destination:
+    auto_paths = _auto_paths_enabled()
+    default_destination = paths.default_export_path(
+        default_filename,
+        extension="csv",
+        create_dirs=auto_paths,
+    )
+    if auto_paths:
         destination = str(default_destination)
-        console.print(
-            f"[{COLORS['info']}]Using default export path {destination}[/{COLORS['info']}]"
-        )
+        _notify_auto_destination("Export destination", default_destination)
+    else:
+        destination = questionary.text(
+            "Export destination (e.g., output.csv)",
+            default=str(default_destination),
+        ).ask()
+        if not destination:
+            destination = str(default_destination)
+            console.print(
+                f"[{COLORS['info']}]Using default export path {destination}[/{COLORS['info']}]"
+            )
 
     last_output = get_last_output()
     if last_output:

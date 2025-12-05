@@ -7,6 +7,7 @@ from typing import Any, Literal, cast
 import click
 import questionary
 
+from quarry.lib import paths
 from quarry.lib.session import get_last_output, set_last_output
 
 from .processor import PolishProcessor
@@ -69,6 +70,8 @@ def polish(
       quarry polish data.jsonl --transform url:extract_domain
       quarry polish data.jsonl --dedupe --skip-invalid --output clean.jsonl
     """
+    auto_paths = paths.auto_path_mode_enabled()
+
     # Initialize validation_rules (may be populated in interactive mode)
     validation_rules: dict[str, dict[str, Any]] = {}
 
@@ -344,10 +347,21 @@ def polish(
         # Prompt for output
         if not output:
             input_path = Path(input_file)
-            default_output = str(
-                input_path.parent / f"{input_path.stem}_polished{input_path.suffix}"
+            default_output_path = paths.default_polished_output(
+                input_path.stem,
+                suffix=input_path.suffix,
+                create_dirs=auto_paths,
             )
-            output = questionary.text("Output file:", default=default_output).ask()
+            if auto_paths:
+                output = str(default_output_path)
+                click.echo(
+                    f"Using {output} for polished output (set by {paths.OUTPUT_ENV_VAR})",
+                    err=True,
+                )
+            else:
+                output = questionary.text(
+                    "Output file:", default=str(default_output_path)
+                ).ask()
 
     # Final validation - should not reach here in normal flow
     if not input_file:
@@ -361,9 +375,18 @@ def polish(
     # Determine output file
     if not output:
         input_path = Path(input_file)
-        output = input_path.parent / f"{input_path.stem}_polished{input_path.suffix}"
+        default_output_path = paths.default_polished_output(
+            input_path.stem,
+            suffix=input_path.suffix,
+            create_dirs=auto_paths,
+        )
+        output = str(default_output_path)
 
     click.echo(f"📋 Processing {input_file}...", err=True)
+
+    output_path = Path(output)
+    paths.ensure_parent_dir(output_path)
+    output = str(output_path)
 
     # Parse transformations
     transformations: dict[str, list[dict[str, Any]]] = {}

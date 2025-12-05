@@ -9,7 +9,9 @@ from urllib.robotparser import RobotFileParser
 
 import requests
 
-_DEFAULT_CACHE_DB = "data/cache/robots.sqlite"
+from quarry.lib import paths
+
+_DEFAULT_CACHE_DB = str(paths.default_robots_cache_path())
 _CACHE_TTL_SECONDS = 86400  # 24 hours
 _HTTP_OK = 200
 

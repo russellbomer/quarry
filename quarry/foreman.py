@@ -21,6 +21,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.syntax import Syntax
 from rich.table import Table
 
+from quarry.lib import paths
 from quarry.lib.theme import COLORS, QUARRY_THEME, QUESTIONARY_STYLE
 
 console = Console(theme=QUARRY_THEME)
@@ -28,7 +29,7 @@ q_style = QStyle.from_dict(QUESTIONARY_STYLE)
 
 # Constants
 MAX_DISPLAY_LEN = 50
-FOREMAN_DIR = Path("foreman_tutorial")
+FOREMAN_DIR = paths.get_foreman_dir(create=True)
 PREVIEW_ROWS = 5
 KB_SIZE = 1024
 
@@ -173,7 +174,7 @@ def _show_welcome() -> bool:
             "Clean and validate the data\n"
             f"  [{COLORS['primary']}]5. Ship[/{COLORS['primary']}]     "
             "Export to a real file\n\n"
-            f"[{COLORS['dim']}]All output files will be saved to: ./{FOREMAN_DIR}/"
+            f"[{COLORS['dim']}]All output files will be saved to: {str(FOREMAN_DIR)}"
             f"[/{COLORS['dim']}]\n"
             f"[{COLORS['dim']}]Estimated time: 5-10 minutes[/{COLORS['dim']}]",
             border_style=COLORS["primary"],
@@ -905,7 +906,7 @@ def _run_foreman_tutorial() -> None:
         if not step_func(state):
             console.print(
                 f"\n[{COLORS['warning']}]Tutorial paused. Your progress is saved in "
-                f"{FOREMAN_DIR}/[/{COLORS['warning']}]"
+                f"{str(FOREMAN_DIR)}[/{COLORS['warning']}]"
             )
             return
 
@@ -940,7 +941,8 @@ def foreman() -> None:
       5. Ship     - Export to CSV, JSON, or SQLite
 
     \b
-    All output files are saved to: ./foreman_tutorial/
+    All output files are saved to QUARRY_OUTPUT_DIR/foreman_tutorial
+    (default: ./foreman_tutorial/)
 
     \b
     Estimated time: 5-10 minutes

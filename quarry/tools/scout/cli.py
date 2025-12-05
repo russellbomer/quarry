@@ -6,6 +6,7 @@ from pathlib import Path
 import click
 import questionary
 
+from quarry.lib import paths
 from quarry.lib.http import get_html
 from quarry.lib.prompts import prompt_choice, prompt_confirm, prompt_file, prompt_url
 
@@ -70,6 +71,8 @@ def scout(url_or_file, file, output, format, pretty, find_api, batch_mode):
         return
 
     # Interactive mode: prompt for missing values
+    auto_paths = paths.auto_path_mode_enabled()
+
     if not batch_mode and not url_or_file and not file:
         click.echo("🔍 Quarry Scout - Interactive Mode\n", err=True)
 
@@ -93,16 +96,28 @@ def scout(url_or_file, file, output, format, pretty, find_api, batch_mode):
         save_output = prompt_confirm("Save results to file?", default=False)
 
         if save_output:
-            output = questionary.text("Output file:", default="scout_analysis.json").ask()
-
-            if output:
-                # Suggest JSON format if saving
-                format = (
-                    prompt_choice(
-                        "Output format:", choices=["json", "terminal"], allow_cancel=False
-                    )
-                    or "json"
+            default_output_path = paths.get_output_dir(create=auto_paths) / "scout_analysis.json"
+            if auto_paths:
+                output = str(default_output_path)
+                click.echo(
+                    f"Using {output} for Scout analysis (set by {paths.OUTPUT_ENV_VAR})",
+                    err=True,
                 )
+                if format == "terminal":
+                    format = "json"
+            else:
+                output = questionary.text(
+                    "Output file:", default=str(default_output_path)
+                ).ask()
+
+                if output:
+                    # Suggest JSON format if saving
+                    format = (
+                        prompt_choice(
+                            "Output format:", choices=["json", "terminal"], allow_cancel=False
+                        )
+                        or "json"
+                    )
 
     # Validate required arguments in batch mode
     if not url_or_file and not file:
@@ -160,6 +175,7 @@ def scout(url_or_file, file, output, format, pretty, find_api, batch_mode):
     # Output
     if output:
         output_path = Path(output)
+        paths.ensure_parent_dir(output_path)
         output_path.write_text(result, encoding="utf-8")
         click.echo(f"✅ Saved to: {output}", err=True)
     else:

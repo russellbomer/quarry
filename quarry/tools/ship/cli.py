@@ -6,6 +6,7 @@ from pathlib import Path
 import click
 import questionary
 
+from quarry.lib import paths
 from quarry.lib.prompts import prompt_choice, prompt_file
 from quarry.lib.session import get_last_output
 
@@ -64,6 +65,8 @@ def ship(
       • SQLite databases (.db, .sqlite, sqlite://)
       • Parquet files (.parquet)
     """
+
+    auto_paths = paths.auto_path_mode_enabled()
 
     # Show helpful error if called without required argument
     if not input_file and not sys.stdin.isatty():
@@ -147,26 +150,50 @@ def ship(
             click.echo("Cancelled", err=True)
             sys.exit(0)
 
-        # Get default filename based on input
         input_path = Path(input_file)
+        base_name = input_path.stem or "quarry_export"
 
         if format_choice == "CSV":
-            default_dest = str(input_path.with_suffix(".csv"))
+            default_dest_path = paths.default_export_path(
+                base_name, extension="csv", create_dirs=auto_paths
+            )
         elif format_choice == "JSON":
-            default_dest = str(input_path.with_suffix(".json"))
+            default_dest_path = paths.default_export_path(
+                base_name, extension="json", create_dirs=auto_paths
+            )
             pretty = questionary.confirm("Pretty-print JSON?", default=True).ask()
         elif format_choice == "SQLite database":
-            default_dest = str(input_path.with_suffix(".db"))
+            default_dest_path = paths.default_export_path(
+                base_name, extension="db", create_dirs=auto_paths
+            )
             table = questionary.text("Table name:", default="records").ask()
+            mode = questionary.select(
+                "If table exists",
+                choices=["replace", "append", "fail"],
+                default="replace",
+            ).ask()
+            if mode:
+                if_exists = mode
         else:  # Parquet
-            default_dest = str(input_path.with_suffix(".parquet"))
+            default_dest_path = paths.default_export_path(
+                base_name, extension="parquet", create_dirs=auto_paths
+            )
 
-        # Prompt for destination
-        destination = questionary.text("Output destination:", default=default_dest).ask()
+        # Prompt for destination unless overriden by env var
+        if auto_paths:
+            destination = str(default_dest_path)
+            click.echo(
+                f"Using {destination} for export (set by {paths.OUTPUT_ENV_VAR})",
+                err=True,
+            )
+        else:
+            destination = questionary.text(
+                "Output destination:", default=str(default_dest_path)
+            ).ask()
 
-        if not destination:
-            click.echo("Cancelled", err=True)
-            sys.exit(0)
+            if not destination:
+                click.echo("Cancelled", err=True)
+                sys.exit(0)
 
         # Ask about metadata
         exclude_meta = questionary.confirm("Exclude _meta field from export?", default=True).ask()
@@ -179,6 +206,9 @@ def ship(
     if not destination:
         click.echo("❌ Error: No destination specified", err=True)
         sys.exit(1)
+
+    if "://" not in destination:
+        paths.ensure_parent_dir(Path(destination))
 
     click.echo(f"📦 Exporting {input_file} to {destination}...", err=True)
 

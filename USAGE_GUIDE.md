@@ -43,6 +43,34 @@ quarry.ship output.jsonl output.csv
 
 ---
 
+## 📂 Managing Output Paths
+
+Quarry writes schemas, extracted data, cache databases, and tutorial assets to
+relative directories such as `./schemas/`, `./data/out/`, and
+`./foreman_tutorial/` by default. Set the `QUARRY_OUTPUT_DIR` environment
+variable to route **all** of these artifacts to a single location. When the
+variable is present, the interactive tools (Wizard, Foreman, Scout, Survey,
+Excavate, Polish, Ship) skip the "save as" prompts and automatically create
+deterministic filenames under the configured directory.
+
+```bash
+export QUARRY_OUTPUT_DIR=/tmp/quarry_runs
+quarry.foreman            # writes to /tmp/quarry_runs/
+quarry.excavate schema.yml --url https://example.com
+```
+
+On Windows PowerShell:
+
+```powershell
+setx QUARRY_OUTPUT_DIR "C:\Quarry\runs"
+$env:QUARRY_OUTPUT_DIR = "C:\Quarry\runs"  # for current session
+```
+
+The helper will create subdirectories (`schemas/`, `data/out/`, `data/cache/`,
+`exports/`, `foreman_tutorial/`) as needed.
+
+---
+
 ## 🔄 The Quarry Workflow
 
 Quarry follows a **mining metaphor** for web data extraction:

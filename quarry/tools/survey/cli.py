@@ -5,6 +5,7 @@ from pathlib import Path
 
 import click
 
+from quarry.lib import paths
 from quarry.lib.http import get_html
 from quarry.lib.schemas import load_schema, save_schema
 from quarry.lib.session import set_last_schema
@@ -17,6 +18,8 @@ from .preview import format_preview, preview_extraction
 def survey():
     """Design extraction schemas interactively."""
     pass
+
+DEFAULT_SCHEMA_OUTPUT = str(paths.default_schema_path("schema", create_dirs=False))
 
 
 @survey.command("create")
@@ -32,8 +35,8 @@ def survey():
     "--output",
     "-o",
     type=click.Path(),
-    default="schema.yml",
-    help="Output schema file (default: schema.yml)",
+    default=DEFAULT_SCHEMA_OUTPUT,
+    help="Output schema file",
 )
 @click.option(
     "--preview/--no-preview", default=True, help="Preview extraction before saving (default: yes)"
@@ -108,12 +111,15 @@ def create(from_probe, url, file, output, preview):
 
     # Save schema
     try:
-        save_schema(schema, output)
-        click.echo(f"\n✅ Schema saved to: {output}", err=True)
+        output_path = Path(output)
+        paths.ensure_parent_dir(output_path)
+        output_path_str = str(output_path)
+        save_schema(schema, output_path_str)
+        click.echo(f"\n✅ Schema saved to: {output_path_str}", err=True)
 
         # Store in session for potential chaining
         set_last_schema(
-            output,
+            output_path_str,
             schema.url,
             metadata={
                 "name": schema.name,

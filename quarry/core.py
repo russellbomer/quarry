@@ -9,6 +9,7 @@ import yaml
 from quarry.connectors import custom as custom_conn
 from quarry.connectors import fda, generic, nws
 from quarry.lib import http
+from quarry.lib import paths
 from quarry.lib.policy import is_allowed_domain
 from quarry.lib.ratelimit import DomainRateLimiter
 from quarry.sinks.base import Sink
@@ -94,7 +95,7 @@ def _create_sink(sink_spec: dict[str, Any], timezone: str, job_name: str) -> Sin
     Separated to reduce run_job size.
     """
     sink_kind = sink_spec.get("kind", "parquet")
-    sink_path_template = sink_spec.get("path", "data/cache/{job}/%Y%m%dT%H%M%SZ.parquet")
+    sink_path_template = sink_spec.get("path", paths.default_sink_path_template())
     if sink_kind == "parquet":
         sink: Sink = ParquetSink(sink_path_template, timezone=timezone)
     elif sink_kind == "csv":

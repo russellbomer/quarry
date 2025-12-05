@@ -6,6 +6,7 @@ from pathlib import Path
 import click
 import questionary
 
+from quarry.lib import paths
 from quarry.lib.schemas import load_schema
 from quarry.lib.session import get_last_schema, set_last_output
 
@@ -27,6 +28,8 @@ from .executor import ExcavateExecutor, write_jsonl
     help="Batch mode (skip prompts, fail if arguments missing)",
 )
 def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, batch_mode):
+        auto_paths = paths.auto_path_mode_enabled()
+
     """
     Execute extraction at scale using a schema.
 
@@ -157,15 +160,24 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
 
     # Interactive prompt for output
     if not batch_mode and not output:
-        default_output = f"{schema.name}.jsonl" if schema.name else "output.jsonl"
-        output = questionary.text("Output file:", default=default_output).ask()
+        default_label = schema.name or Path(schema_file).stem
+        default_output_path = paths.default_extraction_output(default_label, create_dirs=auto_paths)
+        if auto_paths:
+            output = str(default_output_path)
+            click.echo(
+                f"Using {output} for excavation output (set by {paths.OUTPUT_ENV_VAR})",
+                err=True,
+            )
+        else:
+            output = questionary.text("Output file:", default=str(default_output_path)).ask()
 
-        if not output:
-            output = default_output
+            if not output:
+                output = str(default_output_path)
 
     # Set default output if still not specified
     if not output:
-        output = "output.jsonl"
+        fallback_label = schema.name or Path(schema_file).stem
+        output = str(paths.default_extraction_output(fallback_label, create_dirs=auto_paths))
 
     # Get HTML source
     html = None
@@ -228,13 +240,14 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
             import json
 
             output_path = Path(output)
-            output_path.parent.mkdir(parents=True, exist_ok=True)
+            paths.ensure_parent_dir(output_path)
             with output_path.open("w", encoding="utf-8") as f:
                 json.dump(items, f, indent=2, ensure_ascii=False)
             click.echo(f"✅ Wrote {len(items)} items to {output} (JSON)", err=True)
             set_last_output(output, "json", len(items))
         else:
             # JSONL format
+            paths.ensure_parent_dir(Path(output))
             count = write_jsonl(items, output)
             click.echo(f"✅ Wrote {count} items to {output} (JSONL)", err=True)
             set_last_output(output, "jsonl", count)

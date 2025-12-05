@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from quarry.core import load_yaml, run_job
+from quarry.lib import paths
 from quarry.sinks.parquet import ParquetSink
 
 
@@ -34,7 +35,8 @@ def main() -> None:
                 continue
 
             # Write to timestamped Parquet
-            sink_path_template = f"data/cache/{job_name}/%Y%m%dT%H%M%SZ.parquet"
+            job_cache_dir = paths.get_cache_dir(create=True) / job_name
+            sink_path_template = str(job_cache_dir / "%Y%m%dT%H%M%SZ.parquet")
             sink = ParquetSink(sink_path_template)
             written_path = sink.write(df, job=job_name)
 
@@ -50,7 +52,7 @@ def main() -> None:
             continue
 
     # Write index.json
-    index_path = Path("data/cache/index.json")
+    index_path = paths.get_cache_dir(create=True) / "index.json"
     index_path.parent.mkdir(parents=True, exist_ok=True)
     with open(index_path, "w", encoding="utf-8") as f:
         json.dump(index, f, indent=2, sort_keys=True)

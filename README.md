@@ -198,6 +198,9 @@ The CLI and HTTP client can be tuned via environment variables:
 **Logging & HTTP:**
 - `QUARRY_LOG_LEVEL`: Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`). Default `INFO`.
 - `QUARRY_LOG_JSON`: Set to `1` to emit JSON logs to stderr.
+- `QUARRY_OUTPUT_DIR`: Base directory for schemas, extraction output, caches, and the
+    Foreman tutorial. Defaults to the current working directory. When set, Quarry
+    skips save-location prompts and writes all artifacts inside this directory.
 - `QUARRY_DEFAULT_RPS`: Default requests-per-second per domain (float). Default `1.0`.
 - `QUARRY_HTTP_TIMEOUT`: Default request timeout in seconds (int). Default `30`.
 - `QUARRY_HTTP_MAX_RETRIES`: Default HTTP retries (int). Default `3`.
@@ -218,6 +221,7 @@ export QUARRY_HTTP_TIMEOUT=60
 export QUARRY_HTTP_MAX_RETRIES=5
 export QUARRY_MAX_CONTENT_MB=10
 export PROXY_URL=http://proxy.internal:8080
+export QUARRY_OUTPUT_DIR=/tmp/quarry_outputs
 export QUARRY_POSTGRES_URL=postgresql://user:pass@localhost:5432/extractions
 
 quarry excavate schemas/example.yml --url https://example.com -o out.jsonl

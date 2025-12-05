@@ -6,7 +6,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-_DEFAULT_DB_PATH = "data/cache/state.sqlite"
+from quarry.lib import paths
+
+_DEFAULT_DB_PATH = str(paths.default_state_db_path())
 
 
 def open_db(path: str | None = None) -> sqlite3.Connection:
