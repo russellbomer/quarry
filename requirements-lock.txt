@@ -17,7 +17,7 @@ pyarrow==22.0.0
 pydantic==2.12.3
 pydantic_core==2.41.4
 Pygments==2.19.2
-pytest==8.4.2
+pytest==9.0.1
 python-dateutil==2.9.0.post0
 pytz==2025.2
 PyYAML==6.0.3
