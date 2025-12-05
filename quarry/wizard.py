@@ -377,10 +377,17 @@ def _run_polish_flow(input_path: str) -> str | None:
 
 
 def _run_export_flow(input_path: str) -> None:
-    destination = questionary.text("Export destination (e.g., output.csv)", default="").ask()
+    default_filename = Path(input_path).stem or "quarry_export"
+    default_destination = Path.cwd() / f"{default_filename}.csv"
+    destination = questionary.text(
+        "Export destination (e.g., output.csv)",
+        default=str(default_destination),
+    ).ask()
     if not destination:
-        console.print(f"[{COLORS['warning']}]Export skipped[/{COLORS['warning']}]")
-        return
+        destination = str(default_destination)
+        console.print(
+            f"[{COLORS['info']}]Using default export path {destination}[/{COLORS['info']}]"
+        )
 
     last_output = get_last_output()
     if last_output:
