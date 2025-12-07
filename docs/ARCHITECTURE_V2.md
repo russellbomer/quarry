@@ -325,7 +325,7 @@ quarry/
 - **Why replace:** Wrong command structure (flat commands, not subcommands)
 - **Current:**
   ```bash
-  quarry init
+  quarry miner
   quarry run job.yml
   quarry state
   quarry batch urls.txt

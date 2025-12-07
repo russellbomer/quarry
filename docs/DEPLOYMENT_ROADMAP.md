@@ -46,7 +46,7 @@
   - [ ] Ship: Export to CSV/JSON/SQLite/Parquet
   
 - [ ] **Legacy Wizard Suite** - Verify backward compatibility
-  - [ ] `quarry init` - Initialize workspace
+  - [ ] `quarry miner` - Initialize workspace
   - [ ] `quarry run job.yml --offline` - Run with fixtures
   - [ ] `quarry run job.yml --live` - Live scraping
   - [ ] `quarry state` - View job state

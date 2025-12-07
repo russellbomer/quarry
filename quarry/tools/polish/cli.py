@@ -33,6 +33,22 @@ from .processor import PolishProcessor
     multiple=True,
     help="Apply transformation: field:transform_name (e.g., url:extract_domain)",
 )
+@click.option("--validate", is_flag=True, help="Enable validation of records")
+@click.option(
+    "--required",
+    multiple=True,
+    help="Required fields (validation fails if missing). Can specify multiple.",
+)
+@click.option(
+    "--types",
+    multiple=True,
+    help="Field type validation: field:type (e.g., price:number, active:boolean)",
+)
+@click.option(
+    "--url-fields",
+    multiple=True,
+    help="Fields that should contain valid URLs. Can specify multiple.",
+)
 @click.option("--skip-invalid", is_flag=True, help="Skip records that fail validation")
 @click.option("--stats", is_flag=True, help="Show detailed statistics")
 @click.option(
@@ -48,6 +64,10 @@ def polish(
     dedupe_keys,
     dedupe_strategy,
     transform,
+    validate,
+    required,
+    types,
+    url_fields,
     skip_invalid,
     stats,
     batch_mode,
@@ -68,12 +88,44 @@ def polish(
       quarry polish data.jsonl --dedupe
       quarry polish data.jsonl --dedupe-keys title link --batch
       quarry polish data.jsonl --transform url:extract_domain
+      quarry polish data.jsonl --validate --required title price
+      quarry polish data.jsonl --types price:number active:boolean
+      quarry polish data.jsonl --url-fields image link --skip-invalid
       quarry polish data.jsonl --dedupe --skip-invalid --output clean.jsonl
     """
     auto_paths = paths.auto_path_mode_enabled()
 
-    # Initialize validation_rules (may be populated in interactive mode)
+    # Initialize validation_rules (may be populated in interactive mode or batch options)
     validation_rules: dict[str, dict[str, Any]] = {}
+
+    # Parse validation options from CLI arguments
+    if required:
+        for field in required:
+            if field not in validation_rules:
+                validation_rules[field] = {}
+            validation_rules[field]["required"] = True
+
+    if types:
+        for type_spec in types:
+            if ":" not in type_spec:
+                click.echo(
+                    f"⚠️  Invalid type format: {type_spec} (expected field:type)", err=True
+                )
+                continue
+            field, field_type = type_spec.split(":", 1)
+            if field not in validation_rules:
+                validation_rules[field] = {}
+            validation_rules[field]["type"] = field_type
+
+    if url_fields:
+        for field in url_fields:
+            if field not in validation_rules:
+                validation_rules[field] = {}
+            validation_rules[field]["type"] = "url"
+
+    # Enable validation if any validation rules were specified
+    if validation_rules and not validate:
+        validate = True
 
     # Show helpful error if called without required argument
     if not input_file and not sys.stdin.isatty():
@@ -235,10 +287,16 @@ def polish(
             # Show available transforms with descriptions
             click.echo("\n📋 Available transformations:", err=True)
             click.echo("   normalize_text    - Clean whitespace, standardize text", err=True)
-            click.echo("   clean_whitespace  - Remove extra spaces only", err=True)
+            click.echo("   clean_text        - Clean whitespace (alias)", err=True)
+            click.echo("   extract_number    - Extract numeric value (e.g., \"$99.99\" -> 99.99)", err=True)
+            click.echo("   to_boolean        - Convert yes/no, true/false to boolean", err=True)
+            click.echo("   round             - Round number to decimal places", err=True)
             click.echo("   uppercase         - Convert to UPPERCASE", err=True)
+            click.echo("   to_uppercase      - Convert to UPPERCASE (alias)", err=True)
             click.echo("   lowercase         - Convert to lowercase", err=True)
+            click.echo("   to_lowercase      - Convert to lowercase (alias)", err=True)
             click.echo("   extract_domain    - Get domain from URL", err=True)
+            click.echo("   to_absolute       - Convert relative URL to absolute", err=True)
             click.echo("   parse_date        - Normalize date to YYYY-MM-DD", err=True)
             click.echo("   strip_html        - Remove HTML tags", err=True)
             click.echo("   truncate_text     - Limit text length (100 chars)", err=True)
@@ -260,12 +318,26 @@ def polish(
                             "normalize_text - Clean whitespace", value="normalize_text"
                         ),
                         questionary.Choice(
-                            "clean_whitespace - Remove extra spaces", value="clean_whitespace"
+                            "clean_text - Clean whitespace", value="clean_text"
+                        ),
+                        questionary.Choice(
+                            "extract_number - Extract numeric value", value="extract_number"
+                        ),
+                        questionary.Choice(
+                            "to_boolean - Convert to boolean", value="to_boolean"
+                        ),
+                        questionary.Choice(
+                            "round - Round number", value="round"
                         ),
                         questionary.Choice("uppercase - Convert to UPPERCASE", value="uppercase"),
+                        questionary.Choice("to_uppercase - Convert to UPPERCASE", value="to_uppercase"),
                         questionary.Choice("lowercase - Convert to lowercase", value="lowercase"),
+                        questionary.Choice("to_lowercase - Convert to lowercase", value="to_lowercase"),
                         questionary.Choice(
                             "extract_domain - Get domain from URL", value="extract_domain"
+                        ),
+                        questionary.Choice(
+                            "to_absolute - Convert to absolute URL", value="to_absolute"
                         ),
                         questionary.Choice(
                             "parse_date - Normalize to YYYY-MM-DD", value="parse_date"

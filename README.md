@@ -15,7 +15,7 @@
 Quarry provides **two powerful approaches** for web scraping:
 
 1. **⚒️ Quarry Tools** - Interactive CLI pipeline for building extraction workflows
-2. **🧙 Wizard Mode** - YAML-driven declarative scraping with automatic framework detection
+2. **⛏️ Miner Mode** - Interactive pipeline assistant with Scout recommendations and templates
 
 **Key Feature**: Resilient selectors that survive CSS framework updates (React CSS-in-JS, Vue scoped styles, etc.)
 
@@ -77,26 +77,25 @@ quarry scout <url> | quarry excavate | quarry polish --dedupe | quarry ship resu
 
 ---
 
-## 🧙 Wizard Mode
+## ⛏️ Miner Mode
 
-**Zero-code scraping** with automatic framework detection:
+**Guided extraction pipeline** with intelligent recommendations:
 
 ```bash
-# Launch interactive wizard
-quarry init
+# Launch interactive miner
+quarry miner
 
-# Wizard will:
-# 1. Detect framework (React, WordPress, etc.)
-# 2. Suggest selectors
-# 3. Generate YAML job file
-
-# Run generated job
-quarry run jobs/my_job.yml --live
+# Miner will:
+# 1. Analyze page with Scout
+# 2. Recommend selectors or offer templates  
+# 3. Extract data with pagination
+# 4. Clean and deduplicate
+# 5. Export to your format (CSV, PostgreSQL, etc.)
 ```
 
-**Supports 9 frameworks**: WordPress, Drupal, React, Vue, Next.js, Bootstrap, Tailwind, Shopify, Django
+**Choose your approach**: Scout recommendations (fastest), templates (guided), or custom selectors (full control)
 
-📚 **Wizard guide**: [docs/WIZARD.md](docs/WIZARD.md)
+📚 **Miner guide**: [USAGE_GUIDE.md](USAGE_GUIDE.md)
 
 ---
 

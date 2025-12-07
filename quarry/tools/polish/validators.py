@@ -160,6 +160,32 @@ def validate_pattern(value: str | None, pattern: str) -> bool:
     return bool(re.match(pattern, value))
 
 
+def validate_type(value: Any, expected_type: str) -> bool:
+    """
+    Validate that a value matches the expected type.
+
+    Args:
+        value: Value to validate
+        expected_type: Expected type name (text, number, boolean, url)
+
+    Returns:
+        True if value matches expected type
+    """
+    if value is None:
+        return False
+
+    if expected_type == "text":
+        return isinstance(value, str)
+    elif expected_type == "number":
+        return isinstance(value, (int, float))
+    elif expected_type == "boolean":
+        return isinstance(value, bool)
+    elif expected_type == "url":
+        return validate_url(value)
+    else:
+        return False
+
+
 def validate_record(
     record: dict[str, Any],
     rules: dict[str, dict[str, Any]],
@@ -210,6 +236,11 @@ def validate_record(
             pattern = field_rules.get("pattern", r"^\d{4}-\d{2}-\d{2}$")
             if not validate_date_format(value, pattern):
                 errors.append(ValidationError(field, "Invalid date format"))
+
+        elif validation_type in ("text", "number", "boolean"):
+            # Generic type validation
+            if not validate_type(value, validation_type):
+                errors.append(ValidationError(field, f"Expected type: {validation_type}"))
 
         # Length validation
         if "min_length" in field_rules or "max_length" in field_rules:

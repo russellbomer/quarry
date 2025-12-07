@@ -302,3 +302,33 @@ def list_templates() -> list[dict]:
         }
         for key, template in TEMPLATES.items()
     ]
+
+
+def apply_template_to_schema(template_name: str, schema_name: str | None = None, url: str | None = None):
+    """
+    Create a schema from a template.
+
+    Args:
+        template_name: Template key (e.g., "article", "product")
+        schema_name: Optional custom schema name
+        url: Optional target URL
+
+    Returns:
+        ExtractionSchema object with template fields applied
+    """
+    from quarry.lib.schemas import ExtractionSchema
+
+    template = get_template(template_name)
+    
+    # Use template name if no custom name provided
+    name = schema_name or template["name"]
+    
+    # Create schema with template fields
+    schema = ExtractionSchema(
+        name=name,
+        url=url,
+        item_selector=", ".join(template["common_selectors"]),
+        fields=template["fields"],
+    )
+    
+    return schema

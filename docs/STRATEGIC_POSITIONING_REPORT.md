@@ -133,7 +133,7 @@ Quarry is a **Python-based web data extraction toolkit** designed for structured
 - **Rename `quarry scout` → `quarry analyze`** (or keep, but marketing as "analyze" is clearer)
 - **Add `quarry status schema.yml`** - Show schema summary, last run, stats
 - **Improve error messages** - Include actionable suggestions (e.g., "Selector `.foo` not found; try `quarry scout` to verify")
-- **Streamline wizard entry** - `quarry` (no subcommand) should default to interactive wizard, not require `quarry init`
+- **Streamline miner entry** - `quarry` (no subcommand) should default to interactive miner, not require `quarry miner`
 
 ### 4.4 Documentation & Onboarding
 - **Write "Getting Started for BI Analysts"** - Focused tutorial: scrape SEC filings or competitor products in 10 minutes

@@ -7,6 +7,38 @@ from typing import Any
 from urllib.parse import urlparse
 
 
+# Custom transform registry
+_CUSTOM_TRANSFORMS: dict[str, Callable[..., Any]] = {}
+
+
+def register_transform(name: str):
+    """
+    Decorator to register a custom transformation function.
+
+    Allows users to add custom transformations that can be used
+    in the Polish tool via CLI or programmatically.
+
+    Args:
+        name: Name of the transformation (used in --transform)
+
+    Returns:
+        Decorator function
+
+    Example:
+        >>> from quarry.tools.polish.transformers import register_transform
+        >>> @register_transform("custom_clean")
+        ... def custom_clean(value):
+        ...     return value.strip().replace("  ", " ")
+        >>> # Now usable: quarry.polish data.jsonl --transform title:custom_clean
+    """
+
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        _CUSTOM_TRANSFORMS[name] = func
+        return func
+
+    return decorator
+
+
 def normalize_text(text: str | None) -> str | None:
     """
     Normalize text by removing extra whitespace and standardizing.
@@ -189,6 +221,136 @@ def lowercase(text: str | None) -> str | None:
     return text.lower()
 
 
+def extract_number(text: str | None) -> float | None:
+    """
+    Extract numeric value from text.
+
+    Handles currency symbols, commas, and other formatting.
+    Examples: "$99.99" -> 99.99, "1,234.56" -> 1234.56
+
+    Args:
+        text: Input text containing numbers
+
+    Returns:
+        Extracted number or None
+    """
+    if text is None or not isinstance(text, str):
+        return None
+
+    # First remove commas (thousand separators)
+    text = text.replace(",", "")
+
+    # Extract all digits, decimal point, and minus sign
+    cleaned = re.sub(r"[^0-9.-]", "", text)
+
+    # Handle multiple decimals or minus signs
+    if not cleaned:
+        return None
+
+    # Remove extra decimals (keep only the first one)
+    if cleaned.count(".") > 1:
+        parts = cleaned.split(".")
+        cleaned = parts[0] + "." + "".join(parts[1:])
+
+    # Handle multiple minus signs (keep only if at start)
+    if cleaned.count("-") > 0:
+        is_negative = cleaned[0] == "-"
+        cleaned = cleaned.replace("-", "")
+        if is_negative:
+            cleaned = "-" + cleaned
+
+    try:
+        return float(cleaned)
+    except (ValueError, AttributeError):
+        return None
+
+
+def to_boolean(value: str | bool | int | None) -> bool | None:
+    """
+    Convert string to boolean.
+
+    Recognizes: yes/no, true/false, y/n, 1/0, on/off
+
+    Args:
+        value: Input value to convert
+
+    Returns:
+        Boolean value or None
+    """
+    if value is None:
+        return None
+
+    if isinstance(value, bool):
+        return value
+
+    if isinstance(value, int):
+        return bool(value)
+
+    if not isinstance(value, str):
+        return None
+
+    normalized = value.lower().strip()
+    true_values = {"yes", "true", "y", "1", "on", "t"}
+    false_values = {"no", "false", "n", "0", "off", "f"}
+
+    if normalized in true_values:
+        return True
+    elif normalized in false_values:
+        return False
+    else:
+        return None
+
+
+def round_number(value: float | int | str | None, decimals: int = 0) -> float | None:
+    """
+    Round numeric value to specified decimal places.
+
+    Args:
+        value: Input value to round
+        decimals: Number of decimal places (default: 0)
+
+    Returns:
+        Rounded number or None
+    """
+    if value is None:
+        return None
+
+    try:
+        num = float(value) if isinstance(value, str) else value
+        return round(float(num), decimals)
+    except (ValueError, TypeError):
+        return None
+
+
+def to_absolute_url(url: str | None, base_url: str) -> str | None:
+    """
+    Convert relative URL to absolute URL.
+
+    Args:
+        url: Relative or absolute URL
+        base_url: Base URL to resolve relative URLs against
+
+    Returns:
+        Absolute URL or None
+    """
+    if url is None or not isinstance(url, str):
+        return None
+
+    if not base_url:
+        return url
+
+    # Already absolute
+    if url.startswith("http://") or url.startswith("https://"):
+        return url
+
+    from urllib.parse import urljoin
+
+    try:
+        return urljoin(base_url, url)
+    except Exception:
+        return None
+
+
 def apply_transformation(
     value: Any,
     transformation: str,
@@ -208,14 +370,24 @@ def apply_transformation(
     transformations: dict[str, Callable[..., Any]] = {
         "normalize_text": normalize_text,
         "clean_whitespace": clean_whitespace,
+        "clean_text": clean_whitespace,  # Alias for documentation compatibility
         "parse_date": parse_date,
         "extract_domain": extract_domain,
+        "extract_number": extract_number,
         "truncate_text": truncate_text,
         "remove_html_tags": remove_html_tags,
         "strip_html": remove_html_tags,  # Alias
         "uppercase": uppercase,
+        "to_uppercase": uppercase,  # Alias for documentation compatibility
         "lowercase": lowercase,
+        "to_lowercase": lowercase,  # Alias for documentation compatibility
+        "to_boolean": to_boolean,
+        "round": round_number,
+        "to_absolute": to_absolute_url,
     }
+
+    # Include custom registered transforms
+    transformations.update(_CUSTOM_TRANSFORMS)
 
     func: Callable[..., Any] | None = transformations.get(transformation)
     if func is None:

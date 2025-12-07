@@ -1,4 +1,4 @@
-"""Interactive workflow wizard for Quarry tools."""
+"""Interactive miner workflow for Quarry tools."""
 
 from __future__ import annotations
 
@@ -48,60 +48,55 @@ def _notify_auto_destination(action: str, target: Path) -> None:
     )
 
 
-def run_wizard() -> None:
-    """Launch the interactive wizard."""
+def run_miner() -> None:
+    """Launch the interactive miner."""
     try:
-        _run_wizard()
+        _run_miner()
     except KeyboardInterrupt:
-        console.print(f"\n[{COLORS['warning']}]Wizard cancelled by user[/{COLORS['warning']}]")
+        console.print(f"\n[{COLORS['warning']}]Miner cancelled by user[/{COLORS['warning']}]")
 
 
-def _run_wizard() -> None:
-    console.print(Panel.fit("Quarry Wizard", border_style=COLORS["primary"]))
+def _run_miner() -> None:
+    console.print(Panel.fit("Quarry Miner", border_style=COLORS["primary"]))
+    console.print("[dim]Starting full extraction pipeline...[/dim]\n")
 
-    current_schema: str | None = None
-    last_schema = get_last_schema()
-    if last_schema:
-        current_schema = last_schema.get("path")
+    # Step 1: Create schema
+    console.print(f"[{COLORS['primary']}]Step 1: Create Schema[/{COLORS['primary']}]")
+    current_schema = _create_schema_flow()
+    if not current_schema:
+        console.print(f"[{COLORS['warning']}]Pipeline cancelled[/{COLORS['warning']}]")
+        return
 
-    current_output: str | None = None
-    last_output = get_last_output()
-    if last_output:
-        current_output = last_output.get("path")
+    # Step 2: Run extraction
+    console.print(f"\n[{COLORS['primary']}]Step 2: Extract Data[/{COLORS['primary']}]")
+    if not questionary.confirm("Continue to extraction?", default=True).ask():
+        console.print(f"[{COLORS['success']}]Schema saved. Run 'quarry.excavate {current_schema}' to extract data.[/{COLORS['success']}]")
+        return
 
-    while True:
-        action = questionary.select(
-            "Select an action",
-            choices=[
-                "Create or edit schema",
-                "Run extraction",
-                "Polish data",
-                "Export data",
-                "Exit",
-            ],
-            style=q_style,
-        ).ask()
+    current_output = _run_extraction_flow(current_schema)
+    if not current_output:
+        console.print(f"[{COLORS['warning']}]Pipeline stopped at extraction[/{COLORS['warning']}]")
+        return
 
-        if action == "Create or edit schema":
-            current_schema = _create_schema_flow()
-        elif action == "Run extraction":
-            if not current_schema:
-                current_schema = _prompt_schema_path()
-            if current_schema:
-                current_output = _run_extraction_flow(current_schema)
-        elif action == "Polish data":
-            if not current_output:
-                current_output = _prompt_output_path()
-            if current_output:
-                current_output = _run_polish_flow(current_output)
-        elif action == "Export data":
-            if not current_output:
-                current_output = _prompt_output_path()
-            if current_output:
-                _run_export_flow(current_output)
-        else:
-            console.print(f"\n[{COLORS['success']}]Goodbye![/{COLORS['success']}]")
-            return
+    # Step 3: Polish data
+    console.print(f"\n[{COLORS['primary']}]Step 3: Polish Data[/{COLORS['primary']}]")
+    if not questionary.confirm("Continue to polish?", default=True).ask():
+        console.print(f"[{COLORS['success']}]Data extracted to {current_output}[/{COLORS['success']}]")
+        return
+
+    polished_output = _run_polish_flow(current_output)
+    if not polished_output:
+        polished_output = current_output
+
+    # Step 4: Export data
+    console.print(f"\n[{COLORS['primary']}]Step 4: Export Data[/{COLORS['primary']}]")
+    if not questionary.confirm("Continue to export?", default=True).ask():
+        console.print(f"[{COLORS['success']}]Data ready at {polished_output}[/{COLORS['success']}]")
+        return
+
+    _run_export_flow(polished_output)
+    
+    console.print(f"\n[{COLORS['success']}]✨ Pipeline complete![/{COLORS['success']}]")
 
 
 def _create_schema_flow() -> str | None:
@@ -202,17 +197,6 @@ def _create_schema_flow() -> str | None:
         )
     console.print(f"[{COLORS['success']}]Schema saved to {output_path_str}[/{COLORS['success']}]")
     return str(Path(output_path_str).absolute())
-
-
-def _prompt_schema_path() -> str | None:
-    path = questionary.path(
-        "Schema file path",
-        validate=lambda value: Path(value).exists() or "File not found",
-    ).ask()
-    if not path:
-        console.print(f"[{COLORS['warning']}]No schema selected[/{COLORS['warning']}]")
-        return None
-    return str(Path(path).absolute())
 
 
 def _run_extraction_flow(schema_path: str) -> str | None:
@@ -328,17 +312,6 @@ def _run_extraction_flow(schema_path: str) -> str | None:
     return absolute_output
 
 
-def _prompt_output_path() -> str | None:
-    path = questionary.path(
-        "JSONL file path",
-        validate=lambda value: Path(value).exists() or "File not found",
-    ).ask()
-    if not path:
-        console.print(f"[{COLORS['warning']}]No JSONL file selected[/{COLORS['warning']}]")
-        return None
-    return str(Path(path).absolute())
-
-
 def _run_polish_flow(input_path: str) -> str | None:
     processor = PolishProcessor()
 
@@ -427,24 +400,69 @@ def _run_polish_flow(input_path: str) -> str | None:
 def _run_export_flow(input_path: str) -> None:
     default_filename = Path(input_path).stem or "quarry_export"
     auto_paths = _auto_paths_enabled()
-    default_destination = paths.default_export_path(
-        default_filename,
-        extension="csv",
-        create_dirs=auto_paths,
-    )
-    if auto_paths:
-        destination = str(default_destination)
-        _notify_auto_destination("Export destination", default_destination)
-    else:
+
+    # Prompt for export format first
+    format_choice = questionary.select(
+        "Export format:",
+        choices=[
+            questionary.Choice("CSV - Comma-separated values", value="csv"),
+            questionary.Choice("JSON - Pretty JSON array", value="json"),
+            questionary.Choice("JSONL - JSON Lines (streaming)", value="jsonl"),
+            questionary.Choice("Parquet - Columnar format", value="parquet"),
+            questionary.Choice("PostgreSQL - Database table", value="postgres"),
+            questionary.Choice("SQLite - Database file", value="sqlite"),
+        ],
+    ).ask()
+
+    if not format_choice:
+        console.print(f"[{COLORS['warning']}]Export cancelled[/{COLORS['warning']}]")
+        return
+
+    # Handle PostgreSQL connection string separately
+    if format_choice == "postgres":
+        console.print()
+        console.print("[dim]PostgreSQL connection examples:[/dim]")
+        console.print("[dim]  postgresql://user:password@localhost/dbname[/dim]")
+        console.print("[dim]  postgresql://user@localhost:5432/mydb[/dim]")
+        console.print()
+        
         destination = questionary.text(
-            "Export destination (e.g., output.csv)",
-            default=str(default_destination),
+            "PostgreSQL connection string",
+            default="postgresql://user:password@localhost/quarry",
         ).ask()
+        
         if not destination:
+            console.print(f"[{COLORS['warning']}]Export cancelled[/{COLORS['warning']}]")
+            return
+    else:
+        # Set extension based on choice for file-based exports
+        extension_map = {
+            "csv": "csv",
+            "json": "json",
+            "jsonl": "jsonl",
+            "parquet": "parquet",
+            "sqlite": "db",
+        }
+        extension = extension_map.get(format_choice, "csv")
+
+        default_destination = paths.default_export_path(
+            default_filename,
+            extension=extension,
+            create_dirs=auto_paths,
+        )
+        if auto_paths:
             destination = str(default_destination)
-            console.print(
-                f"[{COLORS['info']}]Using default export path {destination}[/{COLORS['info']}]"
-            )
+            _notify_auto_destination("Export destination", default_destination)
+        else:
+            destination = questionary.text(
+                f"Export destination (e.g., output.{extension})",
+                default=str(default_destination),
+            ).ask()
+            if not destination:
+                destination = str(default_destination)
+                console.print(
+                    f"[{COLORS['info']}]Using default export path {destination}[/{COLORS['info']}]"
+                )
 
     last_output = get_last_output()
     if last_output:
@@ -467,8 +485,38 @@ def _run_export_flow(input_path: str) -> None:
         if delimiter:
             options["delimiter"] = delimiter
     elif dest_lower.endswith(".json"):
-        pretty = questionary.confirm("Pretty-print JSON?", default=False).ask()
+        pretty = questionary.confirm("Pretty-print JSON?", default=True).ask()
         options["pretty"] = bool(pretty)
+    elif dest_lower.startswith("postgresql://") or dest_lower.startswith("postgres://"):
+        table = questionary.text("Table name", default="records").ask()
+        if table:
+            options["table_name"] = table
+        
+        mode = questionary.select(
+            "If table exists",
+            choices=["append", "replace", "fail"],
+            default="append",
+        ).ask()
+        if mode:
+            options["if_exists"] = mode
+        
+        exclude_meta = questionary.confirm(
+            "Exclude _meta field?",
+            default=True,
+        ).ask()
+        options["exclude_meta"] = bool(exclude_meta)
+        
+        upsert = questionary.confirm(
+            "Use upsert (INSERT ... ON CONFLICT)?",
+            default=False,
+        ).ask()
+        if upsert:
+            upsert_key = questionary.text(
+                "Upsert key column (e.g., 'id' or 'url')",
+                default="",
+            ).ask()
+            if upsert_key and upsert_key.strip():
+                options["upsert_key"] = upsert_key.strip()
     elif dest_lower.endswith((".db", ".sqlite", ".sqlite3")) or dest_lower.startswith("sqlite://"):
         table = questionary.text("Table name", default="records").ask()
         if table:
@@ -495,4 +543,4 @@ def _run_export_flow(input_path: str) -> None:
     console.print(f"[{ok}]Exported {stats['records_written']} records to {destination}[/{ok}]")
 
 
-__all__ = ["run_wizard"]
+__all__ = ["run_miner"]

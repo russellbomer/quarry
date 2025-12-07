@@ -15,6 +15,49 @@ from quarry.lib.schemas import ExtractionSchema, load_schema
 from .parser import SchemaParser
 
 
+def execute_extraction(
+    schema: ExtractionSchema | str | Path,
+    url: str | None = None,
+    html: str | None = None,
+    include_metadata: bool = True,
+    max_pages: int | None = None,
+) -> list[dict[str, Any]]:
+    """
+    Execute extraction using a schema.
+
+    Convenience wrapper for ExcavateExecutor for programmatic use.
+
+    Args:
+        schema: ExtractionSchema instance or path to schema file
+        url: URL to fetch and extract from (if html not provided)
+        html: HTML content to extract from (if url not provided)
+        include_metadata: Whether to include _meta fields
+        max_pages: Maximum pages to follow (for pagination)
+
+    Returns:
+        List of extracted items as dictionaries
+
+    Example:
+        >>> from quarry.lib.schemas import load_schema
+        >>> from quarry.tools.excavate.executor import execute_extraction
+        >>> schema = load_schema("schema.yml")
+        >>> results = execute_extraction(schema, url="https://example.com")
+    """
+    executor = ExcavateExecutor(schema)
+
+    if html:
+        return executor.parse_html(html, include_metadata=include_metadata)
+    elif url:
+        if executor.schema.pagination:
+            return executor.fetch_paginated(
+                url, max_pages=max_pages, include_metadata=include_metadata
+            )
+        else:
+            return executor.fetch_url(url, include_metadata=include_metadata)
+    else:
+        raise ValueError("Either url or html must be provided")
+
+
 class ExcavateExecutor:
     """
     Executes schema-based extraction on HTML content.

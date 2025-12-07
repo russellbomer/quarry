@@ -243,7 +243,7 @@ policy:
 python examples/use_selector_utilities.py
 
 # Step 2: Use wizard (enhanced with framework detection)
-quarry init
+quarry miner
 
 # Step 3: Validate selectors
 python scripts/audit_schema_selectors.py my_schema.yml

@@ -12,6 +12,7 @@ from quarry.lib.session import set_last_schema
 
 from .builder import build_schema_interactive, load_analysis_from_file
 from .preview import format_preview, preview_extraction
+from .templates import TEMPLATES, apply_template_to_schema
 
 
 @click.group()
@@ -30,6 +31,7 @@ DEFAULT_SCHEMA_OUTPUT = str(paths.default_schema_path("schema", create_dirs=Fals
     type=click.Path(exists=True),
     help="Use Probe analysis JSON as starting point",
 )
+@click.option("--template", "-t", help="Use a template (article, product, event, job, etc.)")
 @click.option("--url", "-u", help="Target URL to analyze")
 @click.option("--file", "-f", type=click.Path(exists=True), help="HTML file to analyze")
 @click.option(
@@ -42,7 +44,7 @@ DEFAULT_SCHEMA_OUTPUT = str(paths.default_schema_path("schema", create_dirs=Fals
 @click.option(
     "--preview/--no-preview", default=True, help="Preview extraction before saving (default: yes)"
 )
-def create(from_probe, url, file, output, preview):
+def create(from_probe, template, url, file, output, preview):
     """
     Create a new extraction schema interactively.
 
@@ -50,39 +52,61 @@ def create(from_probe, url, file, output, preview):
     Examples:
       quarry survey create
       quarry survey create --url https://example.com
+      quarry survey create --template article
       quarry survey create --from-probe analysis.json
       quarry survey create --file page.html --output my-schema.yml
     """
-    # Load analysis if provided
-    analysis = None
-    if from_probe:
-        click.echo(f"📊 Loading Probe analysis from {from_probe}", err=True)
-        try:
-            analysis = load_analysis_from_file(from_probe)
-        except Exception as e:
-            click.echo(f"Error loading analysis: {e}", err=True)
-            sys.exit(1)
-
-    # Load HTML if file provided
+    # Initialize variables
     html = None
-    if file:
-        click.echo(f"📄 Loading HTML from {file}", err=True)
+    
+    # Use template if provided
+    if template:
+        click.echo(f"📋 Loading template: {template}", err=True)
         try:
-            html = Path(file).read_text(encoding="utf-8")
-        except Exception as e:
-            click.echo(f"Error loading file: {e}", err=True)
+            schema = apply_template_to_schema(template, url=url)
+            click.echo(f"✓ Template applied: {schema.name}", err=True)
+            click.echo(f"  Fields: {', '.join(schema.fields.keys())}", err=True)
+            click.echo(f"  Item selector: {schema.item_selector}", err=True)
+        except KeyError:
+            click.echo(f"❌ Unknown template: {template}", err=True)
+            click.echo("\nAvailable templates:", err=True)
+            from .templates import list_templates
+            for tmpl in list_templates():
+                click.echo(f"  • {tmpl['key']:15} - {tmpl['description']}", err=True)
             sys.exit(1)
+        except Exception as e:
+            click.echo(f"Error loading template: {e}", err=True)
+            sys.exit(1)
+    else:
+        # Load analysis if provided
+        analysis = None
+        if from_probe:
+            click.echo(f"📊 Loading Probe analysis from {from_probe}", err=True)
+            try:
+                analysis = load_analysis_from_file(from_probe)
+            except Exception as e:
+                click.echo(f"Error loading analysis: {e}", err=True)
+                sys.exit(1)
 
-    # Build schema interactively
-    click.echo("🔨 Starting interactive builder...\n", err=True)
-    try:
-        schema = build_schema_interactive(url=url, analysis=analysis, html=html)
-    except KeyboardInterrupt:
-        click.echo("\n\nCancelled by user", err=True)
-        sys.exit(1)
-    except Exception as e:
-        click.echo(f"\nError building schema: {e}", err=True)
-        sys.exit(1)
+        # Load HTML if file provided
+        if file:
+            click.echo(f"📄 Loading HTML from {file}", err=True)
+            try:
+                html = Path(file).read_text(encoding="utf-8")
+            except Exception as e:
+                click.echo(f"Error loading file: {e}", err=True)
+                sys.exit(1)
+
+        # Build schema interactively
+        click.echo("🔨 Starting interactive builder...\n", err=True)
+        try:
+            schema = build_schema_interactive(url=url, analysis=analysis, html=html)
+        except KeyboardInterrupt:
+            click.echo("\n\nCancelled by user", err=True)
+            sys.exit(1)
+        except Exception as e:
+            click.echo(f"\nError building schema: {e}", err=True)
+            sys.exit(1)
 
     # Preview extraction if requested
     if preview:
@@ -184,6 +208,34 @@ def validate(schema_file):
         click.echo("\n❌ Validation failed:", err=True)
         click.echo(f"   {e}", err=True)
         sys.exit(1)
+
+
+@survey.command("templates")
+def templates_cmd():
+    """
+    List available schema templates.
+
+    \b
+    Examples:
+      quarry survey templates
+      quarry survey create --template article
+    """
+    from .templates import list_templates
+
+    click.echo("📋 Available Schema Templates:\n")
+    
+    templates = list_templates()
+    for tmpl in templates:
+        key = tmpl["key"]
+        description = tmpl["description"]
+        num_fields = tmpl.get("num_fields", 0)
+        
+        click.echo(f"  • {key:15} - {description}")
+        if num_fields > 0:
+            click.echo(f"    {'':15}   ({num_fields} fields)", nl=False)
+        click.echo()
+    
+    click.echo(f"\n💡 Use with: quarry survey create --template <key>")
 
 
 @survey.command("preview")

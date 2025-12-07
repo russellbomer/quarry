@@ -8,7 +8,7 @@ target: vscode
 model: copilot-4
 
 tools:
-  ['runCommands', 'runTasks', 'edit', 'runNotebooks', 'search', 'new', 'extensions', 'todos', 'runSubagent', 'runTests', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'githubRepo']
+  ['edit', 'runNotebooks', 'search', 'new', 'runCommands', 'runTasks', 'analyzer/*', 'context7/*', 'fetch/*', 'filesystem/*', 'git/*', 'github/*', 'sequentialthinking/*', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'ms-python.python/getPythonEnvironmentInfo', 'ms-python.python/getPythonExecutableCommand', 'ms-python.python/installPythonPackage', 'ms-python.python/configurePythonEnvironment', 'extensions', 'todos', 'runSubagent', 'runTests']
 
 # Optional tools
 tools:

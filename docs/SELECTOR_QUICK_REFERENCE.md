@@ -243,7 +243,7 @@ selectors:
 
 1. Check item selector: `soup.select('article')`
 2. Try broader selector: `article` → `div` → `*` (wildcard)
-3. Use wizard to analyze: `quarry init`
+3. Use miner to analyze: `quarry miner`
 
 ### "Fields extracting as None"
 
@@ -258,7 +258,7 @@ selectors:
 ### "Selector broke after site update"
 
 1. Site likely changed HTML structure (not just CSS)
-2. Re-analyze with wizard: `quarry init`
+2. Re-analyze with miner: `quarry miner`
 3. Update structural selectors to match new hierarchy
 4. Consider selector fallback chains (see DYNAMIC_CSS_STRATEGY.md)
 

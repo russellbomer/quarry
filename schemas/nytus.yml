@@ -1,0 +1,23 @@
+name: nytus
+version: 1
+url: https://www.nytimes.com/section/us
+item_selector: li
+fields:
+  link:
+    selector: a[href]
+    attribute: href
+    required: false
+    multiple: false
+  description:
+    selector: p
+    required: false
+    multiple: false
+  image:
+    selector: img[src]
+    attribute: src
+    required: false
+    multiple: false
+  title:
+    selector: h3
+    required: false
+    multiple: false

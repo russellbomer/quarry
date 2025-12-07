@@ -323,20 +323,55 @@ def build_schema_interactive(
     name = Prompt.ask("Schema name", default="extraction")
     description = Prompt.ask("Description (optional)", default="")
 
-    # Step 1.5: Ask about templates
+    # Step 1.5: Choose schema building approach
     console.print()
     console.print(
         Panel(
-            "[bold]Use a Template?[/bold]\n"
-            "Start with a pre-configured template for common data types",
-            title="Templates",
+            "[bold]How would you like to build this schema?[/bold]\n"
+            "Choose your approach based on your needs",
+            title="Schema Building Method",
             title_align="left",
             border_style="cyan",
             expand=False,
         )
     )
 
-    if Confirm.ask("Browse templates?", default=True):
+    # Determine if we have Scout analysis available
+    has_analysis = bool(analysis and analysis.get("suggestions"))
+    
+    method_choices = []
+    if has_analysis:
+        method_choices.append(
+            questionary.Choice(
+                "Recommended - Use Scout's detected selectors (fastest)",
+                value="recommended"
+            )
+        )
+    method_choices.extend([
+        questionary.Choice(
+            "Template - Start with pre-configured fields for common data types",
+            value="template"
+        ),
+        questionary.Choice(
+            "Custom - Build from scratch with manual selector entry",
+            value="custom"
+        ),
+    ])
+
+    import questionary
+    building_method = questionary.select(
+        "Select method:",
+        choices=method_choices,
+        default="recommended" if has_analysis else "template",
+    ).ask()
+
+    # Handle each building method
+    if building_method == "recommended":
+        # Use Scout recommendations directly - skip to custom flow with analysis
+        console.print("[dim]Using Scout-recommended selectors...[/dim]\n")
+        # Fall through to custom flow which will use the analysis
+        
+    elif building_method == "template":
         templates = list_templates()
 
         table = Table(
@@ -354,18 +389,15 @@ def build_schema_interactive(
         for idx, template in enumerate(templates, 1):
             table.add_row(str(idx), template["name"], template["description"])
 
-        # Add "Custom" option
-        table.add_row(str(len(templates) + 1), "Custom", "Build from scratch")
-
         console.print(table)
         console.print()
 
         choice = Prompt.ask(
-            "Select template number or enter 'skip'", default=str(len(templates) + 1)
+            "Select template number", default="1"
         )
 
         template_key = None
-        if choice.lower() != "skip" and choice.isdigit():
+        if choice.isdigit():
             idx = int(choice) - 1
             if 0 <= idx < len(templates):
                 template_key = templates[idx]["key"]
@@ -636,9 +668,10 @@ def build_schema_interactive(
             )
 
             return schema
-
-    # Continue with custom build (original flow)
-    console.print("[dim]Building custom schema...[/dim]\n")
+    
+    # If template wasn't selected or user chose custom, continue with custom/recommended flow
+    if building_method != "template":
+        console.print("[dim]Building schema with Scout recommendations...[/dim]\n" if building_method == "recommended" else "[dim]Building custom schema...[/dim]\n")
 
     # Step 2: Get URL if not provided
     if not url and not html:
@@ -680,21 +713,38 @@ def build_schema_interactive(
         suggested_selector = (analysis.get("suggestions") or {}).get("item_selector")
 
     if suggested_selector:
-        console.print(
-            Panel(
-                f"[bold]Scout suggestion:[/bold] [cyan]{suggested_selector}[/cyan]\n"
-                "Matches containers that share the same structure (including variants).",
-                title="Suggested Selector",
-                title_align="left",
-                border_style="green",
-                expand=False,
-            )
-        )
-        if Confirm.ask("Use suggested selector?", default=True):
+        # Auto-accept if user chose "recommended" method
+        if building_method == "recommended":
             item_selector = suggested_selector
-            console.print(f"[green]✓[/green] Using Scout suggestion: [cyan]{item_selector}[/cyan]")
+            console.print(
+                Panel(
+                    f"[bold]Scout recommendation:[/bold] [cyan]{suggested_selector}[/cyan]\n"
+                    "Using detected selector automatically.",
+                    title="Item Selector",
+                    title_align="left",
+                    border_style="green",
+                    expand=False,
+                )
+            )
+        else:
+            console.print(
+                Panel(
+                    f"[bold]Scout suggestion:[/bold] [cyan]{suggested_selector}[/cyan]\n"
+                    "Matches containers that share the same structure (including variants).",
+                    title="Suggested Selector",
+                    title_align="left",
+                    border_style="green",
+                    expand=False,
+                )
+            )
+            if Confirm.ask("Use suggested selector?", default=True):
+                item_selector = suggested_selector
+                console.print(f"[green]✓[/green] Using Scout suggestion: [cyan]{item_selector}[/cyan]")
+            else:
+                console.print("[dim]Skipping suggestion - showing all detected containers...[/dim]\n")
 
-    if analysis and analysis.get("containers"):
+    # Only show container table if user didn't already accept a suggestion
+    if not item_selector and analysis and analysis.get("containers"):
         # Show suggestions from Probe analysis
         containers = analysis["containers"][:8]
 
@@ -737,19 +787,9 @@ def build_schema_interactive(
         console.print(table)
         console.print()
 
-        default_choice = "1"
-        prompt_message = "Select number or enter custom selector"
-        if item_selector == suggested_selector and item_selector is not None:
-            default_choice = "keep"
-            prompt_message = (
-                "Select number, enter custom selector, or type 'keep' to reuse suggestion"
-            )
+        choice = Prompt.ask("Select number or enter custom selector", default="1")
 
-        choice = Prompt.ask(prompt_message, default=default_choice)
-
-        if choice.lower() == "keep" and item_selector:
-            console.print(f"[green]✓[/green] Keeping: [cyan]{item_selector}[/cyan]")
-        elif choice.isdigit() and 1 <= int(choice) <= len(containers):
+        if choice.isdigit() and 1 <= int(choice) <= len(containers):
             selected = containers[int(choice) - 1]
             item_selector = selected.get("child_selector") or selected.get("selector")
             # Show why this container was selected
@@ -812,7 +852,14 @@ def build_schema_interactive(
         console.print(table)
         console.print()
 
-        if Confirm.ask("Use all suggested fields?", default=True):
+        # Auto-accept if using recommended method
+        if building_method == "recommended":
+            use_all = True
+            console.print("[green]✓[/green] Using all recommended fields automatically")
+        else:
+            use_all = Confirm.ask("Use all suggested fields?", default=True)
+        
+        if use_all:
             before_count = len(fields)
             for field in suggested_fields:
                 field_name = field["name"]

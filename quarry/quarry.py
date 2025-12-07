@@ -24,7 +24,7 @@ from quarry.tools.polish.cli import polish as polish_command
 from quarry.tools.scout.cli import scout as scout_command
 from quarry.tools.ship.cli import ship as ship_command
 from quarry.tools.survey.cli import survey as survey_command
-from quarry.wizard import run_wizard
+from quarry.miner import run_miner
 
 # Mars/Jupiter themed banner
 BANNER = f"""
@@ -40,7 +40,7 @@ BANNER = f"""
 
 @click.group(invoke_without_command=True)
 @click.pass_context
-@click.version_option(version="2.0.0", prog_name="quarry")
+@click.version_option(version="2.0.8", prog_name="quarry")
 def quarry(ctx):
     """
     Quarry - Web Data Extraction Suite
@@ -177,30 +177,22 @@ def run(job_file, max_items, live, db_path, timezone, interactive, ignore_robots
 
 
 @quarry.command()
-def init():
+def miner():
     """
-    Launch interactive wizard to create extraction jobs.
+    Launch interactive miner to run the full extraction pipeline.
 
-    The wizard guides you through:
-    • Job name and configuration
-    • Source URL and parser selection
-    • Framework detection (WordPress, React, etc.)
-    • Field mapping and selectors
-    • Output format (Parquet/CSV/JSONL)
+    The miner guides you through:
+    • Schema creation with Scout recommendations or templates
+    • Data extraction with pagination support
+    • Data polishing and deduplication
+    • Export to multiple formats (CSV, PostgreSQL, etc.)
 
     \b
     Example:
-      quarry init
-      → Creates jobs/<name>.yml
+      quarry miner
+      → Runs complete pipeline from schema to export
     """
-    try:
-        run_wizard()
-    except KeyboardInterrupt:
-        click.echo("\n[yellow]Cancelled[/yellow]")
-        sys.exit(1)
-    except Exception as e:
-        click.echo(f"[red]Error: {e}[/red]", err=True)
-        sys.exit(1)
+    run_miner()
 
 
 def main():
