@@ -28,8 +28,6 @@ from .executor import ExcavateExecutor, write_jsonl
     help="Batch mode (skip prompts, fail if arguments missing)",
 )
 def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, batch_mode):
-        auto_paths = paths.auto_path_mode_enabled()
-
     """
     Execute extraction at scale using a schema.
 
@@ -47,6 +45,8 @@ def excavate(schema_file, url, file, output, max_pages, no_metadata, pretty, bat
       quarry excavate schema.yml --file page.html --batch
       quarry excavate schema.yml --max-pages 10
     """
+        auto_paths = paths.auto_path_mode_enabled()
+
     # Show helpful error if called without required argument
     if not schema_file and not sys.stdin.isatty():
         # Non-interactive terminal (piped/scripted), show error
