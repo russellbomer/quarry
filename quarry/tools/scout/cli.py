@@ -106,9 +106,7 @@ def scout(url_or_file, file, output, format, pretty, find_api, batch_mode):
                 if format == "terminal":
                     format = "json"
             else:
-                output = questionary.text(
-                    "Output file:", default=str(default_output_path)
-                ).ask()
+                output = questionary.text("Output file:", default=str(default_output_path)).ask()
 
                 if output:
                     # Suggest JSON format if saving

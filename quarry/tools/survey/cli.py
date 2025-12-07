@@ -19,6 +19,7 @@ def survey():
     """Design extraction schemas interactively."""
     pass
 
+
 DEFAULT_SCHEMA_OUTPUT = str(paths.default_schema_path("schema", create_dirs=False))
 
 

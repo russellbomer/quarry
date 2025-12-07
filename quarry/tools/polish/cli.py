@@ -359,9 +359,7 @@ def polish(
                     err=True,
                 )
             else:
-                output = questionary.text(
-                    "Output file:", default=str(default_output_path)
-                ).ask()
+                output = questionary.text("Output file:", default=str(default_output_path)).ask()
 
     # Final validation - should not reach here in normal flow
     if not input_file:
