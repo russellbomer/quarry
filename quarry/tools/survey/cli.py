@@ -12,7 +12,7 @@ from quarry.lib.session import set_last_schema
 
 from .builder import build_schema_interactive, load_analysis_from_file
 from .preview import format_preview, preview_extraction
-from .templates import TEMPLATES, apply_template_to_schema
+from .templates import apply_template_to_schema
 
 
 @click.group()
@@ -235,7 +235,7 @@ def templates_cmd():
             click.echo(f"    {'':15}   ({num_fields} fields)", nl=False)
         click.echo()
     
-    click.echo(f"\n💡 Use with: quarry survey create --template <key>")
+    click.echo("\n💡 Use with: quarry survey create --template <key>")
 
 
 @survey.command("preview")

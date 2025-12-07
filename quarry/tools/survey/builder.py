@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+import questionary
 from bs4 import BeautifulSoup
 
 from quarry.lib.http import get_html
@@ -358,7 +359,6 @@ def build_schema_interactive(
         ),
     ])
 
-    import questionary
     building_method = questionary.select(
         "Select method:",
         choices=method_choices,

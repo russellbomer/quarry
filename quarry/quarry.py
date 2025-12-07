@@ -19,12 +19,12 @@ from rich.console import Console
 from quarry.core import load_yaml, run_job
 from quarry.lib.logging import setup_logging
 from quarry.lib.theme import COLORS, QUARRY_THEME
+from quarry.miner import run_miner
 from quarry.tools.excavate.cli import excavate as excavate_command
 from quarry.tools.polish.cli import polish as polish_command
 from quarry.tools.scout.cli import scout as scout_command
 from quarry.tools.ship.cli import ship as ship_command
 from quarry.tools.survey.cli import survey as survey_command
-from quarry.miner import run_miner
 
 # Mars/Jupiter themed banner
 BANNER = f"""

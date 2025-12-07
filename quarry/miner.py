@@ -70,7 +70,10 @@ def _run_miner() -> None:
     # Step 2: Run extraction
     console.print(f"\n[{COLORS['primary']}]Step 2: Extract Data[/{COLORS['primary']}]")
     if not questionary.confirm("Continue to extraction?", default=True).ask():
-        console.print(f"[{COLORS['success']}]Schema saved. Run 'quarry.excavate {current_schema}' to extract data.[/{COLORS['success']}]")
+        console.print(
+            f"[{COLORS['success']}]Schema saved. "
+            f"Run 'quarry.excavate {current_schema}' to extract data.[/{COLORS['success']}]"
+        )
         return
 
     current_output = _run_extraction_flow(current_schema)
@@ -81,7 +84,9 @@ def _run_miner() -> None:
     # Step 3: Polish data
     console.print(f"\n[{COLORS['primary']}]Step 3: Polish Data[/{COLORS['primary']}]")
     if not questionary.confirm("Continue to polish?", default=True).ask():
-        console.print(f"[{COLORS['success']}]Data extracted to {current_output}[/{COLORS['success']}]")
+        console.print(
+            f"[{COLORS['success']}]Data extracted to {current_output}[/{COLORS['success']}]"
+        )
         return
 
     polished_output = _run_polish_flow(current_output)

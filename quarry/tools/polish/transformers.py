@@ -6,7 +6,6 @@ from datetime import datetime
 from typing import Any
 from urllib.parse import urlparse
 
-
 # Custom transform registry
 _CUSTOM_TRANSFORMS: dict[str, Callable[..., Any]] = {}
 
