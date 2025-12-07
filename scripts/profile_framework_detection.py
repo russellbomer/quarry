@@ -12,6 +12,11 @@ from quarry.framework_profiles import (
     detect_framework,
 )
 
+HEADER_WIDTH = 80
+SLOW_THRESHOLD_MS = 1.0
+GOOD_THRESHOLD_MS = 0.5
+LARGE_REGISTRY_THRESHOLD = 15
+
 
 def load_fixtures() -> dict[str, str]:
     """Load test fixtures."""
@@ -91,27 +96,25 @@ def profile_selector_generation(html: str, name: str, iterations: int = 100) -> 
     }
 
 
-def main():
-    """Run profiling benchmarks."""
-    print("=" * 80)
-    print("Framework Detection Performance Profile")
-    print("=" * 80)
+def print_banner(title: str, border_char: str = "=") -> None:
+    """Print a banner with consistent styling."""
+    print(border_char * HEADER_WIDTH)
+    print(title)
+    print(border_char * HEADER_WIDTH)
 
-    fixtures = load_fixtures()
-    print(f"\nLoaded {len(fixtures)} test fixtures")
-    print(f"Testing against {len(FRAMEWORK_PROFILES)} framework profiles\n")
 
-    # Profile detection
-    print("-" * 80)
+def run_detection_benchmarks(fixtures: dict[str, str]) -> list[dict]:
+    """Run detection benchmarks and print results."""
+    print("-" * HEADER_WIDTH)
     print("Framework Detection Performance")
-    print("-" * 80)
+    print("-" * HEADER_WIDTH)
     print(f"{'Fixture':<20} {'Size':<10} {'Single (ms)':<15} {'All (ms)':<15} {'Detected':<20}")
-    print("-" * 80)
+    print("-" * HEADER_WIDTH)
 
-    detection_results = []
+    results: list[dict] = []
     for name, html in sorted(fixtures.items()):
         result = profile_detection(html, name)
-        detection_results.append(result)
+        results.append(result)
 
         detected = result.get('detected_framework') or 'None'
         print(
@@ -122,17 +125,21 @@ def main():
             f"{detected:<20}"
         )
 
-    # Profile selector generation
-    print("\n" + "-" * 80)
-    print("Selector Generation Performance")
-    print("-" * 80)
-    print(f"{'Fixture':<20} {'Framework':<20} {'Per Field (ms)':<15}")
-    print("-" * 80)
+    return results
 
-    selector_results = []
+
+def run_selector_benchmarks(fixtures: dict[str, str]) -> list[dict]:
+    """Run selector generation benchmarks and print results."""
+    print("\n" + "-" * HEADER_WIDTH)
+    print("Selector Generation Performance")
+    print("-" * HEADER_WIDTH)
+    print(f"{'Fixture':<20} {'Framework':<20} {'Per Field (ms)':<15}")
+    print("-" * HEADER_WIDTH)
+
+    results: list[dict] = []
     for name, html in sorted(fixtures.items()):
         result = profile_selector_generation(html, name)
-        selector_results.append(result)
+        results.append(result)
 
         if "error" in result:
             print(f"{result['name']:<20} {result['error']:<40}")
@@ -143,17 +150,27 @@ def main():
                 f"{result['selector_generation_ms']:<15.3f}"
             )
 
-    # Summary statistics
-    print("\n" + "=" * 80)
+    return results
+
+
+def summarize_results(
+    detection_results: list[dict], selector_results: list[dict]
+) -> float | None:
+    """Print summary statistics and return avg single detection time."""
+    print("\n" + "=" * HEADER_WIDTH)
     print("Summary Statistics")
-    print("=" * 80)
+    print("=" * HEADER_WIDTH)
+
+    avg_single: float | None = None
 
     valid_detection = [r for r in detection_results if "error" not in r]
     if valid_detection:
-        avg_single = sum(r["single_detection_ms"] for r in valid_detection) / len(valid_detection)
+        avg_single = sum(r["single_detection_ms"] for r in valid_detection) / len(
+            valid_detection
+        )
         avg_all = sum(r["all_detection_ms"] for r in valid_detection) / len(valid_detection)
 
-        print(f"\nDetection Performance:")
+        print("\nDetection Performance:")
         print(f"  Average single framework: {avg_single:.3f} ms")
         print(f"  Average all frameworks:   {avg_all:.3f} ms")
         print(f"  Per-profile overhead:     {avg_single / len(FRAMEWORK_PROFILES):.3f} ms")
@@ -163,21 +180,29 @@ def main():
         avg_selector = sum(r["selector_generation_ms"] for r in valid_selector) / len(
             valid_selector
         )
-        print(f"\nSelector Generation:")
+        print("\nSelector Generation:")
         print(f"  Average per field: {avg_selector:.3f} ms")
 
-    # Recommendations
-    print("\n" + "=" * 80)
-    print("Optimization Recommendations")
-    print("=" * 80)
+    return avg_single
 
-    if avg_single > 1.0:
+
+def recommend_optimizations(avg_single: float | None) -> None:
+    """Print optimization recommendations based on average timing."""
+    print("\n" + "=" * HEADER_WIDTH)
+    print("Optimization Recommendations")
+    print("=" * HEADER_WIDTH)
+
+    if avg_single is None:
+        print("\n⚠️  No detection benchmarks available")
+        return
+
+    if avg_single > SLOW_THRESHOLD_MS:
         print("\n⚠️  Detection is slow (>1ms per page)")
         print("   Consider:")
         print("   - Add regex compilation caching")
         print("   - Add lazy profile loading")
         print("   - Optimize detect() methods")
-    elif avg_single > 0.5:
+    elif avg_single > GOOD_THRESHOLD_MS:
         print("\n✅ Detection performance is good (0.5-1ms)")
         print("   Minor optimizations possible:")
         print("   - Cache compiled regexes")
@@ -185,12 +210,29 @@ def main():
     else:
         print("\n✅ Detection performance is excellent (<0.5ms)")
 
-    if len(FRAMEWORK_PROFILES) > 15:
+
+def warn_on_large_registry() -> None:
+    """Warn if the profile registry is getting large."""
+    if len(FRAMEWORK_PROFILES) > LARGE_REGISTRY_THRESHOLD:
         print("\n📊 Large profile registry detected")
         print(f"   {len(FRAMEWORK_PROFILES)} profiles registered")
         print("   Consider categorization or lazy loading as registry grows")
 
-    print("\n" + "=" * 80)
+
+def main():
+    """Run profiling benchmarks."""
+    print_banner("Framework Detection Performance Profile")
+
+    fixtures = load_fixtures()
+    print(f"\nLoaded {len(fixtures)} test fixtures")
+    print(f"Testing against {len(FRAMEWORK_PROFILES)} framework profiles\n")
+
+    detection_results = run_detection_benchmarks(fixtures)
+    selector_results = run_selector_benchmarks(fixtures)
+    avg_single = summarize_results(detection_results, selector_results)
+    recommend_optimizations(avg_single)
+    warn_on_large_registry()
+    print("\n" + "=" * HEADER_WIDTH)
 
 
 if __name__ == "__main__":

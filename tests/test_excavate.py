@@ -1,12 +1,12 @@
 """Tests for Excavate extraction engine."""
 
-import pytest
 from pathlib import Path
 
-from quarry.lib.schemas import ExtractionSchema, FieldSchema, PaginationSchema
-from quarry.tools.excavate.parser import SchemaParser
-from quarry.tools.excavate.executor import ExcavateExecutor
+import pytest
 
+from quarry.lib.schemas import ExtractionSchema, FieldSchema, PaginationSchema
+from quarry.tools.excavate.executor import ExcavateExecutor
+from quarry.tools.excavate.parser import SchemaParser
 
 # Test HTML fixtures
 SIMPLE_HTML = """

@@ -4,7 +4,13 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from quarry.lib.http import _build_browser_headers, _check_robots_txt, create_session, get_html
+from quarry.lib.http import (
+    _ROBOTS_CACHE,
+    _build_browser_headers,
+    _check_robots_txt,
+    create_session,
+    get_html,
+)
 
 
 def test_user_agent_rotation():
@@ -40,7 +46,11 @@ def test_browser_headers_variation():
 
 def test_chrome_specific_headers():
     """Chrome user agents get Chrome-specific headers."""
-    chrome_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    chrome_ua = (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    )
     headers = _build_browser_headers("https://example.com", user_agent=chrome_ua)
 
     # Chrome sends Sec-Ch-Ua headers
@@ -64,8 +74,6 @@ def test_robots_txt_allowed():
         mock_parser_class.return_value = mock_parser
 
         # Clear cache to ensure fresh check
-        from quarry.lib.http import _ROBOTS_CACHE
-
         _ROBOTS_CACHE.clear()
 
         result = _check_robots_txt("https://example.com/page", "TestBot/1.0")
@@ -80,8 +88,6 @@ def test_robots_txt_disallowed():
         mock_parser_class.return_value = mock_parser
 
         # Clear cache to ensure fresh check
-        from quarry.lib.http import _ROBOTS_CACHE
-
         _ROBOTS_CACHE.clear()
 
         result = _check_robots_txt("https://example.com/admin", "TestBot/1.0")
@@ -96,8 +102,6 @@ def test_robots_txt_fetch_failure():
         mock_parser_class.return_value = mock_parser
 
         # Clear cache to ensure fresh check
-        from quarry.lib.http import _ROBOTS_CACHE
-
         _ROBOTS_CACHE.clear()
 
         # Should not raise, should assume allowed
@@ -120,7 +124,7 @@ def test_get_html_respects_robots_txt():
     with patch("quarry.lib.http._check_robots_txt") as mock_check:
         mock_check.return_value = False
 
-        with pytest.raises(PermissionError, match="robots.txt disallows"):
+        with pytest.raises(PermissionError, match=r"robots\.txt disallows"):
             get_html("https://example.com/blocked", respect_robots=True)
 
 

@@ -2,10 +2,11 @@
 
 import csv
 import json
-import pytest
 import sqlite3
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
+import pytest
 
 from quarry.tools.ship.base import ExporterFactory
 from quarry.tools.ship.exporters import (

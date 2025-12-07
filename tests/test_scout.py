@@ -1,5 +1,6 @@
 """Tests for Scout tool."""
 
+import json
 from pathlib import Path
 
 import pytest
@@ -96,8 +97,6 @@ class TestScoutReporter:
         result = format_as_json(analysis, pretty=True)
 
         # Should be valid JSON
-        import json
-
         parsed = json.loads(result)
         assert parsed["url"] == "https://example.com"
         assert parsed["metadata"]["title"] == "Test"

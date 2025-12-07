@@ -1,11 +1,16 @@
 """Tests for quarry/tools/ship/base.py."""
 
 import json
-import pytest
-from pathlib import Path
 
-from quarry.tools.ship.base import Exporter, ExporterFactory
-from quarry.tools.ship.exporters import CSVExporter, JSONExporter, SQLiteExporter
+import pytest
+
+from quarry.tools.ship.base import ExporterFactory
+from quarry.tools.ship.exporters import (
+    CSVExporter,
+    JSONExporter,
+    PostgresExporter,
+    SQLiteExporter,
+)
 
 
 class TestExporterInit:
@@ -142,14 +147,10 @@ class TestExporterFactoryPostgres:
 
     def test_create_postgres_exporter_postgresql_scheme(self):
         """Test factory creates PostgresExporter for postgresql:// scheme."""
-        from quarry.tools.ship.exporters import PostgresExporter
-
         exporter = ExporterFactory.create("postgresql://user:pass@localhost:5432/db")
         assert isinstance(exporter, PostgresExporter)
 
     def test_create_postgres_exporter_postgres_scheme(self):
         """Test factory creates PostgresExporter for postgres:// scheme."""
-        from quarry.tools.ship.exporters import PostgresExporter
-
         exporter = ExporterFactory.create("postgres://user:pass@localhost:5432/db")
         assert isinstance(exporter, PostgresExporter)

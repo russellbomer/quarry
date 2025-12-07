@@ -1,6 +1,5 @@
 """Tests for quarry/inspector.py."""
 
-import pytest
 from bs4 import BeautifulSoup
 
 from quarry.inspector import (

@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import sys
 from unittest.mock import patch
 
 import pytest
@@ -60,8 +61,6 @@ class TestJsonFormatter:
         try:
             raise ValueError("Test error")
         except ValueError:
-            import sys
-
             exc_info = sys.exc_info()
 
         record = logging.LogRecord(
@@ -190,8 +189,6 @@ class TestSetupLogging:
 
     def test_handler_writes_to_stderr(self):
         """Test that handler is configured for stderr."""
-        import sys
-
         setup_logging()
 
         root = logging.getLogger()

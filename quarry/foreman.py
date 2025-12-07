@@ -174,7 +174,7 @@ def _show_welcome() -> bool:
             "Clean and validate the data\n"
             f"  [{COLORS['primary']}]5. Ship[/{COLORS['primary']}]     "
             "Export to a real file\n\n"
-            f"[{COLORS['dim']}]All output files will be saved to: {str(FOREMAN_DIR)}"
+            f"[{COLORS['dim']}]All output files will be saved to: {FOREMAN_DIR!s}"
             f"[/{COLORS['dim']}]\n"
             f"[{COLORS['dim']}]Estimated time: 5-10 minutes[/{COLORS['dim']}]",
             border_style=COLORS["primary"],
@@ -906,7 +906,7 @@ def _run_foreman_tutorial() -> None:
         if not step_func(state):
             console.print(
                 f"\n[{COLORS['warning']}]Tutorial paused. Your progress is saved in "
-                f"{str(FOREMAN_DIR)}[/{COLORS['warning']}]"
+                f"{FOREMAN_DIR!s}[/{COLORS['warning']}]"
             )
             return
 

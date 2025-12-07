@@ -5,10 +5,10 @@ import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
+import requests
 
 from quarry.lib.policy import is_allowed_domain
-from quarry.lib.robots import RobotsCache, check_robots, get_cache, _CACHE_CONTAINER
+from quarry.lib.robots import _CACHE_CONTAINER, RobotsCache, check_robots, get_cache
 
 
 class TestIsAllowedDomain:
@@ -75,7 +75,7 @@ class TestRobotsCache:
         """Should create SQLite database on init."""
         with tempfile.TemporaryDirectory() as tmpdir:
             db_path = Path(tmpdir) / "robots.sqlite"
-            cache = RobotsCache(str(db_path))
+            RobotsCache(str(db_path))
 
             assert db_path.exists()
 
@@ -83,7 +83,7 @@ class TestRobotsCache:
         """Should create robots_cache table."""
         with tempfile.TemporaryDirectory() as tmpdir:
             db_path = Path(tmpdir) / "robots.sqlite"
-            cache = RobotsCache(str(db_path))
+            RobotsCache(str(db_path))
 
             conn = sqlite3.connect(str(db_path))
             cursor = conn.execute(
@@ -96,7 +96,7 @@ class TestRobotsCache:
         """Should create parent directories for database."""
         with tempfile.TemporaryDirectory() as tmpdir:
             db_path = Path(tmpdir) / "nested" / "dir" / "robots.sqlite"
-            cache = RobotsCache(str(db_path))
+            RobotsCache(str(db_path))
 
             assert db_path.exists()
 
@@ -136,7 +136,6 @@ class TestRobotsCache:
     @patch("quarry.lib.robots.requests.get")
     def test_fetch_robots_txt_network_error(self, mock_get):
         """Should return empty string on network error."""
-        import requests
         mock_get.side_effect = requests.RequestException("Network error")
 
         with tempfile.TemporaryDirectory() as tmpdir:

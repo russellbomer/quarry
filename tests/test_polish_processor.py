@@ -1,10 +1,6 @@
 """Tests for quarry/tools/polish/processor.py."""
 
 import json
-import tempfile
-from pathlib import Path
-
-import pytest
 
 from quarry.tools.polish.processor import PolishProcessor
 

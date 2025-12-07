@@ -1,11 +1,12 @@
 """Tests for expanded field type coverage."""
 
 from quarry.framework_profiles import (
-    DrupalViewsProfile,
-    WordPressProfile,
-    ShopifyProfile,
+    FRAMEWORK_PROFILES,
     DjangoAdminProfile,
+    DrupalViewsProfile,
     ReactComponentProfile,
+    ShopifyProfile,
+    WordPressProfile,
 )
 
 
@@ -182,8 +183,6 @@ def test_category_and_tags_separate():
 
 def test_all_profiles_have_core_fields():
     """Test that all profiles at least have title and url."""
-    from quarry.framework_profiles import FRAMEWORK_PROFILES
-
     for profile_class in FRAMEWORK_PROFILES:
         mappings = profile_class.get_field_mappings()
 

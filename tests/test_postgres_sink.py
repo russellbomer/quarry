@@ -5,12 +5,17 @@ PostgreSQL database. All database interactions are mocked.
 """
 
 import os
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
 
-from quarry.sinks.postgres import PostgresSink, PostgresConnectionError, _is_nan
+from quarry.sinks.postgres import PostgresConnectionError, PostgresSink, _is_nan
+
+try:
+    import numpy as np
+except ImportError:  # pragma: no cover - optional dependency for tests
+    np = None
 
 
 class TestPostgresConnectionError:
@@ -92,10 +97,13 @@ class TestConnectionStringValidation:
         sink = PostgresSink(connection_string="postgresql://user:pass@localhost/db")
         
         with patch.dict("sys.modules", {"psycopg_pool": None}):
-            with patch("builtins.__import__", side_effect=ImportError("No module named 'psycopg_pool'")):
+            with patch(
+                "builtins.__import__",
+                side_effect=ImportError("No module named 'psycopg_pool'"),
+            ):
                 with pytest.raises(PostgresConnectionError) as exc_info:
                     sink._get_pool()
-                
+
                 error_msg = str(exc_info.value)
                 assert "psycopg" in error_msg
                 assert "pip install" in error_msg
@@ -236,7 +244,13 @@ class TestMockedDatabaseOperations:
     @patch("quarry.sinks.postgres.PostgresSink._create_table")
     @patch("quarry.sinks.postgres.PostgresSink._table_exists")
     @patch("quarry.sinks.postgres.PostgresSink._get_pool")
-    def test_write_calls_insert(self, mock_get_pool, mock_table_exists, mock_create_table, mock_insert_data):
+    def test_write_calls_insert(
+        self,
+        mock_get_pool,
+        mock_table_exists,
+        mock_create_table,
+        mock_insert_data,
+    ):
         """Write should execute insert statements."""
         # Setup mock pool and connection
         mock_conn = MagicMock()
@@ -262,7 +276,13 @@ class TestMockedDatabaseOperations:
     @patch("quarry.sinks.postgres.PostgresSink._create_table")
     @patch("quarry.sinks.postgres.PostgresSink._table_exists")
     @patch("quarry.sinks.postgres.PostgresSink._get_pool")
-    def test_write_with_upsert_key(self, mock_get_pool, mock_table_exists, mock_create_table, mock_insert_data):
+    def test_write_with_upsert_key(
+        self,
+        mock_get_pool,
+        mock_table_exists,
+        mock_create_table,
+        mock_insert_data,
+    ):
         """Write with upsert_key should use ON CONFLICT."""
         mock_conn = MagicMock()
         
@@ -291,7 +311,14 @@ class TestMockedDatabaseOperations:
     @patch("quarry.sinks.postgres.PostgresSink._create_table")
     @patch("quarry.sinks.postgres.PostgresSink._table_exists")
     @patch("quarry.sinks.postgres.PostgresSink._get_pool")
-    def test_table_exists_fail_mode(self, mock_get_pool, mock_table_exists, mock_create_table, mock_drop_table, mock_insert_data):
+    def test_table_exists_fail_mode(
+        self,
+        mock_get_pool,
+        mock_table_exists,
+        mock_create_table,
+        mock_drop_table,
+        mock_insert_data,
+    ):
         """Should raise error when table exists and if_exists='fail'."""
         mock_conn = MagicMock()
         mock_pool = MagicMock()
@@ -318,7 +345,14 @@ class TestMockedDatabaseOperations:
     @patch("quarry.sinks.postgres.PostgresSink._create_table")
     @patch("quarry.sinks.postgres.PostgresSink._table_exists")
     @patch("quarry.sinks.postgres.PostgresSink._get_pool")
-    def test_table_exists_replace_mode(self, mock_get_pool, mock_table_exists, mock_create_table, mock_drop_table, mock_insert_data):
+    def test_table_exists_replace_mode(
+        self,
+        mock_get_pool,
+        mock_table_exists,
+        mock_create_table,
+        mock_drop_table,
+        mock_insert_data,
+    ):
         """Should drop and recreate table when if_exists='replace'."""
         mock_conn = MagicMock()
         mock_pool = MagicMock()
@@ -345,9 +379,9 @@ class TestMockedDatabaseOperations:
 class TestNaNHandling:
     """Tests for NaN value handling."""
 
+    @pytest.mark.skipif(np is None, reason="NumPy not installed")
     def test_is_nan_with_nan(self):
         """Should detect pandas NaN values."""
-        import numpy as np
         assert _is_nan(float("nan")) is True
         assert _is_nan(np.nan) is True
 

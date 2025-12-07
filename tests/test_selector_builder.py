@@ -4,15 +4,15 @@ import pytest
 from bs4 import BeautifulSoup
 
 from quarry.lib.selectors import (
-    build_robust_selector,
-    _looks_dynamic,
+    SelectorChain,
     _get_stable_marker,
     _is_very_stable,
-    simplify_selector,
-    extract_structural_pattern,
-    validate_selector,
+    _looks_dynamic,
     build_fallback_chain,
-    SelectorChain,
+    build_robust_selector,
+    extract_structural_pattern,
+    simplify_selector,
+    validate_selector,
 )
 
 

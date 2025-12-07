@@ -1,7 +1,5 @@
 """Tests for quarry/framework_profiles/universal/opengraph.py."""
 
-import pytest
-from bs4 import BeautifulSoup
 
 from quarry.framework_profiles.universal.opengraph import OpenGraphProfile
 
@@ -134,7 +132,7 @@ class TestOpenGraphFieldMappings:
     def test_all_mappings_use_attr_syntax(self):
         """Test all mappings use ::attr(content) syntax."""
         mappings = OpenGraphProfile.get_field_mappings()
-        for field, selectors in mappings.items():
+        for _field, selectors in mappings.items():
             for selector in selectors:
                 assert "::attr(content)" in selector
 

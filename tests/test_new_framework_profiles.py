@@ -1,5 +1,7 @@
 """Tests for new framework profiles (Django, Next.js, React, Vue.js)."""
 
+from bs4 import BeautifulSoup
+
 from quarry.framework_profiles import (
     DjangoAdminProfile,
     NextJSProfile,
@@ -221,8 +223,6 @@ def test_vuejs_detection():
 
 def test_django_field_mappings():
     """Test Django Admin field selector generation."""
-    from bs4 import BeautifulSoup
-
     html = """
     <tr class="row1">
         <th class="field-__str__"><a href="/admin/blog/post/1/">Test Post</a></th>
@@ -252,8 +252,6 @@ def test_django_field_mappings():
 
 def test_nextjs_field_mappings():
     """Test Next.js field selector generation."""
-    from bs4 import BeautifulSoup
-
     html = """
     <article class="post-card">
         <h2 class="post-title"><a href="/posts/first">First Post</a></h2>
@@ -277,8 +275,6 @@ def test_nextjs_field_mappings():
 
 def test_react_field_mappings():
     """Test React component field selector generation."""
-    from bs4 import BeautifulSoup
-
     html = """
     <div class="PostCard">
         <h2 class="PostTitle">First Post</h2>

@@ -69,19 +69,31 @@ class TestRealWorldSelectorDetection:
             <ul>
               <li>
                 <article class="recall-item">
-                  <h3><a href="/safety/recalls-market-withdrawals-safety-alerts/acme-allergy">Acme Foods allergy alert</a></h3>
+                  <h3>
+                    <a href="/safety/recalls-market-withdrawals-safety-alerts/acme-allergy">
+                      Acme Foods allergy alert
+                    </a>
+                  </h3>
                   <time datetime="2024-01-15">2024-01-15</time>
                 </article>
               </li>
               <li>
                 <article class="recall-item">
-                  <h3><a href="/safety/recalls-market-withdrawals-safety-alerts/contoso-dairy">Contoso Dairy recall</a></h3>
+                  <h3>
+                    <a href="/safety/recalls-market-withdrawals-safety-alerts/contoso-dairy">
+                      Contoso Dairy recall
+                    </a>
+                  </h3>
                   <time datetime="2024-01-14">2024-01-14</time>
                 </article>
               </li>
               <li>
                 <article class="recall-item">
-                  <h3><a href="/safety/recalls-market-withdrawals-safety-alerts/fabrikam-snacks">Fabrikam Snacks recall</a></h3>
+                  <h3>
+                    <a href="/safety/recalls-market-withdrawals-safety-alerts/fabrikam-snacks">
+                      Fabrikam Snacks recall
+                    </a>
+                  </h3>
                   <time datetime="2024-01-13">2024-01-13</time>
                 </article>
               </li>

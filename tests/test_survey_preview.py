@@ -1,6 +1,7 @@
 """Tests for survey preview module."""
 
 import pytest
+from bs4 import BeautifulSoup
 
 from quarry.lib.schemas import ExtractionSchema, FieldSchema
 from quarry.tools.survey.preview import (
@@ -9,7 +10,6 @@ from quarry.tools.survey.preview import (
     format_preview,
     preview_extraction,
 )
-from bs4 import BeautifulSoup
 
 
 class TestPreviewExtraction:

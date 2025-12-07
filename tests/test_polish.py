@@ -5,23 +5,23 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from quarry.tools.polish.deduplicator import Deduplicator
+from quarry.tools.polish.processor import PolishProcessor
 from quarry.tools.polish.transformers import (
-    normalize_text,
     clean_whitespace,
-    parse_date,
     extract_domain,
+    normalize_text,
+    parse_date,
     remove_html_tags,
     truncate_text,
 )
 from quarry.tools.polish.validators import (
-    validate_email,
-    validate_url,
     validate_date_format,
+    validate_email,
     validate_length,
     validate_range,
     validate_record,
+    validate_url,
 )
-from quarry.tools.polish.processor import PolishProcessor
 
 
 class TestDeduplicator:

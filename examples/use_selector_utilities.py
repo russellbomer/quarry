@@ -14,15 +14,15 @@ from pathlib import Path
 # Add quarry to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import requests
+from bs4 import BeautifulSoup
+
+from quarry.framework_profiles import detect_framework, suggest_extraction_strategy
 from quarry.lib.selectors import (
+    build_fallback_chain,
     build_robust_selector,
     validate_selector,
-    build_fallback_chain,
-    SelectorChain,
 )
-from quarry.framework_profiles import detect_framework, suggest_extraction_strategy
-from bs4 import BeautifulSoup
-import requests
 
 
 def example_validate_selectors():
@@ -91,9 +91,9 @@ def example_fallback_chain():
 
     # Try chain
     value = chain.extract(soup)
-    print(
-        f"\n✓ Extracted: '{value[:50]}...' using selector tier {chain.selectors.index(value[1]) + 1 if value else 'N/A'}"
-    )
+    preview = value[:50] if value else ""
+    tier = chain.selectors.index(value[1]) + 1 if value else "N/A"
+    print(f"\n✓ Extracted: '{preview}...' using selector tier {tier}")
 
 
 def example_framework_detection():
@@ -161,7 +161,7 @@ def example_real_world_workflow():
         # URL
         url_element = first_article.select_one('a')
         if url_element:
-            print(f"   URL: a::attr(href)")
+            print("   URL: a::attr(href)")
 
         # Description
         desc_element = first_article.select_one('p')

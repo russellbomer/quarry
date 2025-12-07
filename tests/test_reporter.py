@@ -2,12 +2,10 @@
 
 import json
 
-import pytest
-
 from quarry.tools.scout.reporter import (
+    _format_as_simple_text,
     format_as_json,
     format_as_terminal,
-    _format_as_simple_text,
 )
 
 

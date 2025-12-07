@@ -11,7 +11,7 @@ from quarry.lib.schemas import (
     save_schema,
     validate_schema_dict,
 )
-from quarry.tools.survey.preview import preview_extraction, format_preview
+from quarry.tools.survey.preview import format_preview, preview_extraction
 
 
 class TestSchemaModel:

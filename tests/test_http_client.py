@@ -3,16 +3,14 @@
 import os
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from quarry.lib.http import (
-    _build_browser_headers,
-    get_rate_limiter,
-    set_rate_limiter,
-    _check_robots_txt,
-    _USER_AGENTS,
     _RATE_LIMITER_CONTAINER,
     _ROBOTS_CACHE,
+    _USER_AGENTS,
+    _build_browser_headers,
+    _check_robots_txt,
+    get_rate_limiter,
+    set_rate_limiter,
 )
 from quarry.lib.ratelimit import DomainRateLimiter
 

@@ -2,6 +2,9 @@
 
 import pytest
 
+import quarry.connectors.generic as generic_module
+from quarry.connectors.generic import GenericConnector
+
 
 def test_generic_connector_basic(monkeypatch):
     """Test GenericConnector with simple HTML."""
@@ -36,11 +39,7 @@ def test_generic_connector_basic(monkeypatch):
     def mock_get_html(url):
         return html
 
-    import quarry.connectors.generic
-
-    monkeypatch.setattr(quarry.connectors.generic, "get_html", mock_get_html)
-
-    from quarry.connectors.generic import GenericConnector
+    monkeypatch.setattr(generic_module, "get_html", mock_get_html)
 
     connector = GenericConnector(
         entry_url="https://example.com/",
@@ -84,18 +83,14 @@ def test_generic_connector_attribute_extraction(monkeypatch):
     def mock_get_html(url):
         return html
 
-    import quarry.connectors.generic
-
-    monkeypatch.setattr(quarry.connectors.generic, "get_html", mock_get_html)
-
-    from quarry.connectors.generic import GenericConnector
+    monkeypatch.setattr(generic_module, "get_html", mock_get_html)
 
     connector = GenericConnector(
         entry_url="https://example.com/",
         config=config,
     )
 
-    records, cursor = connector.collect(cursor=None, max_items=10, offline=False)
+    records, _cursor = connector.collect(cursor=None, max_items=10, offline=False)
 
     assert len(records) == 1
     assert records[0]["id"] == "123"
@@ -106,12 +101,10 @@ def test_generic_connector_attribute_extraction(monkeypatch):
 
 def test_generic_connector_missing_selectors():
     """Test error handling for missing selectors config."""
-    from quarry.connectors.generic import GenericConnector
-
     connector = GenericConnector(
         entry_url="https://example.com/",
         config={},  # No selectors
     )
 
-    with pytest.raises(ValueError, match="requires 'selectors.item'"):
+    with pytest.raises(ValueError, match=r"requires 'selectors\.item'"):
         connector.collect(cursor=None, max_items=10, offline=False)

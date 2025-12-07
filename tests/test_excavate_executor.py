@@ -1,11 +1,10 @@
 """Tests for excavate executor module."""
 
 import json
-import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
+import yaml
 
 from quarry.tools.excavate.executor import (
     ExcavateExecutor,
@@ -33,8 +32,6 @@ class TestExcavateExecutor:
     @pytest.fixture
     def sample_schema_file(self, tmp_path, sample_schema_dict):
         """Create a temporary schema file."""
-        import yaml
-
         schema_path = tmp_path / "test_schema.yml"
         schema_path.write_text(yaml.dump(sample_schema_dict), encoding="utf-8")
         return schema_path
@@ -148,8 +145,6 @@ class TestPagination:
     @pytest.fixture
     def paginated_schema_file(self, tmp_path, paginated_schema_dict):
         """Create a temporary paginated schema file."""
-        import yaml
-
         schema_path = tmp_path / "paginated_schema.yml"
         schema_path.write_text(yaml.dump(paginated_schema_dict), encoding="utf-8")
         return schema_path
@@ -225,6 +220,7 @@ class TestPagination:
 
         # Should stop at 2 pages
         assert executor.stats["urls_fetched"] == 2
+        assert len(items) == 2
 
     @patch("quarry.tools.excavate.executor.get_html")
     def test_fetch_stops_on_duplicate_url(self, mock_get_html, paginated_schema_file):
@@ -244,6 +240,7 @@ class TestPagination:
 
         # Should only fetch once since next points to same URL
         assert executor.stats["urls_fetched"] == 1
+        assert len(items) == 1
 
 
 class TestWriteJsonl:

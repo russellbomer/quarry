@@ -1,7 +1,6 @@
 """Tests for excavate parser module."""
 
 import pytest
-from bs4 import BeautifulSoup
 
 from quarry.lib.schemas import ExtractionSchema, FieldSchema
 from quarry.tools.excavate.parser import SchemaParser

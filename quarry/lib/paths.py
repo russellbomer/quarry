@@ -106,7 +106,11 @@ def default_polished_output(
     return directory / f"{safe_name}_polished{file_suffix}"
 
 
-def default_export_path(base_name: str | None, extension: str = "csv", create_dirs: bool = False) -> Path:
+def default_export_path(
+    base_name: str | None,
+    extension: str = "csv",
+    create_dirs: bool = False,
+) -> Path:
     """Return the default export destination path."""
     safe_name = _sanitize_name(base_name, "quarry_export")
     ext = extension.lstrip(".")

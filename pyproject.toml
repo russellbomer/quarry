@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "py-quarry"
-version = "2.0.5"
+version = "2.0.6"
 description = "An intuitive web scraping toolkit with intelligent templates and interactive workflows"
 readme = "README.md"
 license = {text = "MIT"}
@@ -115,6 +115,11 @@ ignore = []
 "quarry/lib/selectors.py" = ["PLR0911"]
 "quarry/lib/prompts.py" = ["PLR0912"]
 "quarry/lib/http.py" = ["PLR0912", "PLR0915", "PLR0913", "PLR2004"]
+
+"tests/**" = [
+    # Tests intentionally use literal counts/thresholds for clarity
+    "PLR2004",
+]
 
 [tool.mypy]
 python_version = "3.12"

@@ -6,8 +6,9 @@ These tests validate that Foundry can handle common BI extraction needs.
 """
 
 import pytest
-from quarry.tools.scout.analyzer import analyze_page
+
 from quarry.lib.http import get_html
+from quarry.tools.scout.analyzer import analyze_page
 
 
 class TestFinancialDataExtraction:
@@ -356,7 +357,6 @@ class TestInfiniteScrollDetection:
 
             # Should detect React/modern framework
             frameworks = analysis.get("frameworks", [])
-            framework_names = {f["name"] for f in frameworks}
 
             # Medium uses React/Next.js
             assert len(frameworks) > 0, "Should detect some framework"

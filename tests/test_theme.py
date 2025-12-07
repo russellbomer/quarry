@@ -1,11 +1,12 @@
 """Tests for theme utility functions."""
 
 import pytest
+from rich.theme import Theme
 
 from quarry.lib.theme import (
     COLORS,
-    STYLES,
     QUARRY_THEME,
+    STYLES,
     bold,
     get_border_style,
     get_status_style,
@@ -41,8 +42,6 @@ class TestThemeConstants:
 
     def test_quarry_theme_is_theme(self):
         """Test QUARRY_THEME is a Rich Theme instance."""
-        from rich.theme import Theme
-
         assert isinstance(QUARRY_THEME, Theme)
 
 

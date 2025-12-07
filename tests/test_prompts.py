@@ -1,8 +1,8 @@
 """Test retry logic for interactive prompts."""
 
-import pytest
-from unittest.mock import patch, MagicMock
-from quarry.lib.prompts import RetryablePrompt, prompt_url, prompt_file
+from unittest.mock import MagicMock, patch
+
+from quarry.lib.prompts import RetryablePrompt, prompt_file, prompt_url
 
 
 def test_retryable_prompt_success_first_try():

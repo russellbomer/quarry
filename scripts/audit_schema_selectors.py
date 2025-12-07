@@ -10,23 +10,25 @@ Usage:
     python audit_schema_selectors.py examples/schemas/*.yml
 """
 
-import sys
-import yaml
-from pathlib import Path
-from typing import Dict, List, Tuple
 import re
+import sys
+import traceback
+from pathlib import Path
+
+import yaml
 
 # Add quarry to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from quarry.lib.selectors import (
-    _looks_dynamic as _is_dynamic_identifier,
     build_robust_selector,
-    extract_structural_pattern,
 )
 
+MAX_SELECTOR_DEPTH = 4
+MIN_SCHEMA_ARGS = 2
 
-def analyze_selector(selector: str) -> Dict:
+
+def analyze_selector(selector: str) -> dict:
     """Analyze a selector for brittleness"""
     issues = []
     suggestions = []
@@ -48,7 +50,7 @@ def analyze_selector(selector: str) -> Dict:
 
     # Check for deep nesting
     parts = selector.split()
-    if len(parts) > 4:
+    if len(parts) > MAX_SELECTOR_DEPTH:
         issues.append(f"Deep nesting: {len(parts)} levels")
         suggestions.append("Simplify to 2-3 levels for maintainability")
         if severity == "ok":
@@ -86,7 +88,7 @@ def analyze_selector(selector: str) -> Dict:
     }
 
 
-def audit_schema(schema_path: Path) -> Dict:
+def audit_schema(schema_path: Path) -> dict:
     """Audit a schema file for selector quality"""
 
     with open(schema_path) as f:
@@ -121,7 +123,7 @@ def audit_schema(schema_path: Path) -> Dict:
     return results
 
 
-def print_audit_results(results: Dict):
+def print_audit_results(results: dict):
     """Print audit results in a readable format"""
 
     print(f"\n{'=' * 80}")
@@ -145,12 +147,12 @@ def print_audit_results(results: Dict):
     # Item selector
     if 'item' in results['selectors']:
         item = results['selectors']['item']
-        print(f"\n🎯 Item Selector")
+        print("\n🎯 Item Selector")
         print_selector_analysis(item)
 
     # Field selectors
     if 'fields' in results['selectors']:
-        print(f"\n📝 Field Selectors")
+        print("\n📝 Field Selectors")
         for field_name, analysis in results['selectors']['fields'].items():
             print(f"\n  Field: {field_name}")
             print_selector_analysis(analysis, indent=4)
@@ -158,17 +160,18 @@ def print_audit_results(results: Dict):
     # Overall recommendation
     if summary['high'] > 0:
         print(
-            f"\n🔴 RECOMMENDATION: Update {summary['high']} high-priority selectors before deploying"
+            "\n🔴 RECOMMENDATION: Update "
+            f"{summary['high']} high-priority selectors before deploying"
         )
     elif summary['medium'] > 0:
         print(
             f"\n⚠️  RECOMMENDATION: Consider updating {summary['medium']} medium-priority selectors"
         )
     else:
-        print(f"\n✅ SCHEMA LOOKS GOOD: All selectors use resilient patterns")
+        print("\n✅ SCHEMA LOOKS GOOD: All selectors use resilient patterns")
 
 
-def print_selector_analysis(analysis: Dict, indent: int = 2):
+def print_selector_analysis(analysis: dict, indent: int = 2):
     """Print individual selector analysis"""
     prefix = ' ' * indent
 
@@ -197,7 +200,7 @@ def print_selector_analysis(analysis: Dict, indent: int = 2):
         print(f"{prefix}  🔧 Robust alternative: {analysis['robust_alternative']}")
 
 
-def generate_migration_report(all_results: List[Dict]) -> str:
+def generate_migration_report(all_results: list[dict]) -> str:
     """Generate markdown migration report"""
 
     report = ["# Schema Selector Migration Report\n"]
@@ -246,7 +249,7 @@ def generate_migration_report(all_results: List[Dict]) -> str:
 
 
 def main():
-    if len(sys.argv) < 2:
+    if len(sys.argv) < MIN_SCHEMA_ARGS:
         print("Usage: python audit_schema_selectors.py <schema.yml> [schema2.yml ...]")
         print("\nExample:")
         print("  python audit_schema_selectors.py examples/schemas/nyt.yml")
@@ -268,8 +271,6 @@ def main():
 
         except Exception as e:
             print(f"\n❌ Error analyzing {schema_path}: {e}")
-            import traceback
-
             traceback.print_exc()
 
     # Generate migration report
