@@ -122,10 +122,7 @@ class TestDeduplicatorFirstStrategy:
         """Test different records are all unique."""
         dedup = Deduplicator(strategy="first")
 
-        results = [
-            dedup.is_duplicate({"id": i})
-            for i in range(5)
-        ]
+        results = [dedup.is_duplicate({"id": i}) for i in range(5)]
 
         assert all(r is False for r in results)
         assert dedup.duplicate_count == 0

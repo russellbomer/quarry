@@ -94,9 +94,7 @@ class TestPolishProcessorTransformations:
 
         input_file.write_text('{"name": "  hello world  "}')
 
-        transformations = {
-            "name": [{"transform": "normalize_text"}]
-        }
+        transformations = {"name": [{"transform": "normalize_text"}]}
 
         processor = PolishProcessor()
         processor.process(input_file, output_file, transformations=transformations)
@@ -131,9 +129,7 @@ class TestPolishProcessorTransformations:
 
         input_file.write_text('{"text": "This is a very long string"}')
 
-        transformations = {
-            "text": [{"transform": "truncate_text", "max_length": 10}]
-        }
+        transformations = {"text": [{"transform": "truncate_text", "max_length": 10}]}
 
         processor = PolishProcessor()
         processor.process(input_file, output_file, transformations=transformations)
@@ -149,9 +145,7 @@ class TestPolishProcessorTransformations:
 
         input_file.write_text('{"id": 1}')
 
-        transformations = {
-            "nonexistent": [{"transform": "uppercase"}]
-        }
+        transformations = {"nonexistent": [{"transform": "uppercase"}]}
 
         processor = PolishProcessor()
         stats = processor.process(input_file, output_file, transformations=transformations)
@@ -185,9 +179,7 @@ class TestPolishProcessorTransformations:
         # parse_date returns None for invalid dates (doesn't raise)
         input_file.write_text('{"date": "not-a-date"}')
 
-        transformations = {
-            "date": [{"transform": "parse_date"}]
-        }
+        transformations = {"date": [{"transform": "parse_date"}]}
 
         processor = PolishProcessor()
         stats = processor.process(input_file, output_file, transformations=transformations)
@@ -297,9 +289,7 @@ class TestPolishProcessorValidation:
 
         input_file.write_text('{"url": "not-a-url"}')
 
-        validation_rules = {
-            "url": {"type": "url"}
-        }
+        validation_rules = {"url": {"type": "url"}}
 
         processor = PolishProcessor()
         stats = processor.process(
@@ -322,9 +312,7 @@ class TestPolishProcessorValidation:
         ]
         input_file.write_text("\n".join(json.dumps(r) for r in records))
 
-        validation_rules = {
-            "url": {"type": "url"}
-        }
+        validation_rules = {"url": {"type": "url"}}
 
         processor = PolishProcessor()
         stats = processor.process(
@@ -392,9 +380,7 @@ class TestPolishProcessorCombined:
             output_file,
             deduplicate=True,
             dedupe_keys=["id"],
-            transformations={
-                "name": [{"transform": "normalize_text"}, {"transform": "lowercase"}]
-            },
+            transformations={"name": [{"transform": "normalize_text"}, {"transform": "lowercase"}]},
             filter_func=lambda r: r.get("active"),
         )
 

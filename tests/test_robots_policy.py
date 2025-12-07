@@ -280,7 +280,7 @@ class TestGetCache:
         """Should create cache instance on first call."""
         with tempfile.TemporaryDirectory() as tmpdir:
             db_path = Path(tmpdir) / "robots.sqlite"
-            
+
             # Manually set to test get_cache
             cache = get_cache(str(db_path))
 

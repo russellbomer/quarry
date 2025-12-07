@@ -108,9 +108,7 @@ def polish(
     if types:
         for type_spec in types:
             if ":" not in type_spec:
-                click.echo(
-                    f"⚠️  Invalid type format: {type_spec} (expected field:type)", err=True
-                )
+                click.echo(f"⚠️  Invalid type format: {type_spec} (expected field:type)", err=True)
                 continue
             field, field_type = type_spec.split(":", 1)
             if field not in validation_rules:
@@ -288,7 +286,9 @@ def polish(
             click.echo("\n📋 Available transformations:", err=True)
             click.echo("   normalize_text    - Clean whitespace, standardize text", err=True)
             click.echo("   clean_text        - Clean whitespace (alias)", err=True)
-            click.echo("   extract_number    - Extract numeric value (e.g., \"$99.99\" -> 99.99)", err=True)
+            click.echo(
+                "   extract_number    - Extract numeric value (e.g., \"$99.99\" -> 99.99)", err=True
+            )
             click.echo("   to_boolean        - Convert yes/no, true/false to boolean", err=True)
             click.echo("   round             - Round number to decimal places", err=True)
             click.echo("   uppercase         - Convert to UPPERCASE", err=True)
@@ -317,22 +317,20 @@ def polish(
                         questionary.Choice(
                             "normalize_text - Clean whitespace", value="normalize_text"
                         ),
-                        questionary.Choice(
-                            "clean_text - Clean whitespace", value="clean_text"
-                        ),
+                        questionary.Choice("clean_text - Clean whitespace", value="clean_text"),
                         questionary.Choice(
                             "extract_number - Extract numeric value", value="extract_number"
                         ),
-                        questionary.Choice(
-                            "to_boolean - Convert to boolean", value="to_boolean"
-                        ),
-                        questionary.Choice(
-                            "round - Round number", value="round"
-                        ),
+                        questionary.Choice("to_boolean - Convert to boolean", value="to_boolean"),
+                        questionary.Choice("round - Round number", value="round"),
                         questionary.Choice("uppercase - Convert to UPPERCASE", value="uppercase"),
-                        questionary.Choice("to_uppercase - Convert to UPPERCASE", value="to_uppercase"),
+                        questionary.Choice(
+                            "to_uppercase - Convert to UPPERCASE", value="to_uppercase"
+                        ),
                         questionary.Choice("lowercase - Convert to lowercase", value="lowercase"),
-                        questionary.Choice("to_lowercase - Convert to lowercase", value="to_lowercase"),
+                        questionary.Choice(
+                            "to_lowercase - Convert to lowercase", value="to_lowercase"
+                        ),
                         questionary.Choice(
                             "extract_domain - Get domain from URL", value="extract_domain"
                         ),

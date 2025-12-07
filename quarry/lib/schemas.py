@@ -17,9 +17,7 @@ class FieldSchema(BaseModel):
     required: bool = Field(False, description="Whether this field is required")
     multiple: bool = Field(False, description="Whether to extract multiple matches")
     default: Any = Field(None, description="Default value if extraction fails")
-    type: str | None = Field(
-        None, description="Data type hint (text, number, boolean, url, date)"
-    )
+    type: str | None = Field(None, description="Data type hint (text, number, boolean, url, date)")
     transform: str | None = Field(
         None, description="Transformation to apply (e.g., extract_number, to_boolean)"
     )

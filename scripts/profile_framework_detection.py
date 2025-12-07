@@ -153,9 +153,7 @@ def run_selector_benchmarks(fixtures: dict[str, str]) -> list[dict]:
     return results
 
 
-def summarize_results(
-    detection_results: list[dict], selector_results: list[dict]
-) -> float | None:
+def summarize_results(detection_results: list[dict], selector_results: list[dict]) -> float | None:
     """Print summary statistics and return avg single detection time."""
     print("\n" + "=" * HEADER_WIDTH)
     print("Summary Statistics")
@@ -165,9 +163,7 @@ def summarize_results(
 
     valid_detection = [r for r in detection_results if "error" not in r]
     if valid_detection:
-        avg_single = sum(r["single_detection_ms"] for r in valid_detection) / len(
-            valid_detection
-        )
+        avg_single = sum(r["single_detection_ms"] for r in valid_detection) / len(valid_detection)
         avg_all = sum(r["all_detection_ms"] for r in valid_detection) / len(valid_detection)
 
         print("\nDetection Performance:")

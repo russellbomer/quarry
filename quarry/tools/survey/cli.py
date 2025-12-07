@@ -58,7 +58,7 @@ def create(from_probe, template, url, file, output, preview):
     """
     # Initialize variables
     html = None
-    
+
     # Use template if provided
     if template:
         click.echo(f"📋 Loading template: {template}", err=True)
@@ -71,6 +71,7 @@ def create(from_probe, template, url, file, output, preview):
             click.echo(f"❌ Unknown template: {template}", err=True)
             click.echo("\nAvailable templates:", err=True)
             from .templates import list_templates
+
             for tmpl in list_templates():
                 click.echo(f"  • {tmpl['key']:15} - {tmpl['description']}", err=True)
             sys.exit(1)
@@ -223,18 +224,18 @@ def templates_cmd():
     from .templates import list_templates
 
     click.echo("📋 Available Schema Templates:\n")
-    
+
     templates = list_templates()
     for tmpl in templates:
         key = tmpl["key"]
         description = tmpl["description"]
         num_fields = tmpl.get("num_fields", 0)
-        
+
         click.echo(f"  • {key:15} - {description}")
         if num_fields > 0:
             click.echo(f"    {'':15}   ({num_fields} fields)", nl=False)
         click.echo()
-    
+
     click.echo("\n💡 Use with: quarry survey create --template <key>")
 
 

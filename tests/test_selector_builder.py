@@ -425,8 +425,9 @@ class TestBuildFallbackChain:
 
         # Should include tag chain
         selectors = chain.selectors
-        assert any("article" in s and "." not in s for s in selectors) or \
-               any(s == "a" for s in selectors)
+        assert any("article" in s and "." not in s for s in selectors) or any(
+            s == "a" for s in selectors
+        )
 
     def test_chain_ordered_specific_to_general(self):
         """Test that chain is ordered from specific to general."""

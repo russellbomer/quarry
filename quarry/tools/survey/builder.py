@@ -339,25 +339,25 @@ def build_schema_interactive(
 
     # Determine if we have Scout analysis available
     has_analysis = bool(analysis and analysis.get("suggestions"))
-    
+
     method_choices = []
     if has_analysis:
         method_choices.append(
             questionary.Choice(
-                "Recommended - Use Scout's detected selectors (fastest)",
-                value="recommended"
+                "Recommended - Use Scout's detected selectors (fastest)", value="recommended"
             )
         )
-    method_choices.extend([
-        questionary.Choice(
-            "Template - Start with pre-configured fields for common data types",
-            value="template"
-        ),
-        questionary.Choice(
-            "Custom - Build from scratch with manual selector entry",
-            value="custom"
-        ),
-    ])
+    method_choices.extend(
+        [
+            questionary.Choice(
+                "Template - Start with pre-configured fields for common data types",
+                value="template",
+            ),
+            questionary.Choice(
+                "Custom - Build from scratch with manual selector entry", value="custom"
+            ),
+        ]
+    )
 
     building_method = questionary.select(
         "Select method:",
@@ -370,7 +370,7 @@ def build_schema_interactive(
         # Use Scout recommendations directly - skip to custom flow with analysis
         console.print("[dim]Using Scout-recommended selectors...[/dim]\n")
         # Fall through to custom flow which will use the analysis
-        
+
     elif building_method == "template":
         templates = list_templates()
 
@@ -392,9 +392,7 @@ def build_schema_interactive(
         console.print(table)
         console.print()
 
-        choice = Prompt.ask(
-            "Select template number", default="1"
-        )
+        choice = Prompt.ask("Select template number", default="1")
 
         template_key = None
         if choice.isdigit():
@@ -668,10 +666,14 @@ def build_schema_interactive(
             )
 
             return schema
-    
+
     # If template wasn't selected or user chose custom, continue with custom/recommended flow
     if building_method != "template":
-        console.print("[dim]Building schema with Scout recommendations...[/dim]\n" if building_method == "recommended" else "[dim]Building custom schema...[/dim]\n")
+        console.print(
+            "[dim]Building schema with Scout recommendations...[/dim]\n"
+            if building_method == "recommended"
+            else "[dim]Building custom schema...[/dim]\n"
+        )
 
     # Step 2: Get URL if not provided
     if not url and not html:
@@ -739,9 +741,13 @@ def build_schema_interactive(
             )
             if Confirm.ask("Use suggested selector?", default=True):
                 item_selector = suggested_selector
-                console.print(f"[green]✓[/green] Using Scout suggestion: [cyan]{item_selector}[/cyan]")
+                console.print(
+                    f"[green]✓[/green] Using Scout suggestion: [cyan]{item_selector}[/cyan]"
+                )
             else:
-                console.print("[dim]Skipping suggestion - showing all detected containers...[/dim]\n")
+                console.print(
+                    "[dim]Skipping suggestion - showing all detected containers...[/dim]\n"
+                )
 
     # Only show container table if user didn't already accept a suggestion
     if not item_selector and analysis and analysis.get("containers"):
@@ -858,7 +864,7 @@ def build_schema_interactive(
             console.print("[green]✓[/green] Using all recommended fields automatically")
         else:
             use_all = Confirm.ask("Use all suggested fields?", default=True)
-        
+
         if use_all:
             before_count = len(fields)
             for field in suggested_fields:

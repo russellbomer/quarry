@@ -20,9 +20,7 @@ class TestCSVExporter:
             {"id": "1", "title": "First", "author": "Alice"},
             {"id": "2", "title": "Second", "author": "Bob"},
         ]
-        jsonl_path.write_text(
-            "\n".join(json.dumps(r) for r in records), encoding="utf-8"
-        )
+        jsonl_path.write_text("\n".join(json.dumps(r) for r in records), encoding="utf-8")
         return jsonl_path
 
     def test_export_basic(self, tmp_path, sample_jsonl):
@@ -117,9 +115,7 @@ class TestCSVExporter:
             {"id": "1", "title": "First"},
             {"id": "2", "author": "Bob"},  # Different columns
         ]
-        jsonl_path.write_text(
-            "\n".join(json.dumps(r) for r in records), encoding="utf-8"
-        )
+        jsonl_path.write_text("\n".join(json.dumps(r) for r in records), encoding="utf-8")
 
         output_path = tmp_path / "output.csv"
         exporter = CSVExporter(str(output_path))
@@ -148,9 +144,7 @@ class TestJSONExporter:
             {"id": "1", "title": "First"},
             {"id": "2", "title": "Second"},
         ]
-        jsonl_path.write_text(
-            "\n".join(json.dumps(r) for r in records), encoding="utf-8"
-        )
+        jsonl_path.write_text("\n".join(json.dumps(r) for r in records), encoding="utf-8")
         return jsonl_path
 
     def test_export_basic(self, tmp_path, sample_jsonl):
@@ -226,9 +220,7 @@ class TestSQLiteExporter:
             {"id": "1", "title": "First", "author": "Alice"},
             {"id": "2", "title": "Second", "author": "Bob"},
         ]
-        jsonl_path.write_text(
-            "\n".join(json.dumps(r) for r in records), encoding="utf-8"
-        )
+        jsonl_path.write_text("\n".join(json.dumps(r) for r in records), encoding="utf-8")
         return jsonl_path
 
     def test_export_basic(self, tmp_path, sample_jsonl):

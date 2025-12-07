@@ -131,9 +131,7 @@ class TestNormalize:
 
     def test_numeric_values(self):
         """Test that numeric values are preserved."""
-        records = [
-            {"id": "1", "title": "Test", "url": "https://example.com", "count": 42}
-        ]
+        records = [{"id": "1", "title": "Test", "url": "https://example.com", "count": 42}]
 
         result = normalize(records)
 

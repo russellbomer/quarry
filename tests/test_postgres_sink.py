@@ -81,12 +81,12 @@ class TestConnectionStringValidation:
         # Ensure env var is not set
         env = os.environ.copy()
         env.pop("QUARRY_POSTGRES_URL", None)
-        
+
         with patch.dict(os.environ, env, clear=True):
             sink = PostgresSink()
             with pytest.raises(PostgresConnectionError) as exc_info:
                 sink._get_connection_string()
-            
+
             error_msg = str(exc_info.value)
             assert "PostgreSQL connection not configured" in error_msg
             assert "QUARRY_POSTGRES_URL" in error_msg
@@ -95,7 +95,7 @@ class TestConnectionStringValidation:
     def test_psycopg_import_error(self):
         """Should provide helpful message when psycopg not installed."""
         sink = PostgresSink(connection_string="postgresql://user:pass@localhost/db")
-        
+
         with patch.dict("sys.modules", {"psycopg_pool": None}):
             with patch(
                 "builtins.__import__",
@@ -120,12 +120,12 @@ class TestConnectionPoolErrors:
             "Check your username and password in the connection string.\n"
             "Original error: authentication failed"
         )
-        
+
         sink = PostgresSink(connection_string="postgresql://bad:creds@localhost/db")
-        
+
         with pytest.raises(PostgresConnectionError) as exc_info:
             sink._get_pool()
-        
+
         assert "authentication failed" in str(exc_info.value).lower()
 
     @patch("quarry.sinks.postgres.PostgresSink._get_pool")
@@ -137,12 +137,12 @@ class TestConnectionPoolErrors:
             "  1. PostgreSQL is running\n"
             "Original error: connection refused"
         )
-        
+
         sink = PostgresSink(connection_string="postgresql://user:pass@badhost/db")
-        
+
         with pytest.raises(PostgresConnectionError) as exc_info:
             sink._get_pool()
-        
+
         assert "connect" in str(exc_info.value).lower()
 
 
@@ -152,49 +152,57 @@ class TestSchemaInference:
     def test_infer_integer_types(self):
         """Should map pandas int types to PostgreSQL integers."""
         sink = PostgresSink()
-        df = pd.DataFrame({
-            "int32_col": pd.array([1, 2, 3], dtype="int32"),
-            "int64_col": pd.array([1, 2, 3], dtype="int64"),
-        })
-        
+        df = pd.DataFrame(
+            {
+                "int32_col": pd.array([1, 2, 3], dtype="int32"),
+                "int64_col": pd.array([1, 2, 3], dtype="int64"),
+            }
+        )
+
         types = sink._infer_column_types(df)
-        
+
         assert types["int32_col"] == "INTEGER"
         assert types["int64_col"] == "BIGINT"
 
     def test_infer_float_types(self):
         """Should map pandas float types to PostgreSQL floats."""
         sink = PostgresSink()
-        df = pd.DataFrame({
-            "float32_col": pd.array([1.0, 2.0, 3.0], dtype="float32"),
-            "float64_col": pd.array([1.0, 2.0, 3.0], dtype="float64"),
-        })
-        
+        df = pd.DataFrame(
+            {
+                "float32_col": pd.array([1.0, 2.0, 3.0], dtype="float32"),
+                "float64_col": pd.array([1.0, 2.0, 3.0], dtype="float64"),
+            }
+        )
+
         types = sink._infer_column_types(df)
-        
+
         assert types["float32_col"] == "REAL"
         assert types["float64_col"] == "DOUBLE PRECISION"
 
     def test_infer_string_types(self):
         """Should map object dtype to TEXT."""
         sink = PostgresSink()
-        df = pd.DataFrame({
-            "text_col": ["a", "b", "c"],
-        })
-        
+        df = pd.DataFrame(
+            {
+                "text_col": ["a", "b", "c"],
+            }
+        )
+
         types = sink._infer_column_types(df)
-        
+
         assert types["text_col"] == "TEXT"
 
     def test_infer_bool_types(self):
         """Should map bool dtype to BOOLEAN."""
         sink = PostgresSink()
-        df = pd.DataFrame({
-            "bool_col": [True, False, True],
-        })
-        
+        df = pd.DataFrame(
+            {
+                "bool_col": [True, False, True],
+            }
+        )
+
         types = sink._infer_column_types(df)
-        
+
         assert types["bool_col"] == "BOOLEAN"
 
 
@@ -207,7 +215,7 @@ class TestTableOperations:
             connection_string="postgresql://user:pass@localhost/db",
             table_name="quarry_{job}",
         )
-        
+
         # The template expansion happens in write(), verify the stored value
         assert sink.table_name == "quarry_{job}"
 
@@ -230,10 +238,10 @@ class TestWriteValidation:
         """Should raise ValueError for empty DataFrame."""
         sink = PostgresSink(connection_string="postgresql://user:pass@localhost/db")
         empty_df = pd.DataFrame()
-        
+
         with pytest.raises(ValueError) as exc_info:
             sink.write(empty_df, "test_job")
-        
+
         assert "empty" in str(exc_info.value).lower()
 
 
@@ -258,7 +266,7 @@ class TestMockedDatabaseOperations:
         mock_pool.connection.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_pool.connection.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_pool.return_value = mock_pool
-        
+
         # Table does not exist
         mock_table_exists.return_value = False
 
@@ -285,12 +293,12 @@ class TestMockedDatabaseOperations:
     ):
         """Write with upsert_key should use ON CONFLICT."""
         mock_conn = MagicMock()
-        
+
         mock_pool = MagicMock()
         mock_pool.connection.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_pool.connection.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_pool.return_value = mock_pool
-        
+
         # Table does not exist
         mock_table_exists.return_value = False
 
@@ -417,9 +425,9 @@ class TestCloseMethod:
         sink = PostgresSink()
         mock_pool = MagicMock()
         sink._pool = mock_pool
-        
+
         sink.close()
-        
+
         mock_pool.close.assert_called_once()
         assert sink._pool is None
 
@@ -428,9 +436,9 @@ class TestCloseMethod:
         sink = PostgresSink()
         mock_pool = MagicMock()
         sink._pool = mock_pool
-        
+
         sink.close()
         sink.close()  # Should not raise
-        
+
         # close() only called once because pool is None after first call
         mock_pool.close.assert_called_once()

@@ -1,6 +1,5 @@
 """Tests for quarry/framework_profiles/universal/opengraph.py."""
 
-
 from quarry.framework_profiles.universal.opengraph import OpenGraphProfile
 
 

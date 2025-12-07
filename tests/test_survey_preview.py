@@ -192,10 +192,7 @@ class TestFormatPreview:
 
     def test_format_with_limit(self):
         """Test formatting respects limit."""
-        items = [
-            {"title": f"Item {i}"}
-            for i in range(10)
-        ]
+        items = [{"title": f"Item {i}"} for i in range(10)]
 
         result = format_preview(items, limit=3)
 

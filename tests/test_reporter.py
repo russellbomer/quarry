@@ -197,12 +197,10 @@ class TestFormatAsTerminal:
         """Should limit number of displayed frameworks/containers."""
         analysis = {
             "frameworks": [
-                {"name": f"framework{i}", "confidence": 0.9 - i * 0.1}
-                for i in range(10)
+                {"name": f"framework{i}", "confidence": 0.9 - i * 0.1} for i in range(10)
             ],
             "containers": [
-                {"child_selector": f"div.item{i}", "item_count": 10 - i}
-                for i in range(10)
+                {"child_selector": f"div.item{i}", "item_count": 10 - i} for i in range(10)
             ],
         }
         result = format_as_terminal(analysis)

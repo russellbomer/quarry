@@ -100,7 +100,7 @@ def _run_miner() -> None:
         return
 
     _run_export_flow(polished_output)
-    
+
     console.print(f"\n[{COLORS['success']}]✨ Pipeline complete![/{COLORS['success']}]")
 
 
@@ -430,12 +430,12 @@ def _run_export_flow(input_path: str) -> None:
         console.print("[dim]  postgresql://user:password@localhost/dbname[/dim]")
         console.print("[dim]  postgresql://user@localhost:5432/mydb[/dim]")
         console.print()
-        
+
         destination = questionary.text(
             "PostgreSQL connection string",
             default="postgresql://user:password@localhost/quarry",
         ).ask()
-        
+
         if not destination:
             console.print(f"[{COLORS['warning']}]Export cancelled[/{COLORS['warning']}]")
             return
@@ -496,7 +496,7 @@ def _run_export_flow(input_path: str) -> None:
         table = questionary.text("Table name", default="records").ask()
         if table:
             options["table_name"] = table
-        
+
         mode = questionary.select(
             "If table exists",
             choices=["append", "replace", "fail"],
@@ -504,13 +504,13 @@ def _run_export_flow(input_path: str) -> None:
         ).ask()
         if mode:
             options["if_exists"] = mode
-        
+
         exclude_meta = questionary.confirm(
             "Exclude _meta field?",
             default=True,
         ).ask()
         options["exclude_meta"] = bool(exclude_meta)
-        
+
         upsert = questionary.confirm(
             "Use upsert (INSERT ... ON CONFLICT)?",
             default=False,

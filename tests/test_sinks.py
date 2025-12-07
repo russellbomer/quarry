@@ -184,11 +184,13 @@ class TestJSONLSink:
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "test.jsonl"
             sink = JSONLSink(str(path))
-            df = pd.DataFrame({
-                "name": ["Alice"],
-                "tags": [["python", "data"]],
-                "meta": [{"key": "value"}],
-            })
+            df = pd.DataFrame(
+                {
+                    "name": ["Alice"],
+                    "tags": [["python", "data"]],
+                    "meta": [{"key": "value"}],
+                }
+            )
 
             result = sink.write(df, "test_job")
 
