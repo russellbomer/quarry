@@ -46,10 +46,17 @@ def execute_extraction(
     executor = ExcavateExecutor(schema)
 
     if html:
-        return executor.parse_html(html, include_metadata=include_metadata)
+        items = executor.parser.parse(html)
+        if include_metadata:
+            for item in items:
+                item["_meta"] = {
+                    "fetched_at": datetime.now().isoformat(),
+                    "schema": executor.schema.name,
+                }
+        return items
     elif url:
         if executor.schema.pagination:
-            return executor.fetch_paginated(
+            return executor.fetch_with_pagination(
                 url, max_pages=max_pages, include_metadata=include_metadata
             )
         else:
